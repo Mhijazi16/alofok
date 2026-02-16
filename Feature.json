@@ -1,0 +1,132 @@
+{
+  "features": [
+    {
+      "id": "F-001",
+      "category": "Core",
+      "name": "Project Scaffold & Localization",
+      "description": "Setup Monorepo, React (RTL/Arabic support), FastAPI. Use Bun for frontend.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-002",
+      "category": "Backend",
+      "name": "RBAC Implementation",
+      "description": "User roles: Admin, Designer, Sales. Middleware to enforce scopes.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-003",
+      "category": "Backend",
+      "name": "Middleware: Error Handling",
+      "description": "Catch 500 errors -> Slack Webhook. Catch HorizonException -> Log.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-004",
+      "category": "Backend",
+      "name": "Middleware: Caching & Compression",
+      "description": "Gzip compression + Abstract Cache Strategy (InMemory implemented, Redis ready).",
+      "status": "todo",
+      "priority": "medium"
+    },
+    {
+      "id": "F-005",
+      "category": "Backend",
+      "name": "Database & Migrations",
+      "description": "SQLAlchemy Models (BaseMixin: created_at, updated_at, is_deleted) + Alembic setup.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-006",
+      "category": "Frontend - Sales",
+      "name": "Route Management",
+      "description": "View customers by Day/City (e.g., Sunday/Hebron).",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-007",
+      "category": "Frontend - Sales",
+      "name": "Catalog & Ordering",
+      "description": "Browse (Best Sellers/Discounts), Search (Arabic), Create Order.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-008",
+      "category": "Frontend - Designer",
+      "name": "Product Management",
+      "description": "Upload images, edit details, toggle Discount/Best Seller flags.",
+      "status": "todo",
+      "priority": "medium"
+    },
+    {
+      "id": "F-009",
+      "category": "Frontend - Admin",
+      "name": "Insights Dashboard",
+      "description": "View sales stats and debt collection overview.",
+      "status": "todo",
+      "priority": "low"
+    },
+    {
+      "id": "F-010",
+      "category": "Frontend",
+      "name": "Offline Sync",
+      "description": "Cache Catalog/Customers locally. Sync Queue for Orders/Payments.",
+      "status": "todo",
+      "priority": "critical"
+    },
+    {
+      "id": "F-011",
+      "category": "Reporting",
+      "name": "Customer Statement & Reconciliation",
+      "description": "Generate transaction history (Since Zero, Date Range) to resolve balance disputes.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-013",
+      "category": "Financials",
+      "name": "Returned Check Handling",
+      "description": "Workflow to mark checks as returned, update customer balance (re-debit), and log in history.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-014",
+      "category": "Reporting",
+      "name": "EOD Report Generation",
+      "description": "Generate summary of total cash/checks collected for the day.",
+      "status": "todo",
+      "priority": "medium"
+    },
+    {
+      "id": "F-015",
+      "category": "Data Management",
+      "name": "Customer Bulk Import",
+      "description": "Admin tool to upload CSV files for bulk customer creation and initial balance setting.",
+      "status": "todo",
+      "priority": "medium"
+    },
+    {
+      "id": "F-016",
+      "category": "Frontend - Sales",
+      "name": "Customer Insights Dashboard",
+      "description": "Pre-visit summary: Debt, Last Payment, Frequency, Risk Score.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-017",
+      "category": "Frontend - Sales",
+      "name": "Customer-Centric Navigation",
+      "description": "UI Flow: Select Customer -> Dashboard -> Actions (Order/Pay/Statement).",
+      "status": "todo",
+      "priority": "high"
+    }
+  ]
+}
