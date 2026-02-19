@@ -13,7 +13,9 @@ async def list_products(service: CatalogSvc) -> list[ProductOut]:
     return await service.list_products()
 
 
-@router.post("", response_model=ProductOut, status_code=201, dependencies=[require_designer])
+@router.post(
+    "", response_model=ProductOut, status_code=201, dependencies=[require_designer]
+)
 async def create_product(
     body: ProductCreate, current_user: CurrentUser, service: CatalogSvc
 ) -> ProductOut:

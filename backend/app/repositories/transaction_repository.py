@@ -19,7 +19,9 @@ class TransactionRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_payments_for_customer(self, customer_id: uuid.UUID) -> list[Transaction]:
+    async def get_payments_for_customer(
+        self, customer_id: uuid.UUID
+    ) -> list[Transaction]:
         result = await self._db.execute(
             select(Transaction)
             .where(

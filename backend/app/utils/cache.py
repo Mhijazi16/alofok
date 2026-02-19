@@ -10,9 +10,9 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 # TTL constants (seconds)
-TTL_CATALOG = 60 * 10   # 10 minutes
-TTL_ROUTE = 60 * 5      # 5 minutes
-TTL_INSIGHTS = 60 * 2   # 2 minutes
+TTL_CATALOG = 60 * 10  # 10 minutes
+TTL_ROUTE = 60 * 5  # 5 minutes
+TTL_INSIGHTS = 60 * 2  # 2 minutes
 
 
 class CacheBackend(ABC):

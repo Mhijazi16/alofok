@@ -44,7 +44,9 @@ class CustomerService:
 
         customers = await self._customers.get_by_day(assigned_day)
         out = [CustomerOut.model_validate(c) for c in customers]
-        await self._cache.set(cache_key, [c.model_dump(mode="json") for c in out], ttl=TTL_ROUTE)
+        await self._cache.set(
+            cache_key, [c.model_dump(mode="json") for c in out], ttl=TTL_ROUTE
+        )
         return out
 
     async def get_insights(self, customer_id: uuid.UUID) -> CustomerInsightsOut:
@@ -70,7 +72,9 @@ class CustomerService:
 
             if len(payments) >= 2:
                 dates = [p.created_at.date() for p in payments]
-                intervals = [(dates[i] - dates[i + 1]).days for i in range(len(dates) - 1)]
+                intervals = [
+                    (dates[i] - dates[i + 1]).days for i in range(len(dates) - 1)
+                ]
                 avg_interval = sum(intervals) / len(intervals)
 
         out = CustomerInsightsOut(
@@ -96,27 +100,49 @@ class CustomerService:
 
         if since_zero_balance:
             all_txns = await self._transactions.get_for_customer(customer_id)
-            txns = all_txns[_find_since_zero_index(all_txns):]
+            txns = all_txns[_find_since_zero_index(all_txns) :]
         else:
-            start_dt = datetime(start_date.year, start_date.month, start_date.day, tzinfo=timezone.utc) if start_date else None
-            end_dt = datetime(end_date.year, end_date.month, end_date.day + 1, tzinfo=timezone.utc) if end_date else None
-            txns = await self._transactions.get_for_customer(customer_id, start=start_dt, end=end_dt)
+            start_dt = (
+                datetime(
+                    start_date.year,
+                    start_date.month,
+                    start_date.day,
+                    tzinfo=timezone.utc,
+                )
+                if start_date
+                else None
+            )
+            end_dt = (
+                datetime(
+                    end_date.year, end_date.month, end_date.day + 1, tzinfo=timezone.utc
+                )
+                if end_date
+                else None
+            )
+            txns = await self._transactions.get_for_customer(
+                customer_id, start=start_dt, end=end_dt
+            )
 
         running = Decimal("0")
         entries: list[StatementEntryOut] = []
         for txn in txns:
             running += txn.amount
-            entries.append(StatementEntryOut(
-                transaction=TransactionOut.model_validate(txn),
-                running_balance=running,
-            ))
+            entries.append(
+                StatementEntryOut(
+                    transaction=TransactionOut.model_validate(txn),
+                    running_balance=running,
+                )
+            )
 
-        return StatementOut(customer_id=customer_id, entries=entries, closing_balance=running)
+        return StatementOut(
+            customer_id=customer_id, entries=entries, closing_balance=running
+        )
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _compute_risk(balance: Decimal, last_payment_date: str | None) -> str:
     if balance <= 0:

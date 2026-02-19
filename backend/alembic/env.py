@@ -7,6 +7,7 @@ from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
 from app.models import Base  # noqa: F401
+
 # Importing the package triggers all model imports in models/__init__.py,
 # which registers every table with Base.metadata for autogenerate.
 import app.models.user  # noqa: F401

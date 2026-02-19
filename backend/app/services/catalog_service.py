@@ -22,10 +22,14 @@ class CatalogService:
 
         products = await self._products.get_all()
         out = [ProductOut.model_validate(p) for p in products]
-        await self._cache.set(_LIST_KEY, [p.model_dump(mode="json") for p in out], ttl=TTL_CATALOG)
+        await self._cache.set(
+            _LIST_KEY, [p.model_dump(mode="json") for p in out], ttl=TTL_CATALOG
+        )
         return out
 
-    async def create_product(self, body: ProductCreate, creator_id: uuid.UUID) -> ProductOut:
+    async def create_product(
+        self, body: ProductCreate, creator_id: uuid.UUID
+    ) -> ProductOut:
         if await self._products.get_by_sku(body.sku):
             raise HorizonException(409, f"SKU '{body.sku}' already exists")
 
@@ -34,7 +38,9 @@ class CatalogService:
         await self._cache.invalidate_prefix(_CACHE_PREFIX)
         return ProductOut.model_validate(product)
 
-    async def update_product(self, product_id: uuid.UUID, body: ProductUpdate) -> ProductOut:
+    async def update_product(
+        self, product_id: uuid.UUID, body: ProductUpdate
+    ) -> ProductOut:
         product = await self._products.get_by_id(product_id)
         if product is None:
             raise HorizonException(404, "Product not found")

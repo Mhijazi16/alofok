@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/i18n.ts","./src/main.tsx","./src/components/Admin/index.tsx","./src/components/Designer/index.tsx","./src/components/Sales/index.tsx","./src/components/ui/button.tsx","./src/lib/utils.ts","./src/services/api.ts","./src/store/authSlice.ts","./src/store/index.ts"],"version":"5.9.3"}

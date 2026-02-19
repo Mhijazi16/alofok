@@ -24,7 +24,9 @@ class PaymentService:
         self._customers = customer_repo
         self._transactions = transaction_repo
 
-    async def create_payment(self, body: PaymentCreate, creator_id: uuid.UUID) -> TransactionOut:
+    async def create_payment(
+        self, body: PaymentCreate, creator_id: uuid.UUID
+    ) -> TransactionOut:
         if body.type not in _PAYMENT_TYPES:
             raise HorizonException(400, "type must be Payment_Cash or Payment_Check")
         if body.amount <= 0:
@@ -41,7 +43,7 @@ class PaymentService:
             created_by=creator_id,
             type=body.type,
             currency=body.currency,
-            amount=-abs(body.amount),   # negative — reduces customer debt
+            amount=-abs(body.amount),  # negative — reduces customer debt
             status=TransactionStatus.Pending if body.type in _CHECK_TYPES else None,
             data=body.data,
             notes=body.notes,
@@ -51,7 +53,9 @@ class PaymentService:
         txn = await self._transactions.create(txn)
         return TransactionOut.model_validate(txn)
 
-    async def return_check(self, transaction_id: uuid.UUID, creator_id: uuid.UUID) -> TransactionOut:
+    async def return_check(
+        self, transaction_id: uuid.UUID, creator_id: uuid.UUID
+    ) -> TransactionOut:
         check_txn = await self._transactions.get_by_id(transaction_id)
         if check_txn is None or check_txn.type != TransactionType.Payment_Check:
             raise HorizonException(404, "Check transaction not found")
@@ -66,7 +70,7 @@ class PaymentService:
             created_by=creator_id,
             type=TransactionType.Check_Return,
             currency=check_txn.currency,
-            amount=original_amount,     # positive — re-debits customer
+            amount=original_amount,  # positive — re-debits customer
             related_transaction_id=check_txn.id,
             notes=f"Returned check #{check_txn.id}",
         )

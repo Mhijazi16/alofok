@@ -20,7 +20,9 @@ class ProductRepository:
 
     async def get_by_id(self, product_id: uuid.UUID) -> Product | None:
         result = await self._db.execute(
-            select(Product).where(Product.id == product_id, Product.is_deleted.is_(False))
+            select(Product).where(
+                Product.id == product_id, Product.is_deleted.is_(False)
+            )
         )
         return result.scalar_one_or_none()
 

@@ -11,12 +11,16 @@ router = APIRouter()
 
 
 @router.get("/my-route", response_model=list[CustomerOut])
-async def my_route(current_user: CurrentUser, service: CustomerSvc) -> list[CustomerOut]:
+async def my_route(
+    current_user: CurrentUser, service: CustomerSvc
+) -> list[CustomerOut]:
     return await service.get_route(current_user["sub"])
 
 
 @router.get("/{customer_id}/insights", response_model=CustomerInsightsOut)
-async def customer_insights(customer_id: uuid.UUID, service: CustomerSvc) -> CustomerInsightsOut:
+async def customer_insights(
+    customer_id: uuid.UUID, service: CustomerSvc
+) -> CustomerInsightsOut:
     return await service.get_insights(customer_id)
 
 
@@ -28,4 +32,6 @@ async def customer_statement(
     end_date: date | None = Query(None),
     since_zero_balance: bool = Query(False),
 ) -> StatementOut:
-    return await service.get_statement(customer_id, start_date, end_date, since_zero_balance)
+    return await service.get_statement(
+        customer_id, start_date, end_date, since_zero_balance
+    )

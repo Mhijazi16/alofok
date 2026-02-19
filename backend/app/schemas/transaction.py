@@ -34,15 +34,15 @@ class StatementOut(BaseModel):
 
 class OrderCreate(BaseModel):
     customer_id: uuid.UUID
-    items: list[dict]   # [{"product_id": uuid, "quantity": int, "unit_price": Decimal}]
+    items: list[dict]  # [{"product_id": uuid, "quantity": int, "unit_price": Decimal}]
     notes: str | None = None
 
 
 class PaymentCreate(BaseModel):
     customer_id: uuid.UUID
-    type: TransactionType   # Payment_Cash or Payment_Check
+    type: TransactionType  # Payment_Cash or Payment_Check
     currency: Currency
-    amount: Decimal         # positive — will be stored as negative (payment)
+    amount: Decimal  # positive — will be stored as negative (payment)
     notes: str | None = None
     # Check-only fields
     data: dict | None = None  # {"bank": str, "due_date": str, "image_url": str}

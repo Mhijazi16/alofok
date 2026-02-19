@@ -17,7 +17,9 @@ class OrderService:
         self._customers = customer_repo
         self._transactions = transaction_repo
 
-    async def create_order(self, body: OrderCreate, creator_id: uuid.UUID) -> TransactionOut:
+    async def create_order(
+        self, body: OrderCreate, creator_id: uuid.UUID
+    ) -> TransactionOut:
         customer = await self._customers.get_by_id(body.customer_id)
         if customer is None:
             raise HorizonException(404, "Customer not found")
@@ -26,7 +28,8 @@ class OrderService:
             raise HorizonException(400, "Order must contain at least one item")
 
         total = sum(
-            Decimal(str(item.get("quantity", 1))) * Decimal(str(item.get("unit_price", "0")))
+            Decimal(str(item.get("quantity", 1)))
+            * Decimal(str(item.get("unit_price", "0")))
             for item in body.items
         )
 
@@ -35,7 +38,7 @@ class OrderService:
             created_by=creator_id,
             type=TransactionType.Order,
             currency=Currency.ILS,
-            amount=total,           # positive — increases customer debt
+            amount=total,  # positive — increases customer debt
             data={"items": body.items},
             notes=body.notes,
         )

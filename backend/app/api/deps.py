@@ -70,6 +70,7 @@ def _require_role(*roles: str):
         if user.get("role") not in roles:
             raise HorizonException(403, "Insufficient permissions")
         return user
+
     return guard
 
 
@@ -124,11 +125,15 @@ def get_customer_service(
     return CustomerService(customer_repo, transaction_repo, cache)
 
 
-def get_order_service(customer_repo: CustomerRepo, transaction_repo: TransactionRepo) -> OrderService:
+def get_order_service(
+    customer_repo: CustomerRepo, transaction_repo: TransactionRepo
+) -> OrderService:
     return OrderService(customer_repo, transaction_repo)
 
 
-def get_payment_service(customer_repo: CustomerRepo, transaction_repo: TransactionRepo) -> PaymentService:
+def get_payment_service(
+    customer_repo: CustomerRepo, transaction_repo: TransactionRepo
+) -> PaymentService:
     return PaymentService(customer_repo, transaction_repo)
 
 

@@ -8,7 +8,9 @@ from app.schemas.transaction import PaymentCreate, TransactionOut
 router = APIRouter()
 
 
-@router.post("", response_model=TransactionOut, status_code=201, dependencies=[require_sales])
+@router.post(
+    "", response_model=TransactionOut, status_code=201, dependencies=[require_sales]
+)
 async def create_payment(
     body: PaymentCreate, current_user: CurrentUser, service: PaymentSvc
 ) -> TransactionOut:

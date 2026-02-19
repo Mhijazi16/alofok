@@ -4,6 +4,7 @@ Seed script — creates an initial Admin user if none exists.
 Usage:
     python -m app.utils.seed
 """
+
 import asyncio
 import logging
 
@@ -31,7 +32,9 @@ async def seed_admin() -> None:
         existing = result.scalar_one_or_none()
 
         if existing:
-            logger.info("Admin user already exists (%s), skipping seed.", existing.username)
+            logger.info(
+                "Admin user already exists (%s), skipping seed.", existing.username
+            )
             return
 
         admin = User(

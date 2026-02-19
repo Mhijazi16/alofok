@@ -8,7 +8,9 @@ from app.schemas.transaction import OrderCreate, TransactionOut
 router = APIRouter()
 
 
-@router.post("", response_model=TransactionOut, status_code=201, dependencies=[require_sales])
+@router.post(
+    "", response_model=TransactionOut, status_code=201, dependencies=[require_sales]
+)
 async def create_order(
     body: OrderCreate, current_user: CurrentUser, service: OrderSvc
 ) -> TransactionOut:

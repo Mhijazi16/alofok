@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Frontend:** ReactJS + Vite, **Bun** as package manager, **shadcn/ui + Tailwind CSS**
 - **Mobile:** Capacitor (Android/iOS) — added after web is stable
-- **Backend:** Python FastAPI, PostgreSQL, SQLAlchemy (Async), Alembic migrations
+- **Backend:** Python FastAPI, PostgreSQL, SQLAlchemy (Async), Alembic migrations, Black for Formatting
 - **File Storage:** Local filesystem; files served via FastAPI `/static` mount, URL stored in DB
 - **Localization:** Arabic primary (RTL layout), English fallback via `i18next`
 - **State/Cache:** Redis (backend), React Query (client-side cache + offline sync), Redux Toolkit (UI/auth state)
@@ -30,6 +30,7 @@ docker compose build           # Rebuild backend image
 uvicorn app.main:app --reload --port 8000
 alembic upgrade head           # Run migrations
 alembic revision --autogenerate -m "description"  # Generate migration
+black .
 ```
 
 ### Frontend (from /frontend)
