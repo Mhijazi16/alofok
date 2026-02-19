@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useAppSelector } from "@/store";
+import LoginPage from "@/pages/LoginPage";
 
 // Role-specific root components (populated as features are built)
 import AdminRoot from "@/components/Admin";
@@ -11,12 +12,7 @@ function RoleRouter() {
   const token = useAppSelector((s) => s.auth.token);
 
   if (!token || !role) {
-    // TODO: replace with <LoginPage /> when F-004 is built
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-muted-foreground">Login coming soon…</p>
-      </div>
-    );
+    return <LoginPage />;
   }
 
   if (role === "Admin") return <AdminRoot />;

@@ -10,10 +10,23 @@ interface AuthState {
 
 const TOKEN_KEY = "alofok_token";
 
+function decodeJwt(token: string): { sub: string; role: UserRole } | null {
+  try {
+    const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(b64));
+    return { sub: payload.sub, role: payload.role as UserRole };
+  } catch {
+    return null;
+  }
+}
+
+const storedToken = localStorage.getItem(TOKEN_KEY);
+const decoded = storedToken ? decodeJwt(storedToken) : null;
+
 const initialState: AuthState = {
-  token: localStorage.getItem(TOKEN_KEY),
-  userId: null,
-  role: null,
+  token: storedToken,
+  userId: decoded?.sub ?? null,
+  role: decoded?.role ?? null,
 };
 
 const authSlice = createSlice({

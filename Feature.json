@@ -109,7 +109,7 @@
       "category": "Frontend — Sales",
       "name": "Daily Route View",
       "description": "Landing screen after login for Sales role. Lists today's customers from GET /my-route. Each row shows customer name, city, and current balance. Tapping opens the Customer Dashboard.",
-      "status": "todo",
+      "status": "done",
       "priority": "critical"
     },
     {
@@ -117,7 +117,7 @@
       "category": "Frontend — Sales",
       "name": "Customer Dashboard",
       "description": "Shown on customer selection. Displays: Total Debt, Last Collection (date + amount), Collection Frequency, Risk Indicator (Green/Yellow/Red). Action buttons: Order, Pay, Statement, Returned Check.",
-      "status": "todo",
+      "status": "done",
       "priority": "high"
     },
     {
@@ -125,7 +125,7 @@
       "category": "Frontend — Sales",
       "name": "Catalog & Order Flow",
       "description": "Browse catalog with Best Sellers and Discounted sections. Arabic/English search. Add items to order. Submit order via POST /orders. Catalog available offline via React Query cache.",
-      "status": "todo",
+      "status": "done",
       "priority": "high"
     },
     {
@@ -133,7 +133,7 @@
       "category": "Frontend — Sales",
       "name": "Payment Collection Flow",
       "description": "Cash payment form (amount + currency selector). Check payment form (bank, due date, amount, photo upload). Submit via POST /payments.",
-      "status": "todo",
+      "status": "done",
       "priority": "high"
     },
     {
@@ -141,7 +141,7 @@
       "category": "Frontend — Sales",
       "name": "Customer Statement View",
       "description": "Date range picker with presets (Last Week, Last Month, Last Year) and 'Since Zero' toggle. Chronological transaction list with running balance. Displays returned checks explicitly.",
-      "status": "todo",
+      "status": "done",
       "priority": "high"
     },
     {
