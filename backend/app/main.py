@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.api.endpoints import auth
 from app.middleware.error_handler import GlobalErrorHandler
 from app.utils.cache import close_cache, init_cache
 from app.utils.logger import setup_logging
@@ -34,11 +35,16 @@ app.add_middleware(GlobalErrorHandler)
 app.mount("/static", StaticFiles(directory="static", html=False), name="static")
 
 
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+
+# Future routers registered here as features are built:
+# app.include_router(products.router, prefix="/products", tags=["catalog"])
+# app.include_router(customers.router, prefix="/customers", tags=["customers"])
+# app.include_router(orders.router, prefix="/orders", tags=["orders"])
+# app.include_router(payments.router, prefix="/payments", tags=["payments"])
+# app.include_router(admin.router, prefix="/admin", tags=["admin"])
+
+
 @app.get("/health", tags=["health"])
 async def health():
     return {"status": "ok"}
-
-
-# Routers are registered here as features are built:
-# from app.api.endpoints import auth, products, orders, payments, customers, admin
-# app.include_router(auth.router, prefix="/auth", tags=["auth"])

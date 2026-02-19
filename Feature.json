@@ -29,7 +29,7 @@
       "category": "Backend",
       "name": "Auth — JWT Login",
       "description": "POST /auth/login endpoint. bcrypt password verification. JWT issued with role claim. AuthMiddleware decodes token and attaches current_user + roles to request state.",
-      "status": "todo",
+      "status": "done",
       "priority": "critical"
     },
     {
