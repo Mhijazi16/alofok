@@ -66,7 +66,11 @@
     "price": "السعر",
     "image": "الصورة",
     "isDiscounted": "عرض خاص",
-    "isBestseller": "الأكثر مبيعاً"
+    "isBestseller": "الأكثر مبيعاً",
+    "addNew": "إضافة منتج",
+    "edit": "تعديل المنتج",
+    "uploadImage": "رفع صورة",
+    "noProducts": "لا توجد منتجات"
   },
   "errors": {
     "generic": "حدث خطأ غير متوقع. يرجى المحاولة مجدداً.",
