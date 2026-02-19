@@ -72,6 +72,24 @@
     "uploadImage": "Upload Image",
     "noProducts": "No products yet"
   },
+  "admin": {
+    "title": "Admin Dashboard",
+    "salesStats": "Sales Statistics",
+    "debtOverview": "Debt Overview",
+    "overdueChecks": "Overdue Checks",
+    "totalOrders": "Total Orders",
+    "totalCollected": "Total Collected",
+    "totalDebt": "Total Debt",
+    "eodReport": "EOD Report",
+    "sendReport": "Send Report",
+    "reportSent": "Report Sent",
+    "noData": "No data available",
+    "period": {
+      "week": "This Week",
+      "month": "This Month",
+      "year": "This Year"
+    }
+  },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",
     "offline": "You are offline. Data will sync when connection is restored.",
