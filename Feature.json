@@ -149,7 +149,7 @@
       "category": "Frontend — Sales",
       "name": "Offline Sync",
       "description": "Orders and payments created offline stored in IndexedDB sync queue. Flushed automatically when connectivity resumes. Catalog and customer route cached via React Query with long staleTime. Conflict resolution: server is authoritative.",
-      "status": "todo",
+      "status": "done",
       "priority": "critical"
     },
     {
@@ -157,7 +157,7 @@
       "category": "Frontend — Designer",
       "name": "Product Management UI",
       "description": "Create and edit products: name_ar, name_en, SKU, price, image upload, Discounted flag, Best Seller flag. Image stored and URL saved to product record.",
-      "status": "todo",
+      "status": "done",
       "priority": "medium"
     },
     {

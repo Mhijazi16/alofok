@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
-import { salesApi, type Customer } from "@/services/salesApi";
+import { salesApi, type Customer, type PaymentCreate } from "@/services/salesApi";
+import { syncQueue } from "@/lib/syncQueue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -31,7 +32,13 @@ export default function PaymentFlow({
   const [notes, setNotes] = useState("");
 
   const createPayment = useMutation({
-    mutationFn: salesApi.createPayment,
+    mutationFn: async (payload: PaymentCreate) => {
+      if (!navigator.onLine) {
+        await syncQueue.push("payment", payload);
+        return null;
+      }
+      return salesApi.createPayment(payload);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-route"] });
       qc.invalidateQueries({ queryKey: ["insights", customer.id] });

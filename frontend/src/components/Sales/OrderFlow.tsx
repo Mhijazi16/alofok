@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Plus, Minus, ShoppingCart } from "lucide-react";
-import { salesApi, type Customer, type Product } from "@/services/salesApi";
+import { salesApi, type Customer, type Product, type OrderCreate } from "@/services/salesApi";
+import { syncQueue } from "@/lib/syncQueue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,7 +35,13 @@ export default function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) 
   });
 
   const createOrder = useMutation({
-    mutationFn: salesApi.createOrder,
+    mutationFn: async (payload: OrderCreate) => {
+      if (!navigator.onLine) {
+        await syncQueue.push("order", payload);
+        return null;
+      }
+      return salesApi.createOrder(payload);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-route"] });
       qc.invalidateQueries({ queryKey: ["insights", customer.id] });

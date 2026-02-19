@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPin, Grid3X3 } from "lucide-react";
 import { type Customer } from "@/services/salesApi";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { OfflineBanner } from "@/components/ui/offline-banner";
 import RouteView from "./RouteView";
 import CustomerDashboard from "./CustomerDashboard";
 import OrderFlow from "./OrderFlow";
@@ -20,6 +22,7 @@ export default function SalesRoot() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("route");
   const [screen, setScreen] = useState<Screen>({ name: "route" });
+  const { isOnline, isSyncing, pendingCount } = useOfflineSync();
 
   function goBack() {
     if (screen.name === "order" || screen.name === "payment" || screen.name === "statement") {
@@ -36,6 +39,11 @@ export default function SalesRoot() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
+      {/* Offline / syncing banner */}
+      {(!isOnline || isSyncing) && (
+        <OfflineBanner isSyncing={isSyncing} pendingCount={pendingCount} />
+      )}
+
       {/* Page header (hidden when a full-screen flow is open) */}
       {!isFullScreen && screen.name !== "dashboard" && (
         <header className="flex items-center justify-between px-5 pt-safe pt-4 pb-3 border-b border-border bg-card">
