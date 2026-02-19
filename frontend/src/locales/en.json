@@ -1,0 +1,77 @@
+{
+  "app": {
+    "name": "Horizon"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "invalidCredentials": "Invalid username or password"
+  },
+  "nav": {
+    "route": "My Route Today",
+    "catalog": "Catalog",
+    "dashboard": "Dashboard"
+  },
+  "customer": {
+    "balance": "Balance",
+    "totalDebt": "Total Debt",
+    "lastCollection": "Last Collection",
+    "collectionFrequency": "Collection Frequency",
+    "daysAverage": "days on average",
+    "noCustomers": "No customers assigned for today"
+  },
+  "actions": {
+    "order": "Order",
+    "pay": "Collect Payment",
+    "statement": "Statement",
+    "returnedCheck": "Returned Check",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back"
+  },
+  "catalog": {
+    "bestSellers": "Best Sellers",
+    "discounted": "Discounts",
+    "search": "Search...",
+    "addToOrder": "Add to Order"
+  },
+  "payment": {
+    "cash": "Cash",
+    "check": "Check",
+    "amount": "Amount",
+    "currency": "Currency",
+    "bank": "Bank",
+    "dueDate": "Due Date",
+    "currencies": {
+      "ILS": "ILS",
+      "USD": "USD",
+      "JOD": "JOD"
+    }
+  },
+  "statement": {
+    "title": "Account Statement",
+    "sinceZero": "Since Zero Balance",
+    "lastWeek": "Last Week",
+    "lastMonth": "Last Month",
+    "lastYear": "Last Year",
+    "runningBalance": "Running Balance"
+  },
+  "product": {
+    "nameAr": "Name (Arabic)",
+    "nameEn": "Name (English)",
+    "sku": "SKU",
+    "price": "Price",
+    "image": "Image",
+    "isDiscounted": "Discounted",
+    "isBestseller": "Best Seller"
+  },
+  "errors": {
+    "generic": "An unexpected error occurred. Please try again.",
+    "offline": "You are offline. Data will sync when connection is restored.",
+    "notFound": "Item not found",
+    "forbidden": "You do not have permission to access this"
+  }
+}

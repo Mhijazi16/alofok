@@ -2,131 +2,179 @@
   "features": [
     {
       "id": "F-001",
-      "category": "Core",
-      "name": "Project Scaffold & Localization",
-      "description": "Setup Monorepo, React (RTL/Arabic support), FastAPI. Use Bun for frontend.",
-      "status": "todo",
-      "priority": "high"
+      "category": "Infrastructure",
+      "name": "Project Scaffold",
+      "description": "Monorepo structure. FastAPI backend with async SQLAlchemy. React + Vite frontend using Bun. Docker Compose with Postgres and Redis services. Environment variable config via pydantic-settings.",
+      "status": "done",
+      "priority": "critical"
     },
     {
       "id": "F-002",
-      "category": "Backend",
-      "name": "RBAC Implementation",
-      "description": "User roles: Admin, Designer, Sales. Middleware to enforce scopes.",
-      "status": "todo",
-      "priority": "high"
+      "category": "Infrastructure",
+      "name": "Localization Setup",
+      "description": "Configure i18next with Arabic as default (RTL) and English as fallback. Create ar.json and en.json in src/locales/. Apply dir='rtl' globally. Use CSS logical properties throughout.",
+      "status": "done",
+      "priority": "critical"
     },
     {
       "id": "F-003",
       "category": "Backend",
-      "name": "Middleware: Error Handling",
-      "description": "Catch 500 errors -> Slack Webhook. Catch HorizonException -> Log.",
+      "name": "Database Models & Migrations",
+      "description": "SQLAlchemy async models with BaseMixin (id UUID, created_at, updated_at, is_deleted). Models: User, Product, Customer, Transaction. Alembic configured and initial migration generated.",
       "status": "todo",
-      "priority": "high"
+      "priority": "critical"
     },
     {
       "id": "F-004",
       "category": "Backend",
-      "name": "Middleware: Caching & Compression",
-      "description": "Gzip compression + Abstract Cache Strategy (InMemory implemented, Redis ready).",
+      "name": "Auth — JWT Login",
+      "description": "POST /auth/login endpoint. bcrypt password verification. JWT issued with role claim. AuthMiddleware decodes token and attaches current_user + roles to request state.",
       "status": "todo",
-      "priority": "medium"
+      "priority": "critical"
     },
     {
       "id": "F-005",
       "category": "Backend",
-      "name": "Database & Migrations",
-      "description": "SQLAlchemy Models (BaseMixin: created_at, updated_at, is_deleted) + Alembic setup.",
+      "name": "RBAC Middleware & Dependencies",
+      "description": "Role-based access control enforced via FastAPI dependencies (deps.py). Guards: require_admin, require_designer, require_sales. Applied at router level.",
       "status": "todo",
       "priority": "high"
     },
     {
       "id": "F-006",
-      "category": "Frontend - Sales",
-      "name": "Route Management",
-      "description": "View customers by Day/City (e.g., Sunday/Hebron).",
+      "category": "Backend",
+      "name": "Middleware — Global Error Handler",
+      "description": "Middleware wrapping all requests. HorizonException → log warning, return structured 4xx JSON. Unhandled Exception → log stack trace, POST to SLACK_WEBHOOK_URL, return 500 JSON.",
       "status": "todo",
       "priority": "high"
     },
     {
       "id": "F-007",
-      "category": "Frontend - Sales",
-      "name": "Catalog & Ordering",
-      "description": "Browse (Best Sellers/Discounts), Search (Arabic), Create Order.",
+      "category": "Backend",
+      "name": "Middleware — Redis Cache",
+      "description": "CacheBackend abstract class (get, set, delete, invalidate_prefix). RedisCache implementation using REDIS_URL env var. TTLs: catalog 10min, route 5min, insights 2min. Injected as FastAPI dependency.",
       "status": "todo",
       "priority": "high"
     },
     {
       "id": "F-008",
-      "category": "Frontend - Designer",
-      "name": "Product Management",
-      "description": "Upload images, edit details, toggle Discount/Best Seller flags.",
+      "category": "Backend",
+      "name": "Catalog API",
+      "description": "GET /products (Redis-cached, all roles). POST /products and PUT /products/{id} (Designer/Admin only, invalidates cache). Pydantic schemas with name_ar and name_en fields.",
       "status": "todo",
-      "priority": "medium"
+      "priority": "high"
     },
     {
       "id": "F-009",
-      "category": "Frontend - Admin",
-      "name": "Insights Dashboard",
-      "description": "View sales stats and debt collection overview.",
+      "category": "Backend",
+      "name": "Route & Customer API",
+      "description": "GET /my-route returns customers assigned to today's day for the authenticated Sales Rep. GET /customers/{id}/insights returns total_debt, last_payment_date, last_payment_amount, avg_payment_interval_days, risk_score.",
       "status": "todo",
-      "priority": "low"
+      "priority": "high"
     },
     {
       "id": "F-010",
-      "category": "Frontend",
-      "name": "Offline Sync",
-      "description": "Cache Catalog/Customers locally. Sync Queue for Orders/Payments.",
+      "category": "Backend",
+      "name": "Orders & Payments API",
+      "description": "POST /orders (Sales). POST /payments supporting Cash and Check types, multi-currency (ILS/USD/JOD). Exchange rate stored in Transaction.data JSONB at time of recording.",
       "status": "todo",
-      "priority": "critical"
+      "priority": "high"
     },
     {
       "id": "F-011",
-      "category": "Reporting",
-      "name": "Customer Statement & Reconciliation",
-      "description": "Generate transaction history (Since Zero, Date Range) to resolve balance disputes.",
+      "category": "Backend",
+      "name": "Returned Check Workflow",
+      "description": "PUT /checks/{id}/status to mark a check as Returned. Service layer: set check status to Returned, create a Check_Return transaction (positive amount re-debits customer), link via related_transaction_id.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-012",
+      "category": "Backend",
+      "name": "Customer Statement API",
+      "description": "GET /customers/{id}/statement with query params: start_date, end_date, since_zero_balance (bool). Returns chronological transaction list with running balance after each entry.",
       "status": "todo",
       "priority": "high"
     },
     {
       "id": "F-013",
-      "category": "Financials",
-      "name": "Returned Check Handling",
-      "description": "Workflow to mark checks as returned, update customer balance (re-debit), and log in history.",
+      "category": "Backend",
+      "name": "Admin Stats API",
+      "description": "GET /admin/stats/sales — sales by rep and period. GET /admin/stats/debt — total outstanding, by city/route. POST /admin/customers/import — bulk CSV upload for customer creation.",
+      "status": "todo",
+      "priority": "medium"
+    },
+    {
+      "id": "F-014",
+      "category": "Frontend — Sales",
+      "name": "Daily Route View",
+      "description": "Landing screen after login for Sales role. Lists today's customers from GET /my-route. Each row shows customer name, city, and current balance. Tapping opens the Customer Dashboard.",
+      "status": "todo",
+      "priority": "critical"
+    },
+    {
+      "id": "F-015",
+      "category": "Frontend — Sales",
+      "name": "Customer Dashboard",
+      "description": "Shown on customer selection. Displays: Total Debt, Last Collection (date + amount), Collection Frequency, Risk Indicator (Green/Yellow/Red). Action buttons: Order, Pay, Statement, Returned Check.",
       "status": "todo",
       "priority": "high"
     },
     {
-      "id": "F-014",
-      "category": "Reporting",
-      "name": "EOD Report Generation",
-      "description": "Generate summary of total cash/checks collected for the day.",
-      "status": "todo",
-      "priority": "medium"
-    },
-    {
-      "id": "F-015",
-      "category": "Data Management",
-      "name": "Customer Bulk Import",
-      "description": "Admin tool to upload CSV files for bulk customer creation and initial balance setting.",
-      "status": "todo",
-      "priority": "medium"
-    },
-    {
       "id": "F-016",
-      "category": "Frontend - Sales",
-      "name": "Customer Insights Dashboard",
-      "description": "Pre-visit summary: Debt, Last Payment, Frequency, Risk Score.",
+      "category": "Frontend — Sales",
+      "name": "Catalog & Order Flow",
+      "description": "Browse catalog with Best Sellers and Discounted sections. Arabic/English search. Add items to order. Submit order via POST /orders. Catalog available offline via React Query cache.",
       "status": "todo",
       "priority": "high"
     },
     {
       "id": "F-017",
-      "category": "Frontend - Sales",
-      "name": "Customer-Centric Navigation",
-      "description": "UI Flow: Select Customer -> Dashboard -> Actions (Order/Pay/Statement).",
+      "category": "Frontend — Sales",
+      "name": "Payment Collection Flow",
+      "description": "Cash payment form (amount + currency selector). Check payment form (bank, due date, amount, photo upload). Submit via POST /payments.",
       "status": "todo",
       "priority": "high"
+    },
+    {
+      "id": "F-018",
+      "category": "Frontend — Sales",
+      "name": "Customer Statement View",
+      "description": "Date range picker with presets (Last Week, Last Month, Last Year) and 'Since Zero' toggle. Chronological transaction list with running balance. Displays returned checks explicitly.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": "F-019",
+      "category": "Frontend — Sales",
+      "name": "Offline Sync",
+      "description": "Orders and payments created offline stored in IndexedDB sync queue. Flushed automatically when connectivity resumes. Catalog and customer route cached via React Query with long staleTime. Conflict resolution: server is authoritative.",
+      "status": "todo",
+      "priority": "critical"
+    },
+    {
+      "id": "F-020",
+      "category": "Frontend — Designer",
+      "name": "Product Management UI",
+      "description": "Create and edit products: name_ar, name_en, SKU, price, image upload, Discounted flag, Best Seller flag. Image stored and URL saved to product record.",
+      "status": "todo",
+      "priority": "medium"
+    },
+    {
+      "id": "F-021",
+      "category": "Frontend — Admin",
+      "name": "Insights Dashboard",
+      "description": "Sales performance charts by rep and by period. Debt overview: total outstanding, by city/route. Overdue checks list. Powered by GET /admin/stats/sales and GET /admin/stats/debt.",
+      "status": "todo",
+      "priority": "low"
+    },
+    {
+      "id": "F-022",
+      "category": "Reporting",
+      "name": "EOD Report Generation",
+      "description": "Automated daily summary per Sales Rep: total cash collected (by currency), total check value, new orders placed. Sent to Accounting at end of day.",
+      "status": "todo",
+      "priority": "medium"
     }
   ]
 }

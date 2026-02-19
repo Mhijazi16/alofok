@@ -1,35 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useAppSelector } from "@/store";
 
-function App() {
-  const [count, setCount] = useState(0)
+// Role-specific root components (populated as features are built)
+import AdminRoot from "@/components/Admin";
+import DesignerRoot from "@/components/Designer";
+import SalesRoot from "@/components/Sales";
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+function RoleRouter() {
+  const role = useAppSelector((s) => s.auth.role);
+  const token = useAppSelector((s) => s.auth.token);
+
+  if (!token || !role) {
+    // TODO: replace with <LoginPage /> when F-004 is built
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-muted-foreground">Login coming soon…</p>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    );
+  }
+
+  if (role === "Admin") return <AdminRoot />;
+  if (role === "Designer") return <DesignerRoot />;
+  return <SalesRoot />;
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/*" element={<RoleRouter />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

@@ -1,145 +1,229 @@
-# Architecture & Technical Design - Alofok (Horizon)
+# Architecture & Technical Design — Alofok (Horizon)
 
 ## 1. High-Level Architecture
-*   **Frontend:** ReactJS + Capacitor (Ionic optional). **RTL (Right-to-Left)** layout enabled.
-*   **Backend:** Python FastAPI.
-*   **Database:** PostgreSQL.
-*   **ORM/Migration:** SQLAlchemy + Alembic.
-*   **Caching:** Custom In-Memory TTL Dictionary (Python).
-*   **Monitoring:** Slack Webhook for Critical Errors.
 
-## 2. Tech Stack Details
+| Layer | Technology |
+|---|---|
+| Frontend | ReactJS + Vite, Bun, shadcn/ui + Tailwind CSS |
+| Mobile | Capacitor (Android/iOS) — added after web is stable |
+| Backend | Python FastAPI (async) |
+| Database | PostgreSQL 15 |
+| ORM / Migrations | SQLAlchemy (async) + Alembic |
+| Caching | Redis |
+| File Storage | Local filesystem, served via FastAPI `/static` mount |
+| Monitoring | Slack Webhook (critical errors only) |
 
-### Frontend (Mobile/Web)
-*   **Framework:** ReactJS (Vite).
-*   **Runtime:** Capacitor (Android/iOS).
-*   **Localization:** `i18next` (Arabic Default, English Fallback).
-*   **State:** Redux Toolkit or React Query (for caching/offline sync).
+---
 
-### Backend (API)
-*   **Framework:** FastAPI.
-*   **Database:** PostgreSQL.
-*   **ORM:** SQLAlchemy (Async).
-*   **Migrations:** Alembic.
-*   **Middleware:**
-    *   `GZipMiddleware` (Compression).
-    *   `GlobalErrorHandler` (Custom).
-    *   `TTLCacheMiddleware` (Custom implementation).
+## 2. Backend Design
 
-## 3. Backend Design Patterns & Components
+### 2.1 Middleware Pipeline (execution order)
 
-### 3.1. Middleware Pipeline
-1.  **Compression:** Gzip/Brotli to reduce payload size.
-2.  **Global Error Handler:**
-    *   `try/except` block wrapping requests.
-    *   `if type(e) == HorizonException`: Log warning, return structured 400/4xx JSON.
-    *   `if type(e) == Exception (500)`: Log error stack trace, **Send Slack Alert**, return generic 500 JSON.
-3.  **Auth Middleware:** Decodes JWT, attaches `current_user` and `roles` to request state.
+1. **GZipMiddleware** — compresses all responses (Gzip/Brotli).
+2. **GlobalErrorHandler** — wraps every request:
+   - `HorizonException` → log warning, return structured 4xx JSON. No Slack alert.
+   - Unhandled `Exception` → log full stack trace, **send Slack webhook**, return generic 500 JSON.
+3. **AuthMiddleware** — decodes JWT, attaches `current_user` and `roles` to request state.
 
-### 3.2. Caching Strategy
-*   **Abstract Base Class:** `CacheBackend` (interface with `get`, `set`, `delete`).
-*   **Implementations:**
-    *   `InMemoryCache`: Singleton dictionary (Current implementation).
-    *   `RedisCache`: Redis-based implementation (Future-proof).
-*   **Dependency Injection:** Inject `CacheBackend` into services/middleware, configured via env vars.
+### 2.2 Caching (Redis)
 
-### 3.3. Database Models (ER Schema)
+- **Abstract interface:** `CacheBackend` with `get`, `set`, `delete`, `invalidate_prefix`.
+- **Implementation:** `RedisCache` — connects via `REDIS_URL` env var, uses key prefixes per resource type (e.g. `catalog:`, `route:`).
+- **Injection:** `CacheBackend` is a FastAPI dependency. Never instantiate it directly inside endpoints.
+- **TTL policy:**
+  - Product catalog: 10 minutes. Invalidated on any Designer write.
+  - Customer route: 5 minutes.
+  - Customer insights: 2 minutes.
 
-**Base Model Mixin:**
-*   `created_at`: DateTime (UTC, Auto-set)
-*   `updated_at`: DateTime (UTC, Auto-update)
-*   `is_deleted`: Boolean (Default False, for Soft Delete)
+### 2.3 Error Taxonomy
 
-#### Users (RBAC)
-*   *Base Model Fields*
-*   `id`: UUID
-*   `username`: String
-*   `role`: Enum (**Admin**, **Designer**, **Sales**)
-*   `password_hash`: String
-*   `is_active`: Boolean
+| Class | HTTP | Behaviour |
+|---|---|---|
+| `HorizonException` | 4xx | Logged as warning; structured JSON response. |
+| Unhandled `Exception` | 500 | Logged + Slack alert; generic JSON response. |
 
-#### Products (Catalog)
-*   *Base Model Fields*
-*   `id`: UUID
-*   `name_ar`: String (Arabic)
-*   `name_en`: String (English)
-*   `sku`: String
-*   `is_discounted`: Boolean
-*   `is_bestseller`: Boolean
-*   `price`: Decimal
-*   `image_url`: String
-*   `created_by`: FK -> User (Designer)
+---
 
-#### Customers & Routes
-*   *Base Model Fields*
-*   `id`: UUID
-*   `name`: String
-*   `city`: String
-*   `assigned_day`: Enum (Sun, Mon...)
-*   `balance`: Decimal
+## 3. Database Schema
 
-#### Transactions (Sales & Debt)
-*   *Base Model Fields*
-*   `id`: UUID
-*   `type`: Enum (Order, Payment_Cash, Payment_Check, **Check_Return**)
-*   `currency`: Enum (ILS, USD, JOD)
-*   `amount`: Decimal (Signed: Negative for payments, Positive for Orders/Returns)
-*   `related_transaction_id`: FK -> Transaction (For Check Returns, links to original payment)
-*   `data`: JSONB (Stores check details, exchange rates)
-*   `status`: Enum (Pending, Deposited, **Returned**, Cleared) (Specifically for Checks)
+### Base Mixin (all models)
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID | PK, auto-generated |
+| `created_at` | DateTime (UTC) | Auto-set on insert |
+| `updated_at` | DateTime (UTC) | Auto-updated |
+| `is_deleted` | Boolean | Soft delete flag, default `False` |
 
-## 4. API Endpoints Structure
+Hard deletes are not used anywhere in the system.
+
+### Users
+| Field | Type | Notes |
+|---|---|---|
+| `username` | String | Unique |
+| `role` | Enum | `Admin`, `Designer`, `Sales` |
+| `password_hash` | String | bcrypt |
+| `is_active` | Boolean | Default `True` |
+
+### Products
+| Field | Type | Notes |
+|---|---|---|
+| `name_ar` | String | Arabic display name |
+| `name_en` | String | English display name |
+| `sku` | String | Unique |
+| `price` | Decimal | |
+| `image_url` | String | |
+| `is_discounted` | Boolean | |
+| `is_bestseller` | Boolean | |
+| `created_by` | FK → User | Designer who created it |
+
+### Customers
+| Field | Type | Notes |
+|---|---|---|
+| `name` | String | |
+| `city` | String | |
+| `assigned_day` | Enum | `Sun`, `Mon`, `Tue`, `Wed`, `Thu` |
+| `balance` | Decimal | Positive = owes Alofok; Negative = Alofok owes customer (credit) |
+
+### Transactions
+| Field | Type | Notes |
+|---|---|---|
+| `type` | Enum | `Order`, `Payment_Cash`, `Payment_Check`, `Check_Return` |
+| `currency` | Enum | `ILS`, `USD`, `JOD` |
+| `amount` | Decimal | **Signed:** positive = order/returned check; negative = payment |
+| `status` | Enum | `Pending`, `Deposited`, `Returned`, `Cleared` — relevant for checks only |
+| `related_transaction_id` | FK → Transaction | Links a `Check_Return` to its original `Payment_Check` |
+| `data` | JSONB | Check details (bank, due date, image URL), exchange rates |
+| `customer_id` | FK → Customer | |
+| `created_by` | FK → User | Sales rep who recorded it |
+
+**Returned Check flow:** Mark the check `Transaction.status = Returned`, create a new `Check_Return` transaction with a positive amount to re-debit the customer, and link both via `related_transaction_id`.
+
+---
+
+## 4. API Endpoints
 
 ### Auth
-*   `POST /auth/login`
+| Method | Path | Access |
+|---|---|---|
+| `POST` | `/auth/login` | Public |
 
-### Catalog (Read: All, Write: Designer/Admin)
-*   `GET /products` (Cached)
-*   `POST /products` (Designer only, invalidates cache)
-*   `PUT /products/{id}` (Designer only)
+### Catalog
+| Method | Path | Access | Notes |
+|---|---|---|---|
+| `GET` | `/products` | All | Redis-cached |
+| `POST` | `/products` | Designer, Admin | Invalidates cache |
+| `PUT` | `/products/{id}` | Designer, Admin | Invalidates cache |
 
-### Sales & Operations (Sales Rep)
-*   `GET /my-route` (Returns customers for today)
-*   `GET /customers/{id}/insights`
-    *   Returns: `{ total_debt, last_payment_date, last_payment_amount, avg_payment_interval_days, risk_score }`
-*   `POST /orders`
-*   `POST /payments`
-*   `PUT /checks/{id}/status` (Admin/Sales: Mark as Returned)
-*   `GET /customers/{id}/statement`  
-    *   Query Params: `start_date`, `end_date`, `since_zero_balance=true`
-    *   Returns: List of transactions (Orders, Payments, Returns) and running balance.
+### Sales & Operations
+| Method | Path | Access | Notes |
+|---|---|---|---|
+| `GET` | `/my-route` | Sales | Customers assigned to today's day |
+| `GET` | `/customers/{id}/insights` | Sales, Admin | Debt, last payment, frequency, risk score |
+| `GET` | `/customers/{id}/statement` | Sales, Admin | Params: `start_date`, `end_date`, `since_zero_balance` |
+| `POST` | `/orders` | Sales | |
+| `POST` | `/payments` | Sales | |
+| `PUT` | `/checks/{id}/status` | Sales, Admin | Mark as Returned |
 
-### Admin Insights
-*   `GET /admin/stats/sales`
-*   `GET /admin/stats/debt`
+### Admin
+| Method | Path | Access |
+|---|---|---|
+| `GET` | `/admin/stats/sales` | Admin |
+| `GET` | `/admin/stats/debt` | Admin |
+| `POST` | `/admin/customers/import` | Admin — bulk CSV upload |
 
-## 5. Directory Structure
+---
+
+## 5. Frontend Architecture
+
+### Localization
+- **Library:** `i18next`
+- **Default locale:** Arabic (`ar`) — RTL layout enabled globally.
+- **Fallback:** English (`en`).
+- All UI strings must exist in both `src/locales/ar.json` and `src/locales/en.json`.
+- Use CSS logical properties throughout (`margin-inline-start` not `margin-left`).
+
+### State Management
+- **Server state:** React Query — handles caching, background sync, and offline queue.
+- **Client/UI state:** Redux Toolkit — auth session, role, UI preferences.
+
+### Offline Strategy
+Sales Reps operate in areas with poor connectivity. The app must function fully offline for the critical path:
+- Catalog and customer list are cached via React Query with a long `staleTime`.
+- Orders and payments created offline are stored in a persistent sync queue (IndexedDB) and flushed when connectivity is restored.
+
+### Component Structure
+```
+src/
+├── locales/
+│   ├── ar.json
+│   └── en.json
+├── components/
+│   ├── Admin/
+│   ├── Designer/
+│   └── Sales/
+└── App.tsx
+```
+Role-specific components live under their own directory. Shared UI primitives (buttons, inputs, modals) live in `src/components/ui/`.
+
+---
+
+## 6. Directory Structure
+
 ```
 /
 ├── backend/
-│   ├── alembic/            # DB Migrations
+│   ├── alembic/
+│   │   └── versions/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── endpoints/
-│   │   │   └── deps.py     # Auth dependencies
+│   │   │   ├── endpoints/      # auth.py, products.py, orders.py, etc.
+│   │   │   └── deps.py         # JWT auth dependencies, role guards
 │   │   ├── core/
-│   │   │   ├── config.py
-│   │   │   ├── errors.py   # HorizonException
-│   │   │   └── security.py
+│   │   │   ├── config.py       # Settings loaded from env vars
+│   │   │   ├── errors.py       # HorizonException definition
+│   │   │   └── security.py     # JWT encode/decode, password hashing
 │   │   ├── middleware/
-│   │   │   ├── error_handler.py # Slack integration
-│   │   │   └── cache.py    # Custom TTL Dict
-│   │   ├── models/         # SQLAlchemy Models
+│   │   │   ├── error_handler.py
+│   │   │   └── cache.py        # CacheBackend ABC + RedisCache
+│   │   ├── models/             # SQLAlchemy models
+│   │   ├── schemas/            # Pydantic request/response models
+│   │   ├── services/           # Business logic layer
 │   │   └── main.py
+│   ├── Dockerfile
 │   └── alembic.ini
 │
-├── frontend/
-│   ├── src/
-│   │   ├── locales/        # ar.json, en.json
-│   │   ├── components/
-│   │   │   ├── Admin/
-│   │   │   ├── Designer/
-│   │   │   └── Sales/
-│   │   └── App.tsx
-│   └── capacitor.config.ts
+└── frontend/
+    ├── src/
+    │   ├── locales/
+    │   ├── components/
+    │   ├── hooks/
+    │   ├── store/              # Redux slices
+    │   ├── services/           # API client, sync queue
+    │   └── App.tsx
+    ├── capacitor.config.ts
+    └── package.json
+```
+
+---
+
+## 7. Infrastructure (Local Dev)
+
+`docker-compose.yml` starts two services:
+- `db` — PostgreSQL 15 on port `5432`
+- `backend` — FastAPI on port `8000` with hot reload
+
+A `redis` service should be added to `docker-compose.yml`:
+```yaml
+redis:
+  image: redis:7-alpine
+  ports:
+    - "6379:6379"
+```
+
+**Environment variables (backend):**
+```
+DATABASE_URL=postgresql+asyncpg://postgres:password@db/alofok
+REDIS_URL=redis://redis:6379
+JWT_SECRET=<secret>
+SLACK_WEBHOOK_URL=<url>
 ```

@@ -1,0 +1,77 @@
+{
+  "app": {
+    "name": "أفق"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة"
+  },
+  "nav": {
+    "route": "مساري اليوم",
+    "catalog": "الكتالوج",
+    "dashboard": "لوحة التحكم"
+  },
+  "customer": {
+    "balance": "الرصيد",
+    "totalDebt": "إجمالي الدين",
+    "lastCollection": "آخر تحصيل",
+    "collectionFrequency": "معدل التحصيل",
+    "daysAverage": "يوم في المتوسط",
+    "noCustomers": "لا يوجد عملاء لهذا اليوم"
+  },
+  "actions": {
+    "order": "طلب",
+    "pay": "تحصيل",
+    "statement": "كشف حساب",
+    "returnedCheck": "شيك مرتجع",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "back": "رجوع"
+  },
+  "catalog": {
+    "bestSellers": "الأكثر مبيعاً",
+    "discounted": "العروض",
+    "search": "بحث...",
+    "addToOrder": "إضافة للطلب"
+  },
+  "payment": {
+    "cash": "نقدي",
+    "check": "شيك",
+    "amount": "المبلغ",
+    "currency": "العملة",
+    "bank": "البنك",
+    "dueDate": "تاريخ الاستحقاق",
+    "currencies": {
+      "ILS": "شيكل",
+      "USD": "دولار",
+      "JOD": "دينار"
+    }
+  },
+  "statement": {
+    "title": "كشف الحساب",
+    "sinceZero": "منذ آخر رصيد صفري",
+    "lastWeek": "الأسبوع الماضي",
+    "lastMonth": "الشهر الماضي",
+    "lastYear": "السنة الماضية",
+    "runningBalance": "الرصيد المتراكم"
+  },
+  "product": {
+    "nameAr": "الاسم (عربي)",
+    "nameEn": "الاسم (إنجليزي)",
+    "sku": "رمز المنتج",
+    "price": "السعر",
+    "image": "الصورة",
+    "isDiscounted": "عرض خاص",
+    "isBestseller": "الأكثر مبيعاً"
+  },
+  "errors": {
+    "generic": "حدث خطأ غير متوقع. يرجى المحاولة مجدداً.",
+    "offline": "أنت غير متصل بالإنترنت. سيتم مزامنة البيانات عند عودة الاتصال.",
+    "notFound": "العنصر غير موجود",
+    "forbidden": "ليس لديك صلاحية للوصول"
+  }
+}
