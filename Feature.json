@@ -101,7 +101,7 @@
       "category": "Backend",
       "name": "Admin Stats API",
       "description": "GET /admin/stats/sales — sales by rep and period. GET /admin/stats/debt — total outstanding, by city/route. POST /admin/customers/import — bulk CSV upload for customer creation.",
-      "status": "todo",
+      "status": "done",
       "priority": "medium"
     },
     {
@@ -165,7 +165,7 @@
       "category": "Frontend — Admin",
       "name": "Insights Dashboard",
       "description": "Sales performance charts by rep and by period. Debt overview: total outstanding, by city/route. Overdue checks list. Powered by GET /admin/stats/sales and GET /admin/stats/debt.",
-      "status": "todo",
+      "status": "done",
       "priority": "low"
     },
     {
@@ -173,7 +173,7 @@
       "category": "Reporting",
       "name": "EOD Report Generation",
       "description": "Automated daily summary per Sales Rep: total cash collected (by currency), total check value, new orders placed. Sent to Accounting at end of day.",
-      "status": "todo",
+      "status": "done",
       "priority": "medium"
     }
   ]

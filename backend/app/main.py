@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.endpoints import auth, customers, orders, payments, products
+from app.api.endpoints import admin, auth, customers, orders, payments, products
 from app.middleware.error_handler import GlobalErrorHandler
 from app.utils.cache import close_cache, init_cache
 from app.utils.logger import setup_logging
@@ -41,8 +41,7 @@ app.include_router(customers.router, prefix="/customers", tags=["customers"])
 app.include_router(orders.router, prefix="/orders", tags=["orders"])
 app.include_router(payments.router, prefix="/payments", tags=["payments"])
 
-# Future routers:
-# app.include_router(admin.router, prefix="/admin", tags=["admin"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 
 @app.get("/health", tags=["health"])

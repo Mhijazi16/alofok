@@ -11,6 +11,7 @@ from app.repositories.customer_repository import CustomerRepository
 from app.repositories.product_repository import ProductRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.repositories.user_repository import UserRepository
+from app.services.admin_service import AdminService
 from app.services.auth_service import AuthService
 from app.services.catalog_service import CatalogService
 from app.services.customer_service import CustomerService
@@ -136,6 +137,12 @@ def get_payment_service(
 ) -> PaymentService:
     return PaymentService(customer_repo, transaction_repo)
 
+
+def get_admin_service(db: DbSession) -> AdminService:
+    return AdminService(db)
+
+
+AdminSvc = Annotated[AdminService, Depends(get_admin_service)]
 
 AuthSvc = Annotated[AuthService, Depends(get_auth_service)]
 CatalogSvc = Annotated[CatalogService, Depends(get_catalog_service)]
