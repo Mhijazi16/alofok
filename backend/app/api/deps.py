@@ -7,13 +7,29 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.core.config import settings
 from app.core.errors import HorizonException
 from app.core.security import decode_access_token
+from app.repositories.customer_repository import CustomerRepository
+from app.repositories.product_repository import ProductRepository
+from app.repositories.transaction_repository import TransactionRepository
+from app.repositories.user_repository import UserRepository
+from app.services.auth_service import AuthService
+from app.services.catalog_service import CatalogService
+from app.services.customer_service import CustomerService
+from app.services.order_service import OrderService
+from app.services.payment_service import PaymentService
 from app.utils.cache import CacheBackend, get_cache
 
 # ---------------------------------------------------------------------------
 # Database
 # ---------------------------------------------------------------------------
 
-engine = create_async_engine(settings.DATABASE_URL, echo=False)
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    pool_size=settings.DB_POOL_SIZE,
+    max_overflow=settings.DB_MAX_OVERFLOW,
+    pool_recycle=settings.DB_POOL_RECYCLE,
+    pool_pre_ping=True,
+    echo=False,
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
@@ -36,10 +52,6 @@ Cache = Annotated[CacheBackend, Depends(get_cache)]
 
 
 async def get_current_user(authorization: str = Header(...)) -> dict:
-    """
-    Extracts and validates the Bearer token from the Authorization header.
-    Returns the decoded payload: {"sub": user_id, "role": role}.
-    """
     if not authorization.startswith("Bearer "):
         raise HorizonException(401, "Invalid authorization header")
     token = authorization.removeprefix("Bearer ")
@@ -58,10 +70,70 @@ def _require_role(*roles: str):
         if user.get("role") not in roles:
             raise HorizonException(403, "Insufficient permissions")
         return user
-
     return guard
 
 
 require_admin = Depends(_require_role("Admin"))
 require_designer = Depends(_require_role("Designer", "Admin"))
 require_sales = Depends(_require_role("Sales", "Admin"))
+
+# ---------------------------------------------------------------------------
+# Repositories
+# ---------------------------------------------------------------------------
+
+
+def get_user_repo(db: DbSession) -> UserRepository:
+    return UserRepository(db)
+
+
+def get_product_repo(db: DbSession) -> ProductRepository:
+    return ProductRepository(db)
+
+
+def get_customer_repo(db: DbSession) -> CustomerRepository:
+    return CustomerRepository(db)
+
+
+def get_transaction_repo(db: DbSession) -> TransactionRepository:
+    return TransactionRepository(db)
+
+
+UserRepo = Annotated[UserRepository, Depends(get_user_repo)]
+ProductRepo = Annotated[ProductRepository, Depends(get_product_repo)]
+CustomerRepo = Annotated[CustomerRepository, Depends(get_customer_repo)]
+TransactionRepo = Annotated[TransactionRepository, Depends(get_transaction_repo)]
+
+# ---------------------------------------------------------------------------
+# Services
+# ---------------------------------------------------------------------------
+
+
+def get_auth_service(user_repo: UserRepo) -> AuthService:
+    return AuthService(user_repo)
+
+
+def get_catalog_service(product_repo: ProductRepo, cache: Cache) -> CatalogService:
+    return CatalogService(product_repo, cache)
+
+
+def get_customer_service(
+    customer_repo: CustomerRepo,
+    transaction_repo: TransactionRepo,
+    cache: Cache,
+) -> CustomerService:
+    return CustomerService(customer_repo, transaction_repo, cache)
+
+
+def get_order_service(customer_repo: CustomerRepo, transaction_repo: TransactionRepo) -> OrderService:
+    return OrderService(customer_repo, transaction_repo)
+
+
+def get_payment_service(customer_repo: CustomerRepo, transaction_repo: TransactionRepo) -> PaymentService:
+    return PaymentService(customer_repo, transaction_repo)
+
+
+AuthSvc = Annotated[AuthService, Depends(get_auth_service)]
+CatalogSvc = Annotated[CatalogService, Depends(get_catalog_service)]
+CustomerSvc = Annotated[CustomerService, Depends(get_customer_service)]
+OrderSvc = Annotated[OrderService, Depends(get_order_service)]
+PaymentSvc = Annotated[PaymentService, Depends(get_payment_service)]

@@ -167,7 +167,26 @@ Role-specific components live under their own directory. Shared UI primitives (b
 
 ---
 
-## 6. Directory Structure
+## 6. Backend Layer Architecture
+
+Requests flow through four distinct layers:
+
+```
+HTTP Request
+    ↓
+Endpoint (app/api/endpoints/)   — parse request, call service, return response
+    ↓
+Service (app/services/)         — business logic, orchestration, validation
+    ↓
+Repository (app/repositories/)  — all DB queries (select/insert/update), no logic
+    ↓
+SQLAlchemy AsyncSession         — connection pool (pool_size=10, max_overflow=20)
+```
+
+Dependencies are wired via FastAPI `Depends` in `app/api/deps.py`.
+Endpoints never import repositories or touch sessions directly.
+
+## 7. Directory Structure
 
 ```
 /
@@ -176,19 +195,19 @@ Role-specific components live under their own directory. Shared UI primitives (b
 │   │   └── versions/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── endpoints/      # auth.py, products.py, orders.py, etc.
-│   │   │   └── deps.py         # JWT auth dependencies, role guards
+│   │   │   ├── endpoints/      # Thin controllers — parse, call service, return
+│   │   │   └── deps.py         # DI wiring: DB pool, repos, services, auth guards
 │   │   ├── core/
-│   │   │   ├── config.py       # Settings loaded from env vars
-│   │   │   ├── errors.py       # HorizonException definition
-│   │   │   └── security.py     # JWT encode/decode, password hashing
+│   │   │   ├── config.py       # Settings (pydantic-settings, includes pool config)
+│   │   │   ├── errors.py       # HorizonException
+│   │   │   └── security.py     # JWT encode/decode, bcrypt
 │   │   ├── middleware/
-│   │   │   ├── error_handler.py
-│   │   │   └── cache.py        # CacheBackend ABC + RedisCache
-│   │   ├── models/             # SQLAlchemy models
+│   │   │   └── error_handler.py
+│   │   ├── models/             # SQLAlchemy models + BaseMixin
+│   │   ├── repositories/       # DB query layer (one file per model)
 │   │   ├── schemas/            # Pydantic request/response models
-│   │   ├── services/           # Business logic layer
-│   │   └── main.py
+│   │   ├── services/           # Business logic (one file per domain)
+│   │   └── utils/              # cache.py, slack.py, logger.py, seed.py
 │   ├── Dockerfile
 │   └── alembic.ini
 │
