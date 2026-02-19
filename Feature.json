@@ -21,7 +21,7 @@
       "category": "Backend",
       "name": "Database Models & Migrations",
       "description": "SQLAlchemy async models with BaseMixin (id UUID, created_at, updated_at, is_deleted). Models: User, Product, Customer, Transaction. Alembic configured and initial migration generated.",
-      "status": "todo",
+      "status": "done",
       "priority": "critical"
     },
     {

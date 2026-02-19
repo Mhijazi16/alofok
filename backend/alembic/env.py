@@ -6,11 +6,13 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
-from app.models import Base  # noqa: F401 — ensures all models are imported
-
-# Import all models here so Alembic can detect them for autogenerate:
-# from app.models.user import User
-# from app.models.product import Product
+from app.models import Base  # noqa: F401
+# Importing the package triggers all model imports in models/__init__.py,
+# which registers every table with Base.metadata for autogenerate.
+import app.models.user  # noqa: F401
+import app.models.product  # noqa: F401
+import app.models.customer  # noqa: F401
+import app.models.transaction  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

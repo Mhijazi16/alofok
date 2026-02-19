@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -31,3 +31,17 @@ class BaseMixin:
         nullable=False,
     )
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+
+# Import all models here so that:
+# 1. Alembic autogenerate can detect all tables via Base.metadata
+# 2. Consumers can do: from app.models import User, Product, etc.
+from app.models.user import User, UserRole  # noqa: E402, F401
+from app.models.product import Product  # noqa: E402, F401
+from app.models.customer import Customer, AssignedDay  # noqa: E402, F401
+from app.models.transaction import (  # noqa: E402, F401
+    Transaction,
+    TransactionType,
+    TransactionStatus,
+    Currency,
+)
