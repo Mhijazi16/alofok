@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=alofok
+      - POSTGRES_DB=horizon
     ports:
       - "5432:5432"
     volumes:
@@ -29,7 +29,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:password@db/alofok
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db/horizon
       - REDIS_URL=redis://redis:6379
     depends_on:
       - db

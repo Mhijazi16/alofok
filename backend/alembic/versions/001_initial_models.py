@@ -19,31 +19,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # --- Enum types ---
-    userrole = postgresql.ENUM("Admin", "Designer", "Sales", name="userrole")
-    assignedday = postgresql.ENUM("Sun", "Mon", "Tue", "Wed", "Thu", name="assignedday")
-    transactiontype = postgresql.ENUM(
-        "Order",
-        "Payment_Cash",
-        "Payment_Check",
-        "Check_Return",
-        name="transactiontype",
-    )
-    transactionstatus = postgresql.ENUM(
-        "Pending",
-        "Deposited",
-        "Returned",
-        "Cleared",
-        name="transactionstatus",
-    )
-    currency = postgresql.ENUM("ILS", "USD", "JOD", name="currency")
-
-    userrole.create(op.get_bind(), checkfirst=True)
-    assignedday.create(op.get_bind(), checkfirst=True)
-    transactiontype.create(op.get_bind(), checkfirst=True)
-    transactionstatus.create(op.get_bind(), checkfirst=True)
-    currency.create(op.get_bind(), checkfirst=True)
-
     # --- users ---
     op.create_table(
         "users",
@@ -210,9 +185,7 @@ def upgrade() -> None:
         sa.Column("amount", sa.Numeric(12, 2), nullable=False),
         sa.Column(
             "status",
-            sa.Enum(
-                "Pending", "Deposited", "Returned", "Cleared", name="transactionstatus"
-            ),
+            sa.Enum("Pending", "Deposited", "Returned", "Cleared", name="transactionstatus"),
             nullable=True,
         ),
         sa.Column(
