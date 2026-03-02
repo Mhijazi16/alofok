@@ -12,8 +12,38 @@ class CustomerOut(BaseModel):
     city: str
     assigned_day: AssignedDay
     balance: Decimal
+    phone: str | None = None
+    address: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    avatar_url: str | None = None
+    notes: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class CustomerCreate(BaseModel):
+    name: str
+    phone: str | None = None
+    city: str
+    address: str | None = None
+    assigned_day: str
+    latitude: float | None = None
+    longitude: float | None = None
+    avatar_url: str | None = None
+    notes: str | None = None
+
+
+class CustomerUpdate(BaseModel):
+    name: str | None = None
+    phone: str | None = None
+    city: str | None = None
+    address: str | None = None
+    assigned_day: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    avatar_url: str | None = None
+    notes: str | None = None
 
 
 class CustomerInsightsOut(BaseModel):

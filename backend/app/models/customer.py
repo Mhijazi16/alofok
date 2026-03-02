@@ -2,7 +2,7 @@ import enum
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import Enum as SAEnum, ForeignKey, Numeric, String
+from sqlalchemy import Enum as SAEnum, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,6 +26,12 @@ class Customer(BaseMixin, Base):
         SAEnum(AssignedDay, name="assignedday"), nullable=False
     )
     balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0, nullable=False)
+    phone: Mapped[str | None] = mapped_column(String, nullable=True)
+    address: Mapped[str | None] = mapped_column(String, nullable=True)
+    latitude: Mapped[Decimal | None] = mapped_column(Numeric(10, 7), nullable=True)
+    longitude: Mapped[Decimal | None] = mapped_column(Numeric(10, 7), nullable=True)
+    avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     assigned_to: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
