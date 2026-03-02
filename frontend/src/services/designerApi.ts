@@ -6,21 +6,41 @@ export type { Product };
 export interface ProductCreate {
   name_ar: string;
   name_en: string;
+  description_ar?: string | null;
+  description_en?: string | null;
   sku: string;
   price: number;
+  discount_percentage?: number | null;
+  discounted_price?: number | null;
   image_url?: string | null;
   is_discounted: boolean;
   is_bestseller: boolean;
+  category?: string | null;
+  brand?: string | null;
+  stock_qty?: number | null;
+  unit?: string;
+  weight?: number | null;
+  color_options?: string[] | null;
 }
 
 export interface ProductUpdate {
   name_ar?: string;
   name_en?: string;
+  description_ar?: string | null;
+  description_en?: string | null;
   sku?: string;
   price?: number;
+  discount_percentage?: number | null;
+  discounted_price?: number | null;
   image_url?: string | null;
   is_discounted?: boolean;
   is_bestseller?: boolean;
+  category?: string | null;
+  brand?: string | null;
+  stock_qty?: number | null;
+  unit?: string;
+  weight?: number | null;
+  color_options?: string[] | null;
 }
 
 export const designerApi = {

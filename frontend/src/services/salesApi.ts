@@ -6,19 +6,59 @@ export interface Product {
   id: string;
   name_ar: string;
   name_en: string;
+  description_ar?: string | null;
+  description_en?: string | null;
   sku: string;
   price: number;
+  discount_percentage?: number | null;
+  discounted_price?: number | null;
   image_url: string | null;
   is_discounted: boolean;
   is_bestseller: boolean;
+  category?: string | null;
+  brand?: string | null;
+  stock_qty?: number | null;
+  unit?: string;
+  weight?: number | null;
+  color_options?: string[] | null;
 }
 
 export interface Customer {
   id: string;
   name: string;
+  phone?: string | null;
   city: string;
+  address?: string | null;
   assigned_day: string;
   balance: number;
+  latitude?: number | null;
+  longitude?: number | null;
+  avatar_url?: string | null;
+  notes?: string | null;
+}
+
+export interface CustomerCreate {
+  name: string;
+  phone?: string | null;
+  city: string;
+  address?: string | null;
+  assigned_day: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  avatar_url?: string | null;
+  notes?: string | null;
+}
+
+export interface CustomerUpdate {
+  name?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  address?: string | null;
+  assigned_day?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  avatar_url?: string | null;
+  notes?: string | null;
 }
 
 export interface CustomerInsights {
@@ -123,4 +163,18 @@ export const salesApi = {
         status: "Returned",
       })
       .then((r) => r.data),
+
+  createCustomer: (body: CustomerCreate) =>
+    api.post<Customer>("/customers", body).then((r) => r.data),
+
+  updateCustomer: (id: string, body: CustomerUpdate) =>
+    api.put<Customer>(`/customers/${id}`, body).then((r) => r.data),
+
+  uploadAvatar: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return api
+      .post<{ url: string }>("/customers/upload-avatar", form)
+      .then((r) => r.data);
+  },
 };
