@@ -13,6 +13,16 @@ class ProductOut(BaseModel):
     image_url: str | None
     is_discounted: bool
     is_bestseller: bool
+    description_ar: str | None = None
+    description_en: str | None = None
+    discount_percentage: float | None = None
+    discounted_price: float | None = None
+    category: str | None = None
+    brand: str | None = None
+    stock_qty: int | None = None
+    unit: str = "piece"
+    weight: float | None = None
+    color_options: list[str] | None = None
 
     model_config = {"from_attributes": True}
 
@@ -25,6 +35,16 @@ class ProductCreate(BaseModel):
     image_url: str | None = None
     is_discounted: bool = False
     is_bestseller: bool = False
+    description_ar: str | None = None
+    description_en: str | None = None
+    discount_percentage: float | None = None
+    discounted_price: float | None = None
+    category: str | None = None
+    brand: str | None = None
+    stock_qty: int | None = None
+    unit: str = "piece"
+    weight: float | None = None
+    color_options: list[str] | None = None
 
 
 class ProductUpdate(BaseModel):
@@ -35,3 +55,13 @@ class ProductUpdate(BaseModel):
     image_url: str | None = None
     is_discounted: bool | None = None
     is_bestseller: bool | None = None
+    description_ar: str | None = None
+    description_en: str | None = None
+    discount_percentage: float | None = None
+    discounted_price: float | None = None
+    category: str | None = None
+    brand: str | None = None
+    stock_qty: int | None = None
+    unit: str | None = None
+    weight: float | None = None
+    color_options: list[str] | None = None
