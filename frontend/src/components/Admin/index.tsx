@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
-  TrendingUp,
-  AlertTriangle,
   Users,
   User,
   LogOut,
   Globe,
+  Package,
+  PlusCircle,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
@@ -27,8 +27,11 @@ import { Overview } from "./Overview";
 import { SalesStats } from "./SalesStats";
 import { DebtStats } from "./DebtStats";
 import { CustomerImport } from "./CustomerImport";
+import { ProductList } from "@/components/Designer/ProductList";
+import { ProductForm } from "@/components/Designer/ProductForm";
+import type { Product } from "@/services/designerApi";
 
-type AdminView = "overview" | "sales" | "debt" | "customers" | "profile";
+type AdminView = "overview" | "sales" | "debt" | "customers" | "products" | "addProduct" | "editProduct" | "profile";
 
 export default function AdminPanel() {
   const { t, i18n } = useTranslation();
@@ -38,6 +41,7 @@ export default function AdminPanel() {
   const role = useAppSelector((s) => s.auth.role);
 
   const [activeView, setActiveView] = useState<AdminView>("overview");
+  const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
 
   const eodMutation = useMutation({
     mutationFn: () => adminApi.sendEodReport(),
@@ -55,9 +59,9 @@ export default function AdminPanel() {
 
   const navItems = [
     { icon: LayoutDashboard, label: t("nav.overview"), value: "overview" },
-    { icon: TrendingUp, label: t("nav.sales"), value: "sales" },
-    { icon: AlertTriangle, label: t("nav.debt"), value: "debt" },
+    { icon: Package, label: t("nav.products"), value: "products" },
     { icon: Users, label: t("nav.customers"), value: "customers" },
+    { icon: PlusCircle, label: t("nav.addProduct"), value: "addProduct" },
     { icon: User, label: t("profile.title"), value: "profile" },
   ];
 
@@ -80,6 +84,37 @@ export default function AdminPanel() {
         return <DebtStats />;
       case "customers":
         return <CustomerImport />;
+      case "products":
+        return (
+          <ProductList
+            onEdit={(product) => {
+              setEditingProduct(product);
+              setActiveView("editProduct");
+            }}
+            onAdd={() => setActiveView("addProduct")}
+          />
+        );
+      case "addProduct":
+        return (
+          <ProductForm
+            onDone={() => setActiveView("products")}
+            onBack={() => setActiveView("products")}
+          />
+        );
+      case "editProduct":
+        return (
+          <ProductForm
+            product={editingProduct}
+            onDone={() => {
+              setEditingProduct(undefined);
+              setActiveView("products");
+            }}
+            onBack={() => {
+              setEditingProduct(undefined);
+              setActiveView("products");
+            }}
+          />
+        );
       case "profile":
         return (
           <PageContainer>
@@ -158,7 +193,13 @@ export default function AdminPanel() {
       bottomNav={
         <BottomNav
           items={navItems}
-          activeValue={activeView}
+          activeValue={
+            activeView === "editProduct"
+              ? "products"
+              : activeView === "sales" || activeView === "debt"
+                ? "overview"
+                : activeView
+          }
           onValueChange={(v) => setActiveView(v as AdminView)}
         />
       }
