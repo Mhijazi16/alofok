@@ -1,18 +1,30 @@
 {
   "app": {
-    "name": "أفق"
+    "name": "أفق",
+    "tagline": "نظام إدارة التجارة الذكي"
   },
   "auth": {
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
     "username": "اسم المستخدم",
     "password": "كلمة المرور",
-    "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة"
+    "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة",
+    "welcome": "مرحباً بك في أفق",
+    "loginSubtitle": "سجّل دخولك لمتابعة عملك"
   },
   "nav": {
-    "route": "مساري اليوم",
+    "route": "مساري",
     "catalog": "الكتالوج",
-    "dashboard": "لوحة التحكم"
+    "dashboard": "لوحة التحكم",
+    "profile": "الملف الشخصي",
+    "overview": "نظرة عامة",
+    "sales": "المبيعات",
+    "debt": "الديون",
+    "reports": "التقارير",
+    "customers": "العملاء",
+    "products": "المنتجات",
+    "settings": "الإعدادات",
+    "addProduct": "إضافة منتج"
   },
   "customer": {
     "balance": "الرصيد",
@@ -20,23 +32,80 @@
     "lastCollection": "آخر تحصيل",
     "collectionFrequency": "معدل التحصيل",
     "daysAverage": "يوم في المتوسط",
-    "noCustomers": "لا يوجد عملاء لهذا اليوم"
+    "noCustomers": "لا يوجد عملاء لهذا اليوم",
+    "riskScore": "مستوى المخاطرة",
+    "riskLow": "منخفض",
+    "riskMedium": "متوسط",
+    "riskHigh": "مرتفع",
+    "recentActivity": "النشاط الأخير",
+    "customerDetails": "تفاصيل العميل",
+    "totalCustomers": "إجمالي العملاء",
+    "todayRoute": "مسار اليوم",
+    "city": "المدينة",
+    "assignedDay": "يوم الزيارة",
+    "searchCustomers": "بحث عن عميل...",
+    "todayDebt": "ديون المسار",
+    "todayCollections": "تحصيلات اليوم",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "location": "الموقع",
+    "avatar": "الصورة",
+    "notes": "ملاحظات",
+    "addNew": "إضافة عميل",
+    "editCustomer": "تعديل العميل",
+    "tapToSetLocation": "اضغط على الخريطة لتحديد الموقع",
+    "locationSet": "تم تحديد الموقع",
+    "savedSuccess": "تم حفظ العميل بنجاح"
   },
   "actions": {
-    "order": "طلب",
+    "order": "طلب جديد",
     "pay": "تحصيل",
     "statement": "كشف حساب",
     "returnedCheck": "شيك مرتجع",
     "save": "حفظ",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
-    "back": "رجوع"
+    "back": "رجوع",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "close": "إغلاق",
+    "send": "إرسال",
+    "upload": "رفع",
+    "download": "تحميل",
+    "retry": "إعادة المحاولة",
+    "viewAll": "عرض الكل",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "import": "استيراد"
   },
   "catalog": {
     "bestSellers": "الأكثر مبيعاً",
     "discounted": "العروض",
-    "search": "بحث...",
-    "addToOrder": "إضافة للطلب"
+    "search": "بحث في المنتجات...",
+    "addToOrder": "إضافة للطلب",
+    "allProducts": "جميع المنتجات",
+    "cart": "السلة",
+    "cartEmpty": "السلة فارغة",
+    "total": "الإجمالي",
+    "itemCount": "منتجات",
+    "qty": "الكمية",
+    "confirmOrder": "تأكيد الطلب",
+    "orderSuccess": "تم إنشاء الطلب بنجاح",
+    "orderQueued": "تم حفظ الطلب وسيتم إرساله عند الاتصال",
+    "removeItem": "إزالة",
+    "noResults": "لا توجد نتائج",
+    "gridView": "عرض شبكي",
+    "listView": "عرض قائمة"
+  },
+  "cart": {
+    "title": "السلة",
+    "empty": "سلة المشتريات فارغة",
+    "browseCatalog": "تصفح المنتجات",
+    "subtotal": "المجموع",
+    "placeOrder": "تأكيد الطلب",
+    "itemCount": "{{count}} عناصر"
   },
   "payment": {
     "cash": "نقدي",
@@ -45,6 +114,13 @@
     "currency": "العملة",
     "bank": "البنك",
     "dueDate": "تاريخ الاستحقاق",
+    "notes": "ملاحظات",
+    "checkImage": "صورة الشيك",
+    "paymentType": "نوع الدفع",
+    "paymentSuccess": "تم تسجيل الدفعة بنجاح",
+    "paymentQueued": "تم حفظ الدفعة وسيتم إرسالها عند الاتصال",
+    "confirmPayment": "تأكيد الدفع",
+    "paymentSummary": "ملخص الدفعة",
     "currencies": {
       "ILS": "شيكل",
       "USD": "دولار",
@@ -57,7 +133,17 @@
     "lastWeek": "الأسبوع الماضي",
     "lastMonth": "الشهر الماضي",
     "lastYear": "السنة الماضية",
-    "runningBalance": "الرصيد المتراكم"
+    "customRange": "فترة مخصصة",
+    "runningBalance": "الرصيد المتراكم",
+    "openingBalance": "الرصيد الافتتاحي",
+    "closingBalance": "الرصيد الختامي",
+    "noTransactions": "لا توجد معاملات في هذه الفترة",
+    "transactionTypes": {
+      "Order": "طلب",
+      "Payment_Cash": "دفع نقدي",
+      "Payment_Check": "شيك",
+      "Check_Return": "شيك مرتجع"
+    }
   },
   "product": {
     "nameAr": "الاسم (عربي)",
@@ -70,7 +156,36 @@
     "addNew": "إضافة منتج",
     "edit": "تعديل المنتج",
     "uploadImage": "رفع صورة",
-    "noProducts": "لا توجد منتجات"
+    "noProducts": "لا توجد منتجات",
+    "productCount": "عدد المنتجات",
+    "gridView": "عرض شبكي",
+    "listView": "عرض قائمة",
+    "preview": "معاينة",
+    "savedSuccess": "تم حفظ المنتج بنجاح",
+    "discardChanges": "هل تريد التخلي عن التغييرات؟",
+    "dragImage": "اسحب صورة هنا أو اضغط للاختيار",
+    "imageFormats": "PNG, JPG حتى 5MB",
+    "descriptionAr": "الوصف (عربي)",
+    "descriptionEn": "الوصف (إنجليزي)",
+    "discountPercentage": "نسبة الخصم %",
+    "discountedPrice": "السعر بعد الخصم",
+    "category": "الفئة",
+    "brand": "العلامة التجارية",
+    "stockQty": "الكمية المتوفرة",
+    "unit": "الوحدة",
+    "weight": "الوزن (كغ)",
+    "colorOptions": "خيارات الألوان",
+    "unitOptions": {
+      "piece": "قطعة",
+      "box": "صندوق",
+      "carton": "كرتون",
+      "kg": "كيلوغرام",
+      "liter": "لتر"
+    },
+    "basicInfo": "المعلومات الأساسية",
+    "pricing": "التسعير",
+    "inventory": "المخزون",
+    "attributes": "الخصائص"
   },
   "admin": {
     "title": "لوحة الإدارة",
@@ -80,20 +195,99 @@
     "totalOrders": "إجمالي الطلبات",
     "totalCollected": "إجمالي التحصيل",
     "totalDebt": "إجمالي الديون",
+    "totalRevenue": "إجمالي الإيرادات",
+    "activeCustomers": "عملاء نشطون",
     "eodReport": "تقرير نهاية اليوم",
     "sendReport": "إرسال التقرير",
     "reportSent": "تم إرسال التقرير",
     "noData": "لا توجد بيانات",
+    "importCustomers": "استيراد عملاء",
+    "downloadTemplate": "تحميل القالب",
+    "importSuccess": "تم استيراد {{count}} عميل بنجاح",
+    "importErrors": "أخطاء في الاستيراد",
+    "previewData": "معاينة البيانات",
+    "startImport": "بدء الاستيراد",
+    "recentActivity": "النشاط الأخير",
+    "performanceChart": "أداء المبيعات",
+    "debtByCity": "الديون حسب المدينة",
+    "repPerformance": "أداء المندوبين",
+    "collectionRate": "نسبة التحصيل",
+    "orderCount": "عدد الطلبات",
+    "collectionCount": "عدد التحصيلات",
+    "daysOverdue": "يوم تأخير",
     "period": {
       "week": "هذا الأسبوع",
       "month": "هذا الشهر",
       "year": "هذه السنة"
     }
   },
+  "offline": {
+    "disconnected": "غير متصل بالإنترنت",
+    "syncing": "جاري المزامنة...",
+    "pending": "{{count}} عملية معلقة",
+    "syncComplete": "تمت المزامنة بنجاح",
+    "syncError": "فشل في مزامنة بعض العمليات"
+  },
+  "empty": {
+    "noData": "لا توجد بيانات",
+    "noDataDesc": "لا توجد بيانات لعرضها حالياً",
+    "noResults": "لا توجد نتائج",
+    "noResultsDesc": "جرّب كلمات بحث مختلفة",
+    "offlineTitle": "أنت غير متصل",
+    "offlineDesc": "ستتم مزامنة البيانات عند عودة الاتصال",
+    "errorTitle": "حدث خطأ",
+    "errorDesc": "حدث خطأ غير متوقع. يرجى المحاولة مجدداً"
+  },
+  "confirm": {
+    "title": "تأكيد العملية",
+    "deleteTitle": "تأكيد الحذف",
+    "deleteDesc": "هل أنت متأكد من حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.",
+    "orderTitle": "تأكيد الطلب",
+    "orderDesc": "هل تريد تأكيد هذا الطلب؟",
+    "paymentTitle": "تأكيد الدفع",
+    "paymentDesc": "هل تريد تأكيد هذه الدفعة؟"
+  },
+  "toast": {
+    "success": "تمت العملية بنجاح",
+    "error": "حدث خطأ",
+    "warning": "تنبيه",
+    "info": "معلومة"
+  },
+  "table": {
+    "noData": "لا توجد بيانات",
+    "showing": "عرض",
+    "of": "من",
+    "entries": "سجل",
+    "sortAsc": "ترتيب تصاعدي",
+    "sortDesc": "ترتيب تنازلي"
+  },
+  "datePicker": {
+    "selectDate": "اختر تاريخ",
+    "from": "من",
+    "to": "إلى"
+  },
+  "fileUpload": {
+    "dragDrop": "اسحب الملف هنا",
+    "orClick": "أو اضغط للاختيار",
+    "uploading": "جاري الرفع...",
+    "maxSize": "الحد الأقصى: {{size}}",
+    "invalidType": "نوع الملف غير مدعوم",
+    "tooLarge": "حجم الملف كبير جداً"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "role": "الدور",
+    "language": "اللغة",
+    "arabic": "العربية",
+    "english": "English",
+    "version": "الإصدار"
+  },
   "errors": {
     "generic": "حدث خطأ غير متوقع. يرجى المحاولة مجدداً.",
     "offline": "أنت غير متصل بالإنترنت. سيتم مزامنة البيانات عند عودة الاتصال.",
     "notFound": "العنصر غير موجود",
-    "forbidden": "ليس لديك صلاحية للوصول"
+    "forbidden": "ليس لديك صلاحية للوصول",
+    "unauthorized": "انتهت جلستك. يرجى تسجيل الدخول مجدداً",
+    "serverError": "خطأ في الخادم. يرجى المحاولة لاحقاً"
   }
 }

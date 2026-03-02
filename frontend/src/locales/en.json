@@ -1,42 +1,111 @@
 {
   "app": {
-    "name": "Horizon"
+    "name": "Horizon",
+    "tagline": "Smart Trading Management System"
   },
   "auth": {
-    "login": "Login",
-    "logout": "Logout",
+    "login": "Sign In",
+    "logout": "Sign Out",
     "username": "Username",
     "password": "Password",
-    "invalidCredentials": "Invalid username or password"
+    "invalidCredentials": "Invalid username or password",
+    "welcome": "Welcome to Horizon",
+    "loginSubtitle": "Sign in to continue your work"
   },
   "nav": {
-    "route": "My Route Today",
+    "route": "My Route",
     "catalog": "Catalog",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "overview": "Overview",
+    "sales": "Sales",
+    "debt": "Debt",
+    "reports": "Reports",
+    "customers": "Customers",
+    "products": "Products",
+    "settings": "Settings",
+    "addProduct": "Add Product"
   },
   "customer": {
     "balance": "Balance",
     "totalDebt": "Total Debt",
     "lastCollection": "Last Collection",
     "collectionFrequency": "Collection Frequency",
-    "daysAverage": "days on average",
-    "noCustomers": "No customers assigned for today"
+    "daysAverage": "days average",
+    "noCustomers": "No customers for today",
+    "riskScore": "Risk Score",
+    "riskLow": "Low",
+    "riskMedium": "Medium",
+    "riskHigh": "High",
+    "recentActivity": "Recent Activity",
+    "customerDetails": "Customer Details",
+    "totalCustomers": "Total Customers",
+    "todayRoute": "Today's Route",
+    "city": "City",
+    "assignedDay": "Visit Day",
+    "searchCustomers": "Search customers...",
+    "todayDebt": "Route Debt",
+    "todayCollections": "Today's Collections",
+    "phone": "Phone",
+    "address": "Address",
+    "location": "Location",
+    "avatar": "Photo",
+    "notes": "Notes",
+    "addNew": "Add Customer",
+    "editCustomer": "Edit Customer",
+    "tapToSetLocation": "Tap map to set location",
+    "locationSet": "Location set",
+    "savedSuccess": "Customer saved successfully"
   },
   "actions": {
-    "order": "Order",
-    "pay": "Collect Payment",
+    "order": "New Order",
+    "pay": "Collect",
     "statement": "Statement",
     "returnedCheck": "Returned Check",
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "back": "Back"
+    "back": "Back",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "send": "Send",
+    "upload": "Upload",
+    "download": "Download",
+    "retry": "Retry",
+    "viewAll": "View All",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import"
   },
   "catalog": {
     "bestSellers": "Best Sellers",
-    "discounted": "Discounts",
-    "search": "Search...",
-    "addToOrder": "Add to Order"
+    "discounted": "Discounted",
+    "search": "Search products...",
+    "addToOrder": "Add to Order",
+    "allProducts": "All Products",
+    "cart": "Cart",
+    "cartEmpty": "Cart is empty",
+    "total": "Total",
+    "itemCount": "items",
+    "qty": "Qty",
+    "confirmOrder": "Confirm Order",
+    "orderSuccess": "Order created successfully",
+    "orderQueued": "Order saved and will sync when online",
+    "removeItem": "Remove",
+    "noResults": "No results found",
+    "gridView": "Grid View",
+    "listView": "List View"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "browseCatalog": "Browse Catalog",
+    "subtotal": "Subtotal",
+    "placeOrder": "Place Order",
+    "itemCount": "{{count}} items"
   },
   "payment": {
     "cash": "Cash",
@@ -45,6 +114,13 @@
     "currency": "Currency",
     "bank": "Bank",
     "dueDate": "Due Date",
+    "notes": "Notes",
+    "checkImage": "Check Image",
+    "paymentType": "Payment Type",
+    "paymentSuccess": "Payment recorded successfully",
+    "paymentQueued": "Payment saved and will sync when online",
+    "confirmPayment": "Confirm Payment",
+    "paymentSummary": "Payment Summary",
     "currencies": {
       "ILS": "ILS",
       "USD": "USD",
@@ -57,7 +133,17 @@
     "lastWeek": "Last Week",
     "lastMonth": "Last Month",
     "lastYear": "Last Year",
-    "runningBalance": "Running Balance"
+    "customRange": "Custom Range",
+    "runningBalance": "Running Balance",
+    "openingBalance": "Opening Balance",
+    "closingBalance": "Closing Balance",
+    "noTransactions": "No transactions in this period",
+    "transactionTypes": {
+      "Order": "Order",
+      "Payment_Cash": "Cash Payment",
+      "Payment_Check": "Check",
+      "Check_Return": "Returned Check"
+    }
   },
   "product": {
     "nameAr": "Name (Arabic)",
@@ -70,7 +156,36 @@
     "addNew": "Add Product",
     "edit": "Edit Product",
     "uploadImage": "Upload Image",
-    "noProducts": "No products yet"
+    "noProducts": "No products yet",
+    "productCount": "Product Count",
+    "gridView": "Grid View",
+    "listView": "List View",
+    "preview": "Preview",
+    "savedSuccess": "Product saved successfully",
+    "discardChanges": "Discard unsaved changes?",
+    "dragImage": "Drag an image here or click to select",
+    "imageFormats": "PNG, JPG up to 5MB",
+    "descriptionAr": "Description (Arabic)",
+    "descriptionEn": "Description (English)",
+    "discountPercentage": "Discount %",
+    "discountedPrice": "Discounted Price",
+    "category": "Category",
+    "brand": "Brand",
+    "stockQty": "Stock Quantity",
+    "unit": "Unit",
+    "weight": "Weight (kg)",
+    "colorOptions": "Color Options",
+    "unitOptions": {
+      "piece": "Piece",
+      "box": "Box",
+      "carton": "Carton",
+      "kg": "Kilogram",
+      "liter": "Liter"
+    },
+    "basicInfo": "Basic Information",
+    "pricing": "Pricing",
+    "inventory": "Inventory",
+    "attributes": "Attributes"
   },
   "admin": {
     "title": "Admin Dashboard",
@@ -80,20 +195,99 @@
     "totalOrders": "Total Orders",
     "totalCollected": "Total Collected",
     "totalDebt": "Total Debt",
-    "eodReport": "EOD Report",
+    "totalRevenue": "Total Revenue",
+    "activeCustomers": "Active Customers",
+    "eodReport": "End of Day Report",
     "sendReport": "Send Report",
     "reportSent": "Report Sent",
     "noData": "No data available",
+    "importCustomers": "Import Customers",
+    "downloadTemplate": "Download Template",
+    "importSuccess": "Successfully imported {{count}} customers",
+    "importErrors": "Import Errors",
+    "previewData": "Preview Data",
+    "startImport": "Start Import",
+    "recentActivity": "Recent Activity",
+    "performanceChart": "Sales Performance",
+    "debtByCity": "Debt by City",
+    "repPerformance": "Rep Performance",
+    "collectionRate": "Collection Rate",
+    "orderCount": "Order Count",
+    "collectionCount": "Collection Count",
+    "daysOverdue": "days overdue",
     "period": {
       "week": "This Week",
       "month": "This Month",
       "year": "This Year"
     }
   },
+  "offline": {
+    "disconnected": "You are offline",
+    "syncing": "Syncing...",
+    "pending": "{{count}} pending operations",
+    "syncComplete": "Sync complete",
+    "syncError": "Failed to sync some operations"
+  },
+  "empty": {
+    "noData": "No Data",
+    "noDataDesc": "There's no data to display right now",
+    "noResults": "No Results",
+    "noResultsDesc": "Try different search terms",
+    "offlineTitle": "You're Offline",
+    "offlineDesc": "Data will sync when connection resumes",
+    "errorTitle": "Something went wrong",
+    "errorDesc": "An unexpected error occurred. Please try again"
+  },
+  "confirm": {
+    "title": "Confirm Action",
+    "deleteTitle": "Confirm Delete",
+    "deleteDesc": "Are you sure you want to delete this item? This action cannot be undone.",
+    "orderTitle": "Confirm Order",
+    "orderDesc": "Do you want to confirm this order?",
+    "paymentTitle": "Confirm Payment",
+    "paymentDesc": "Do you want to confirm this payment?"
+  },
+  "toast": {
+    "success": "Operation successful",
+    "error": "An error occurred",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "table": {
+    "noData": "No data available",
+    "showing": "Showing",
+    "of": "of",
+    "entries": "entries",
+    "sortAsc": "Sort ascending",
+    "sortDesc": "Sort descending"
+  },
+  "datePicker": {
+    "selectDate": "Select date",
+    "from": "From",
+    "to": "To"
+  },
+  "fileUpload": {
+    "dragDrop": "Drag file here",
+    "orClick": "or click to select",
+    "uploading": "Uploading...",
+    "maxSize": "Max size: {{size}}",
+    "invalidType": "File type not supported",
+    "tooLarge": "File is too large"
+  },
+  "profile": {
+    "title": "Profile",
+    "role": "Role",
+    "language": "Language",
+    "arabic": "العربية",
+    "english": "English",
+    "version": "Version"
+  },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",
-    "offline": "You are offline. Data will sync when connection is restored.",
+    "offline": "You are offline. Data will sync when connection resumes.",
     "notFound": "Item not found",
-    "forbidden": "You do not have permission to access this"
+    "forbidden": "You don't have access to this resource",
+    "unauthorized": "Your session has expired. Please sign in again",
+    "serverError": "Server error. Please try again later"
   }
 }
