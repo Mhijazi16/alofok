@@ -1,252 +1,441 @@
-import { useRef, useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, ImagePlus, Loader2 } from "lucide-react";
+import { Package } from "lucide-react";
+
 import {
   designerApi,
   type Product,
   type ProductCreate,
+  type ProductUpdate,
 } from "@/services/designerApi";
+import { getImageUrl } from "@/lib/image";
+import { useToast } from "@/hooks/useToast";
+import { PageContainer } from "@/components/layout/page-container";
+import { TopBar } from "@/components/ui/top-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { FormField } from "@/components/ui/form-field";
+import { FileUpload } from "@/components/ui/file-upload";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
-interface ProductFormProps {
-  product?: Product; // undefined = create mode
-  onBack: () => void;
-  onSaved: () => void;
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "ILS",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(price);
 }
 
-export default function ProductForm({
-  product,
-  onBack,
-  onSaved,
-}: ProductFormProps) {
-  const { t } = useTranslation();
-  const qc = useQueryClient();
-  const fileRef = useRef<HTMLInputElement>(null);
+// ── Props ────────────────────────────────────────────────────────────────────
 
-  const editing = !!product;
+interface ProductFormProps {
+  product?: Product;
+  onBack: () => void;
+  onDone: () => void;
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
+export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const isEdit = Boolean(product);
+
+  // ── Form state ─────────────────────────────────────────────────────────────
 
   const [nameAr, setNameAr] = useState(product?.name_ar ?? "");
   const [nameEn, setNameEn] = useState(product?.name_en ?? "");
   const [sku, setSku] = useState(product?.sku ?? "");
-  const [price, setPrice] = useState(product ? String(product.price) : "");
-  const [imageUrl, setImageUrl] = useState(product?.image_url ?? "");
+  const [price, setPrice] = useState<string>(
+    product?.price != null ? String(product.price) : ""
+  );
   const [isDiscounted, setIsDiscounted] = useState(
     product?.is_discounted ?? false
   );
   const [isBestseller, setIsBestseller] = useState(
     product?.is_bestseller ?? false
   );
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    product?.image_url ?? null
+  );
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
-  const save = useMutation({
-    mutationFn: async () => {
-      const payload: ProductCreate = {
+  // Track whether the form has been changed
+  const initialSnapshot = useRef({
+    nameAr: product?.name_ar ?? "",
+    nameEn: product?.name_en ?? "",
+    sku: product?.sku ?? "",
+    price: product?.price != null ? String(product.price) : "",
+    isDiscounted: product?.is_discounted ?? false,
+    isBestseller: product?.is_bestseller ?? false,
+    imageUrl: product?.image_url ?? null,
+  });
+
+  const isDirty = useCallback(() => {
+    const s = initialSnapshot.current;
+    return (
+      nameAr !== s.nameAr ||
+      nameEn !== s.nameEn ||
+      sku !== s.sku ||
+      price !== s.price ||
+      isDiscounted !== s.isDiscounted ||
+      isBestseller !== s.isBestseller ||
+      imageUrl !== s.imageUrl ||
+      imageFile !== null
+    );
+  }, [nameAr, nameEn, sku, price, isDiscounted, isBestseller, imageUrl, imageFile]);
+
+  // Reset form when product prop changes (e.g. switching from create to edit)
+  useEffect(() => {
+    setNameAr(product?.name_ar ?? "");
+    setNameEn(product?.name_en ?? "");
+    setSku(product?.sku ?? "");
+    setPrice(product?.price != null ? String(product.price) : "");
+    setIsDiscounted(product?.is_discounted ?? false);
+    setIsBestseller(product?.is_bestseller ?? false);
+    setImageUrl(product?.image_url ?? null);
+    setImageFile(null);
+    initialSnapshot.current = {
+      nameAr: product?.name_ar ?? "",
+      nameEn: product?.name_en ?? "",
+      sku: product?.sku ?? "",
+      price: product?.price != null ? String(product.price) : "",
+      isDiscounted: product?.is_discounted ?? false,
+      isBestseller: product?.is_bestseller ?? false,
+      imageUrl: product?.image_url ?? null,
+    };
+  }, [product]);
+
+  // ── Back handler with dirty check ──────────────────────────────────────────
+
+  const handleBack = () => {
+    if (isDirty()) {
+      setShowDiscardDialog(true);
+    } else {
+      onBack();
+    }
+  };
+
+  // ── Image handling ─────────────────────────────────────────────────────────
+
+  const handleImageSelect = (file: File) => {
+    setImageFile(file);
+    // Show local preview immediately
+    const url = URL.createObjectURL(file);
+    setImageUrl(url);
+  };
+
+  // ── Mutations ──────────────────────────────────────────────────────────────
+
+  const createMutation = useMutation({
+    mutationFn: (body: ProductCreate) => designerApi.createProduct(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: t("product.savedSuccess"), variant: "success" });
+      onDone();
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: ProductUpdate }) =>
+      designerApi.updateProduct(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: t("product.savedSuccess"), variant: "success" });
+      onDone();
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) return;
+
+    let finalImageUrl = imageUrl;
+
+    // Upload image if a new file was selected
+    if (imageFile) {
+      try {
+        setIsUploading(true);
+        finalImageUrl = await designerApi.uploadImage(imageFile);
+      } catch {
+        toast({ title: t("toast.error"), variant: "error" });
+        setIsUploading(false);
+        return;
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
+    if (isEdit && product) {
+      updateMutation.mutate({
+        id: product.id,
+        body: {
+          name_ar: nameAr,
+          name_en: nameEn,
+          sku,
+          price: parsedPrice,
+          image_url: finalImageUrl,
+          is_discounted: isDiscounted,
+          is_bestseller: isBestseller,
+        },
+      });
+    } else {
+      createMutation.mutate({
         name_ar: nameAr,
         name_en: nameEn,
         sku,
-        price: parseFloat(price),
-        image_url: imageUrl || null,
+        price: parsedPrice,
+        image_url: finalImageUrl,
         is_discounted: isDiscounted,
         is_bestseller: isBestseller,
-      };
-      if (editing) {
-        return designerApi.updateProduct(product.id, payload);
-      }
-      return designerApi.createProduct(payload);
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["products"] });
-      onSaved();
-    },
-    onError: () => setFormError(t("errors.generic")),
-  });
-
-  async function handleImagePick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingImage(true);
-    try {
-      const url = await designerApi.uploadImage(file);
-      setImageUrl(url);
-    } catch {
-      setFormError(t("errors.generic"));
-    } finally {
-      setUploadingImage(false);
+      });
     }
-  }
+  };
+
+  // ── Computed preview values ────────────────────────────────────────────────
+
+  const previewName = isAr
+    ? nameAr || t("product.nameAr")
+    : nameEn || t("product.nameEn");
+  const previewPrice = parseFloat(price);
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border">
-        <button
-          onClick={onBack}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-accent"
-        >
-          <ArrowRight className="h-5 w-5" />
-        </button>
-        <h2 className="text-lg font-bold">
-          {editing ? t("product.edit") : t("product.addNew")}
-        </h2>
-      </div>
+    <>
+      <TopBar
+        title={isEdit ? t("product.edit") : t("product.addNew")}
+        backButton={{ onBack: handleBack }}
+      />
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          setFormError(null);
-          save.mutate();
-        }}
-        className="flex-1 overflow-y-auto flex flex-col gap-4 p-4"
-      >
-        {/* Image */}
-        <div className="flex flex-col items-center gap-3">
-          <div
-            onClick={() => fileRef.current?.click()}
-            className="relative w-full h-44 rounded-2xl border-2 border-dashed border-border bg-muted flex items-center justify-center cursor-pointer overflow-hidden"
-          >
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            ) : uploadingImage ? (
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <ImagePlus className="h-8 w-8" />
-                <span className="text-sm">{t("product.uploadImage")}</span>
+      <PageContainer>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-6 lg:grid-cols-5">
+            {/* ── Left: Form fields ──────────────────────────────────────── */}
+            <div className="space-y-5 lg:col-span-3">
+              <Card variant="glass">
+                <CardContent className="space-y-4 p-5">
+                  {/* Name AR */}
+                  <FormField
+                    label={t("product.nameAr")}
+                    required
+                    htmlFor="name_ar"
+                  >
+                    <Input
+                      id="name_ar"
+                      value={nameAr}
+                      onChange={(e) => setNameAr(e.target.value)}
+                      placeholder={t("product.nameAr")}
+                      dir="rtl"
+                      required
+                    />
+                  </FormField>
+
+                  {/* Name EN */}
+                  <FormField
+                    label={t("product.nameEn")}
+                    required
+                    htmlFor="name_en"
+                  >
+                    <Input
+                      id="name_en"
+                      value={nameEn}
+                      onChange={(e) => setNameEn(e.target.value)}
+                      placeholder={t("product.nameEn")}
+                      dir="ltr"
+                      required
+                    />
+                  </FormField>
+
+                  {/* SKU */}
+                  <FormField label={t("product.sku")} required htmlFor="sku">
+                    <Input
+                      id="sku"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
+                      placeholder={t("product.sku")}
+                      dir="ltr"
+                      required
+                    />
+                  </FormField>
+
+                  {/* Price */}
+                  <FormField
+                    label={t("product.price")}
+                    required
+                    htmlFor="price"
+                  >
+                    <Input
+                      id="price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      placeholder="0.00"
+                      dir="ltr"
+                      required
+                    />
+                  </FormField>
+                </CardContent>
+              </Card>
+
+              {/* Image upload */}
+              <Card variant="glass">
+                <CardContent className="p-5">
+                  <FormField label={t("product.image")}>
+                    <FileUpload
+                      accept="image/*"
+                      maxSize={5 * 1024 * 1024}
+                      onUpload={handleImageSelect}
+                      isUploading={isUploading}
+                    />
+                  </FormField>
+                </CardContent>
+              </Card>
+
+              {/* Toggles */}
+              <Card variant="glass">
+                <CardContent className="space-y-4 p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-body-sm font-medium text-foreground">
+                      {t("product.isDiscounted")}
+                    </span>
+                    <Switch
+                      checked={isDiscounted}
+                      onCheckedChange={setIsDiscounted}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-body-sm font-medium text-foreground">
+                      {t("product.isBestseller")}
+                    </span>
+                    <Switch
+                      checked={isBestseller}
+                      onCheckedChange={setIsBestseller}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Submit */}
+              <Button
+                type="submit"
+                variant="gradient"
+                size="xl"
+                className="w-full"
+                isLoading={isSaving || isUploading}
+              >
+                {t("actions.save")}
+              </Button>
+            </div>
+
+            {/* ── Right: Live preview ────────────────────────────────────── */}
+            <div className="lg:col-span-2">
+              <div className="sticky top-20">
+                <Card variant="glass">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-body-sm text-muted-foreground">
+                      {t("product.preview")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pb-5">
+                    {/* Preview card mimics how it looks in the catalog */}
+                    <Card variant="default" className="overflow-hidden">
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                        {imageUrl ? (
+                          <img
+                            src={getImageUrl(imageUrl)!}
+                            alt={previewName}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted-foreground/10">
+                              <Package className="h-7 w-7 text-muted-foreground" />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Badges */}
+                        <div className="absolute start-2 top-2 flex flex-col gap-1">
+                          {isBestseller && (
+                            <Badge variant="warning" size="sm">
+                              {t("catalog.bestSellers")}
+                            </Badge>
+                          )}
+                          {isDiscounted && (
+                            <Badge variant="success" size="sm">
+                              {t("catalog.discounted")}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      <CardContent className="p-3 pt-3">
+                        <p className="truncate text-body-sm font-semibold text-foreground">
+                          {previewName}
+                        </p>
+                        <p className="mt-0.5 truncate text-caption text-muted-foreground">
+                          {sku || t("product.sku")}
+                        </p>
+                        <p className="mt-1.5 text-body-sm font-bold text-primary">
+                          {!isNaN(previewPrice) && previewPrice >= 0
+                            ? formatPrice(previewPrice)
+                            : formatPrice(0)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </CardContent>
+                </Card>
               </div>
-            )}
+            </div>
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImagePick}
-          />
-        </div>
+        </form>
+      </PageContainer>
 
-        {/* Fields */}
-        <Field label={t("product.nameAr")}>
-          <Input
-            value={nameAr}
-            onChange={(e) => setNameAr(e.target.value)}
-            required
-            dir="rtl"
-          />
-        </Field>
-
-        <Field label={t("product.nameEn")}>
-          <Input
-            value={nameEn}
-            onChange={(e) => setNameEn(e.target.value)}
-            required
-            dir="ltr"
-          />
-        </Field>
-
-        <Field label={t("product.sku")}>
-          <Input
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
-            required
-            dir="ltr"
-          />
-        </Field>
-
-        <Field label={t("product.price")}>
-          <Input
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min="0"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            required
-            dir="ltr"
-          />
-        </Field>
-
-        {/* Toggles */}
-        <div className="flex flex-col gap-3">
-          <Toggle
-            checked={isDiscounted}
-            onChange={setIsDiscounted}
-            label={t("product.isDiscounted")}
-          />
-          <Toggle
-            checked={isBestseller}
-            onChange={setIsBestseller}
-            label={t("product.isBestseller")}
-          />
-        </div>
-
-        {formError && (
-          <p className="text-sm text-destructive text-center">{formError}</p>
-        )}
-
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={save.isPending || uploadingImage}
-        >
-          {save.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            t("actions.save")
-          )}
-        </Button>
-      </form>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium">{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function Toggle({
-  checked,
-  onChange,
-  label,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-}) {
-  return (
-    <div
-      className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 cursor-pointer"
-      onClick={() => onChange(!checked)}
-    >
-      <span className="text-sm font-medium">{label}</span>
-      <div
-        className={`relative h-6 w-11 rounded-full transition-colors ${
-          checked ? "bg-primary" : "bg-muted"
-        }`}
-      >
-        <div
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
-            checked ? "start-[22px]" : "start-0.5"
-          }`}
-        />
-      </div>
-    </div>
+      {/* Discard changes dialog */}
+      <ConfirmationDialog
+        open={showDiscardDialog}
+        onOpenChange={setShowDiscardDialog}
+        title={t("product.discardChanges")}
+        confirmLabel={t("actions.confirm")}
+        cancelLabel={t("actions.cancel")}
+        variant="destructive"
+        onConfirm={() => {
+          setShowDiscardDialog(false);
+          onBack();
+        }}
+      />
+    </>
   );
 }
