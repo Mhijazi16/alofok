@@ -1,49 +1,33 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   ShoppingCart,
   Package,
   Plus,
   Minus,
-  Trash2,
   Star,
   Tag,
   LayoutGrid,
   List,
 } from "lucide-react";
 import {
-  salesApi,
   type Customer,
   type Product,
-  type OrderItem,
 } from "@/services/salesApi";
-import { syncQueue } from "@/lib/syncQueue";
 import { getImageUrl } from "@/lib/image";
 import { cn } from "@/lib/utils";
-import { useOfflineSync } from "@/hooks/useOfflineSync";
-import { useToast } from "@/hooks/useToast";
+import { salesApi } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
-
-interface CartItem {
+export interface CartItem {
   product: Product;
   quantity: number;
 }
@@ -52,6 +36,11 @@ interface OrderFlowProps {
   customer: Customer;
   onBack: () => void;
   onDone: () => void;
+  cart: Map<string, CartItem>;
+  addToCart: (product: Product, qty?: number) => void;
+  updateCartQty: (productId: string, qty: number) => void;
+  removeFromCart: (productId: string) => void;
+  onViewCart?: () => void;
 }
 
 function ProductGridCard({
@@ -200,16 +189,10 @@ function ProductGridCard({
   );
 }
 
-export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
+export function OrderFlow({ customer, onBack, onDone, cart, addToCart, updateCartQty, removeFromCart, onViewCart }: OrderFlowProps) {
   const { t, i18n } = useTranslation();
-  const { isOnline } = useOfflineSync();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
-  const [cartOpen, setCartOpen] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">(
     () => (localStorage.getItem("catalog-view") as "grid" | "list") || "grid"
   );
@@ -224,28 +207,9 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
     queryFn: salesApi.getProducts,
   });
 
-  const orderMutation = useMutation({
-    mutationFn: salesApi.createOrder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-route"] });
-      queryClient.invalidateQueries({ queryKey: ["insights", customer.id] });
-      queryClient.invalidateQueries({ queryKey: ["statement", customer.id] });
-      toast({ title: t("catalog.orderSuccess"), variant: "success" });
-      onDone();
-    },
-    onError: () => {
-      toast({ title: t("toast.error"), variant: "error" });
-    },
-  });
-
-  const cartItems = useMemo(() => Array.from(cart.values()), [cart]);
   const cartCount = useMemo(
-    () => cartItems.reduce((s, i) => s + i.quantity, 0),
-    [cartItems]
-  );
-  const cartTotal = useMemo(
-    () => cartItems.reduce((s, i) => s + i.product.price * i.quantity, 0),
-    [cartItems]
+    () => Array.from(cart.values()).reduce((s, i) => s + i.quantity, 0),
+    [cart]
   );
 
   const filtered = useMemo(() => {
@@ -270,66 +234,19 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
   );
   const allProducts = filtered;
 
-  const addToCart = useCallback((product: Product, qty: number = 1) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      const existing = next.get(product.id);
-      if (existing) {
-        next.set(product.id, { ...existing, quantity: existing.quantity + qty });
-      } else {
-        next.set(product.id, { product, quantity: qty });
-      }
-      return next;
-    });
-  }, []);
-
-  const updateQty = useCallback((productId: string, delta: number) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      const existing = next.get(productId);
-      if (!existing) return prev;
-      const newQty = existing.quantity + delta;
-      if (newQty <= 0) {
-        next.delete(productId);
-      } else {
-        next.set(productId, { ...existing, quantity: newQty });
-      }
-      return next;
-    });
-  }, []);
-
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      next.delete(productId);
-      return next;
-    });
-  }, []);
+  // Helper to apply delta-based quantity updates using the prop
+  const applyQtyDelta = useCallback((productId: string, delta: number) => {
+    const existing = cart.get(productId);
+    if (!existing) return;
+    const newQty = existing.quantity + delta;
+    updateCartQty(productId, newQty);
+  }, [cart, updateCartQty]);
 
   const formatCurrency = (val: number) =>
     val.toLocaleString(i18n.language === "ar" ? "ar-SA" : "en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-
-  const handleSubmit = async () => {
-    const items: OrderItem[] = cartItems.map((ci) => ({
-      product_id: ci.product.id,
-      quantity: ci.quantity,
-      unit_price: ci.product.price,
-    }));
-
-    const payload = { customer_id: customer.id, items };
-
-    if (isOnline) {
-      orderMutation.mutate(payload);
-    } else {
-      await syncQueue.push("order", payload);
-      toast({ title: t("catalog.orderQueued"), variant: "success" });
-      onDone();
-    }
-    setConfirmOpen(false);
-  };
 
   const productName = (p: Product) =>
     i18n.language === "ar" ? p.name_ar : p.name_en;
@@ -396,7 +313,7 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
                     className="h-7 w-7"
                     onClick={(e) => {
                       e.stopPropagation();
-                      updateQty(product.id, -1);
+                      applyQtyDelta(product.id, -1);
                     }}
                   >
                     <Minus className="h-3 w-3" />
@@ -410,7 +327,7 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
                     className="h-7 w-7"
                     onClick={(e) => {
                       e.stopPropagation();
-                      updateQty(product.id, 1);
+                      applyQtyDelta(product.id, 1);
                     }}
                   >
                     <Plus className="h-3 w-3" />
@@ -486,7 +403,7 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
               variant="glass"
               size="sm"
               className="relative"
-              onClick={() => setCartOpen(true)}
+              onClick={() => onViewCart?.()}
             >
               <ShoppingCart className="h-4 w-4" />
               {cartCount > 0 && (
@@ -534,120 +451,6 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
         )}
       </div>
 
-      {/* Cart Dialog */}
-      <Dialog open={cartOpen} onOpenChange={setCartOpen}>
-        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {t("catalog.cart")} ({cartCount} {t("catalog.itemCount")})
-            </DialogTitle>
-            <DialogDescription>{customer.name}</DialogDescription>
-          </DialogHeader>
-
-          {cartItems.length === 0 ? (
-            <EmptyState
-              preset="no-data"
-              title={t("catalog.cartEmpty")}
-              className="py-8"
-            />
-          ) : (
-            <div className="space-y-3">
-              {cartItems.map((ci) => (
-                <div
-                  key={ci.product.id}
-                  className="flex items-center gap-3 rounded-xl border border-border p-3"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    {ci.product.image_url ? (
-                      <img
-                        src={getImageUrl(ci.product.image_url)!}
-                        alt={productName(ci.product)}
-                        className="h-full w-full rounded-lg object-cover"
-                      />
-                    ) : (
-                      <Package className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-body-sm font-medium text-foreground truncate">
-                      {productName(ci.product)}
-                    </p>
-                    <p className="text-caption text-muted-foreground">
-                      {formatCurrency(ci.product.price)} x {ci.quantity}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="h-7 w-7"
-                      onClick={() => updateQty(ci.product.id, -1)}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="min-w-[1.5rem] text-center text-body-sm font-bold">
-                      {ci.quantity}
-                    </span>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="h-7 w-7"
-                      onClick={() => updateQty(ci.product.id, 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-destructive"
-                      onClick={() => removeFromCart(ci.product.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              <Separator />
-
-              <StatCard
-                variant="gradient"
-                value={formatCurrency(cartTotal)}
-                label={t("catalog.total")}
-                icon={ShoppingCart}
-              />
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCartOpen(false)}>
-              {t("actions.close")}
-            </Button>
-            <Button
-              variant="gradient"
-              disabled={cartItems.length === 0}
-              onClick={() => {
-                setCartOpen(false);
-                setConfirmOpen(true);
-              }}
-            >
-              {t("catalog.confirmOrder")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirmation */}
-      <ConfirmationDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        title={t("confirm.orderTitle")}
-        description={t("confirm.orderDesc")}
-        confirmLabel={t("actions.confirm")}
-        cancelLabel={t("actions.cancel")}
-        onConfirm={handleSubmit}
-        isLoading={orderMutation.isPending}
-      />
     </div>
   );
 }

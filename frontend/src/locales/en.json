@@ -105,7 +105,9 @@
     "browseCatalog": "Browse Catalog",
     "subtotal": "Subtotal",
     "placeOrder": "Place Order",
-    "itemCount": "{{count}} items"
+    "itemCount": "{{count}} items",
+    "selectCustomer": "Please select a customer first",
+    "clearCart": "Clear Cart"
   },
   "payment": {
     "cash": "Cash",

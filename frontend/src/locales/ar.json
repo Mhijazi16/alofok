@@ -105,7 +105,9 @@
     "browseCatalog": "تصفح المنتجات",
     "subtotal": "المجموع",
     "placeOrder": "تأكيد الطلب",
-    "itemCount": "{{count}} عناصر"
+    "itemCount": "{{count}} عناصر",
+    "selectCustomer": "يرجى اختيار عميل أولاً",
+    "clearCart": "إفراغ السلة"
   },
   "payment": {
     "cash": "نقدي",
