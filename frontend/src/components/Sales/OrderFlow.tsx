@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -9,6 +9,8 @@ import {
   Trash2,
   Star,
   Tag,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import {
   salesApi,
@@ -18,6 +20,7 @@ import {
 } from "@/services/salesApi";
 import { syncQueue } from "@/lib/syncQueue";
 import { getImageUrl } from "@/lib/image";
+import { cn } from "@/lib/utils";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { TopBar } from "@/components/ui/top-bar";
@@ -51,6 +54,152 @@ interface OrderFlowProps {
   onDone: () => void;
 }
 
+function ProductGridCard({
+  product,
+  expanded,
+  onToggle,
+  onAddToCart,
+  cartQty,
+}: {
+  product: Product;
+  expanded: boolean;
+  onToggle: () => void;
+  onAddToCart: (product: Product, qty: number) => void;
+  cartQty: number;
+}) {
+  const { t, i18n } = useTranslation();
+  const [qty, setQty] = useState(1);
+  const lang = i18n.language;
+  const name = lang === "ar" ? product.name_ar : product.name_en;
+  const description = lang === "ar" ? product.description_ar : product.description_en;
+
+  return (
+    <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-300">
+      {/* Image */}
+      <button onClick={onToggle} className="w-full text-start">
+        <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+          {product.image_url ? (
+            <img
+              src={getImageUrl(product.image_url)!}
+              alt={name}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <Package className="h-12 w-12 text-muted-foreground/30" />
+            </div>
+          )}
+          {/* Badges */}
+          <div className="absolute top-2 start-2 flex flex-col gap-1">
+            {product.is_bestseller && (
+              <Badge variant="warning" className="text-[0.6rem]">
+                <Star className="h-3 w-3 me-0.5" /> {t("catalog.bestSellers")}
+              </Badge>
+            )}
+            {product.is_discounted && (
+              <Badge variant="success" className="text-[0.6rem]">
+                <Tag className="h-3 w-3 me-0.5" />{" "}
+                {product.discount_percentage
+                  ? `${product.discount_percentage}%`
+                  : t("catalog.discounted")}
+              </Badge>
+            )}
+          </div>
+          {/* Cart indicator */}
+          {cartQty > 0 && (
+            <div className="absolute top-2 end-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+              {cartQty}
+            </div>
+          )}
+        </div>
+        {/* Info below image */}
+        <div className="p-3">
+          <p className="text-body-sm font-medium text-foreground truncate">
+            {name}
+          </p>
+          <div className="flex items-center gap-2 mt-1">
+            {product.discounted_price ? (
+              <>
+                <span className="text-primary font-bold text-body-sm">
+                  {new Intl.NumberFormat(lang, {
+                    style: "currency",
+                    currency: "ILS",
+                  }).format(product.discounted_price)}
+                </span>
+                <span className="text-muted-foreground line-through text-caption">
+                  {new Intl.NumberFormat(lang, {
+                    style: "currency",
+                    currency: "ILS",
+                  }).format(product.price)}
+                </span>
+              </>
+            ) : (
+              <span className="text-primary font-bold text-body-sm">
+                {new Intl.NumberFormat(lang, {
+                  style: "currency",
+                  currency: "ILS",
+                }).format(product.price)}
+              </span>
+            )}
+          </div>
+        </div>
+      </button>
+
+      {/* Expandable section */}
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-300 ease-in-out",
+          expanded ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
+        )}
+      >
+        <div className="border-t border-border p-3 space-y-3">
+          {description && (
+            <p className="text-caption text-muted-foreground line-clamp-2">
+              {description}
+            </p>
+          )}
+          {product.unit && product.unit !== "piece" && (
+            <Badge variant="outline" className="text-[0.6rem]">
+              {t(`product.unitOptions.${product.unit}`)}
+            </Badge>
+          )}
+          {/* Quantity picker */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-accent"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+            <span className="text-body-sm font-medium w-8 text-center">
+              {qty}
+            </span>
+            <button
+              onClick={() => setQty((q) => q + 1)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-accent"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          <Button
+            variant="gradient"
+            size="sm"
+            className="w-full"
+            onClick={() => {
+              onAddToCart(product, qty);
+              setQty(1);
+            }}
+          >
+            <ShoppingCart className="h-4 w-4 me-1.5" />
+            {t("catalog.addToOrder")}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
   const { t, i18n } = useTranslation();
   const { isOnline } = useOfflineSync();
@@ -61,6 +210,14 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
   const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
   const [cartOpen, setCartOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">(
+    () => (localStorage.getItem("catalog-view") as "grid" | "list") || "grid"
+  );
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem("catalog-view", viewMode);
+  }, [viewMode]);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
@@ -113,14 +270,14 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
   );
   const allProducts = filtered;
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: Product, qty: number = 1) => {
     setCart((prev) => {
       const next = new Map(prev);
       const existing = next.get(product.id);
       if (existing) {
-        next.set(product.id, { ...existing, quantity: existing.quantity + 1 });
+        next.set(product.id, { ...existing, quantity: existing.quantity + qty });
       } else {
-        next.set(product.id, { product, quantity: 1 });
+        next.set(product.id, { product, quantity: qty });
       }
       return next;
     });
@@ -288,9 +445,24 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
     return (
       <div className="space-y-2">
         <Separator label={title} />
-        <div className="space-y-2">
-          {items.map((p, i) => renderProductCard(p, startIdx + i))}
-        </div>
+        {viewMode === "grid" ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {items.map((p) => (
+              <ProductGridCard
+                key={p.id}
+                product={p}
+                expanded={expandedId === p.id}
+                onToggle={() => setExpandedId((prev) => (prev === p.id ? null : p.id))}
+                onAddToCart={(product, qty) => addToCart(product, qty)}
+                cartQty={cart.get(p.id)?.quantity ?? 0}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {items.map((p, i) => renderProductCard(p, startIdx + i))}
+          </div>
+        )}
       </div>
     );
   };
@@ -302,19 +474,28 @@ export function OrderFlow({ customer, onBack, onDone }: OrderFlowProps) {
         subtitle={customer.name}
         backButton={{ onBack }}
         actions={
-          <Button
-            variant="glass"
-            size="sm"
-            className="relative"
-            onClick={() => setCartOpen(true)}
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {cartCount > 0 && (
-              <span className="absolute -end-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[0.625rem] font-bold text-primary-foreground">
-                {cartCount}
-              </span>
-            )}
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setViewMode((v) => (v === "grid" ? "list" : "grid"))}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              title={viewMode === "grid" ? t("catalog.listView") : t("catalog.gridView")}
+            >
+              {viewMode === "grid" ? <List className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
+            </button>
+            <Button
+              variant="glass"
+              size="sm"
+              className="relative"
+              onClick={() => setCartOpen(true)}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {cartCount > 0 && (
+                <span className="absolute -end-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[0.625rem] font-bold text-primary-foreground">
+                  {cartCount}
+                </span>
+              )}
+            </Button>
+          </div>
         }
       />
 
