@@ -20,6 +20,7 @@ import { CustomerDashboard } from "./CustomerDashboard";
 import { OrderFlow } from "./OrderFlow";
 import { PaymentFlow } from "./PaymentFlow";
 import { StatementView } from "./StatementView";
+import { CustomerForm } from "./CustomerForm";
 
 type View =
   | "route"
@@ -28,7 +29,8 @@ type View =
   | "customer"
   | "order"
   | "payment"
-  | "statement";
+  | "statement"
+  | "customerForm";
 
 export default function SalesRoot() {
   const { t, i18n } = useTranslation();
@@ -41,6 +43,9 @@ export default function SalesRoot() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
+  const [editingCustomer, setEditingCustomer] = useState<
+    Customer | undefined
+  >();
 
   const navigateToCustomer = useCallback((customer: Customer) => {
     setSelectedCustomer(customer);
@@ -51,6 +56,14 @@ export default function SalesRoot() {
     if (view === "customer") {
       setView("route");
       setSelectedCustomer(null);
+    } else if (view === "customerForm") {
+      // Go back to where we came from
+      if (selectedCustomer) {
+        setView("customer");
+      } else {
+        setView("route");
+      }
+      setEditingCustomer(undefined);
     } else if (
       view === "order" ||
       view === "payment" ||
@@ -58,7 +71,17 @@ export default function SalesRoot() {
     ) {
       setView("customer");
     }
-  }, [view]);
+  }, [view, selectedCustomer]);
+
+  const navigateToAddCustomer = useCallback(() => {
+    setEditingCustomer(undefined);
+    setView("customerForm");
+  }, []);
+
+  const navigateToEditCustomer = useCallback((customer: Customer) => {
+    setEditingCustomer(customer);
+    setView("customerForm");
+  }, []);
 
   const handleCustomerAction = useCallback(
     (action: "order" | "payment" | "statement" | "check") => {
@@ -99,7 +122,12 @@ export default function SalesRoot() {
   const renderMainView = () => {
     switch (view) {
       case "route":
-        return <RouteView onSelectCustomer={navigateToCustomer} />;
+        return (
+          <RouteView
+            onSelectCustomer={navigateToCustomer}
+            onAddCustomer={navigateToAddCustomer}
+          />
+        );
 
       case "catalog":
         return selectedCustomer ? (
@@ -216,6 +244,23 @@ export default function SalesRoot() {
   };
 
   const renderSubView = () => {
+    if (view === "customerForm") {
+      return (
+        <CustomerForm
+          customer={editingCustomer}
+          onBack={navigateBack}
+          onDone={() => {
+            setEditingCustomer(undefined);
+            if (selectedCustomer) {
+              setView("customer");
+            } else {
+              setView("route");
+            }
+          }}
+        />
+      );
+    }
+
     if (!selectedCustomer) return null;
 
     switch (view) {
@@ -225,6 +270,7 @@ export default function SalesRoot() {
             customer={selectedCustomer}
             onBack={navigateBack}
             onAction={handleCustomerAction}
+            onEditCustomer={navigateToEditCustomer}
           />
         );
       case "order":

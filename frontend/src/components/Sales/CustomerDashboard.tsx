@@ -1,155 +1,327 @@
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
+  DollarSign,
+  Calendar,
+  Clock,
+  Shield,
   ShoppingCart,
   Banknote,
   FileText,
-  AlertCircle,
-  ArrowRight,
+  RotateCcw,
+  Pencil,
 } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
+import { TopBar } from "@/components/ui/top-bar";
+import { StatCard } from "@/components/ui/stat-card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusIndicator } from "@/components/ui/status-indicator";
+import { Timeline, TimelineItem } from "@/components/ui/timeline";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-type Action = "order" | "pay" | "statement" | "returnedCheck";
+type CustomerAction = "order" | "payment" | "statement" | "check";
 
 interface CustomerDashboardProps {
   customer: Customer;
-  onAction: (action: Action) => void;
   onBack: () => void;
+  onAction: (action: CustomerAction) => void;
+  onEditCustomer?: (customer: Customer) => void;
 }
 
-function RiskBadge({ score }: { score: string }) {
-  const { t } = useTranslation();
-  if (score === "green")
-    return <Badge variant="success">{t("actions.confirm")}</Badge>;
-  if (score === "yellow")
-    return <Badge variant="warning">{score}</Badge>;
-  return <Badge variant="danger">{score}</Badge>;
-}
-
-export default function CustomerDashboard({
+export function CustomerDashboard({
   customer,
-  onAction,
   onBack,
+  onAction,
+  onEditCustomer,
 }: CustomerDashboardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const { data: insights, isLoading } = useQuery({
+  const { data: insights, isLoading: insightsLoading } = useQuery({
     queryKey: ["insights", customer.id],
     queryFn: () => salesApi.getInsights(customer.id),
-    staleTime: 2 * 60 * 1000,
   });
 
-  const actions: { key: Action; label: string; icon: React.ReactNode; color: string }[] = [
+  const { data: recentStatement, isLoading: statementLoading } = useQuery({
+    queryKey: ["statement", customer.id, "recent"],
+    queryFn: () => salesApi.getStatement(customer.id, { since_zero_balance: true }),
+  });
+
+  const recentEntries = recentStatement?.entries.slice(-3).reverse() ?? [];
+
+  const formatCurrency = (val: number) =>
+    Math.abs(val).toLocaleString(i18n.language === "ar" ? "ar-SA" : "en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString(
+      i18n.language === "ar" ? "ar-SA" : "en-US",
+      { month: "short", day: "numeric" }
+    );
+  };
+
+  const riskStatusVariant = (risk: string | undefined) => {
+    switch (risk) {
+      case "green":
+        return "online" as const;
+      case "yellow":
+        return "pending" as const;
+      case "red":
+        return "offline" as const;
+      default:
+        return "neutral" as const;
+    }
+  };
+
+  const riskLabel = (risk: string | undefined) => {
+    switch (risk) {
+      case "green":
+        return t("customer.riskLow");
+      case "yellow":
+        return t("customer.riskMedium");
+      case "red":
+        return t("customer.riskHigh");
+      default:
+        return "-";
+    }
+  };
+
+  const txTypeVariant = (type: string) => {
+    if (type === "Order") return "warning" as const;
+    if (type.startsWith("Payment")) return "success" as const;
+    if (type === "Check_Return") return "destructive" as const;
+    return "default" as const;
+  };
+
+  const txBadgeVariant = (type: string) => {
+    if (type === "Order") return "warning" as const;
+    if (type.startsWith("Payment")) return "success" as const;
+    if (type === "Check_Return") return "destructive" as const;
+    return "default" as const;
+  };
+
+  const actionCards: {
+    key: CustomerAction;
+    icon: typeof ShoppingCart;
+    label: string;
+    accent: string;
+    iconBg: string;
+  }[] = [
     {
       key: "order",
+      icon: ShoppingCart,
       label: t("actions.order"),
-      icon: <ShoppingCart className="h-6 w-6" />,
-      color: "bg-blue-50 text-blue-700",
+      accent: "hover:border-info/50",
+      iconBg: "bg-info/15 text-info",
     },
     {
-      key: "pay",
+      key: "payment",
+      icon: Banknote,
       label: t("actions.pay"),
-      icon: <Banknote className="h-6 w-6" />,
-      color: "bg-green-50 text-green-700",
+      accent: "hover:border-success/50",
+      iconBg: "bg-success/15 text-success",
     },
     {
       key: "statement",
+      icon: FileText,
       label: t("actions.statement"),
-      icon: <FileText className="h-6 w-6" />,
-      color: "bg-purple-50 text-purple-700",
+      accent: "hover:border-violet-500/50",
+      iconBg: "bg-violet-500/15 text-violet-400",
     },
     {
-      key: "returnedCheck",
+      key: "check",
+      icon: RotateCcw,
       label: t("actions.returnedCheck"),
-      icon: <AlertCircle className="h-6 w-6" />,
-      color: "bg-red-50 text-red-700",
+      accent: "hover:border-destructive/50",
+      iconBg: "bg-destructive/15 text-destructive",
     },
   ];
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-accent"
-        >
-          <ArrowRight className="h-5 w-5" />
-        </button>
-        <div>
-          <h2 className="text-lg font-bold">{customer.name}</h2>
-          <p className="text-sm text-muted-foreground">{customer.city}</p>
-        </div>
-      </div>
+    <div className="animate-fade-in">
+      <TopBar
+        title={customer.name}
+        subtitle={customer.city}
+        backButton={{ onBack }}
+        actions={
+          onEditCustomer && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEditCustomer(customer)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )
+        }
+      />
 
-      {/* Insights grid */}
-      {isLoading ? (
+      <div className="space-y-5 p-4">
+        {/* Insight Stats 2x2 */}
+        {insightsLoading ? (
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} variant="card" className="h-28" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard
+              variant="glass"
+              value={formatCurrency(insights?.total_debt ?? customer.balance)}
+              label={t("customer.totalDebt")}
+              icon={DollarSign}
+              className="animate-slide-up"
+              style={{ animationDelay: "0ms" }}
+            />
+            <StatCard
+              variant="glass"
+              value={
+                insights?.last_payment_amount
+                  ? formatCurrency(insights.last_payment_amount)
+                  : "-"
+              }
+              label={t("customer.lastCollection")}
+              icon={Calendar}
+              footer={
+                insights?.last_payment_date ? (
+                  <span className="text-caption text-muted-foreground">
+                    {formatDate(insights.last_payment_date)}
+                  </span>
+                ) : undefined
+              }
+              className="animate-slide-up"
+              style={{ animationDelay: "60ms" }}
+            />
+            <StatCard
+              variant="glass"
+              value={
+                insights?.avg_payment_interval_days
+                  ? `${insights.avg_payment_interval_days}`
+                  : "-"
+              }
+              label={t("customer.collectionFrequency")}
+              icon={Clock}
+              footer={
+                insights?.avg_payment_interval_days ? (
+                  <span className="text-caption text-muted-foreground">
+                    {t("customer.daysAverage")}
+                  </span>
+                ) : undefined
+              }
+              className="animate-slide-up"
+              style={{ animationDelay: "120ms" }}
+            />
+            <StatCard
+              variant="glass"
+              value={riskLabel(insights?.risk_score)}
+              label={t("customer.riskScore")}
+              icon={Shield}
+              footer={
+                <StatusIndicator
+                  variant={riskStatusVariant(insights?.risk_score)}
+                  label={riskLabel(insights?.risk_score)}
+                  size="sm"
+                />
+              }
+              className="animate-slide-up"
+              style={{ animationDelay: "180ms" }}
+            />
+          </div>
+        )}
+
+        {/* Action Cards 2x2 */}
         <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24" />
-          ))}
+          {actionCards.map((ac, idx) => {
+            const Icon = ac.icon;
+            return (
+              <Card
+                key={ac.key}
+                variant="interactive"
+                className={cn(
+                  "flex flex-col items-center justify-center gap-3 p-5 animate-scale-in",
+                  ac.accent
+                )}
+                style={{ animationDelay: `${idx * 60}ms` }}
+                onClick={() => onAction(ac.key)}
+              >
+                <div
+                  className={cn(
+                    "flex h-12 w-12 items-center justify-center rounded-xl",
+                    ac.iconBg
+                  )}
+                >
+                  <Icon className="h-6 w-6" />
+                </div>
+                <span className="text-body-sm font-medium text-foreground">
+                  {ac.label}
+                </span>
+              </Card>
+            );
+          })}
         </div>
-      ) : insights ? (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">
-              {t("customer.totalDebt")}
-            </p>
-            <p className="mt-1 text-xl font-bold text-destructive">
-              {Number(insights.total_debt).toLocaleString("ar-SA")}
-            </p>
+
+        {/* Recent Activity */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-h4 font-semibold text-foreground">
+              {t("customer.recentActivity")}
+            </h3>
+            <Button
+              variant="link"
+              size="sm"
+              onClick={() => onAction("statement")}
+              className="text-primary"
+            >
+              {t("actions.viewAll")}
+            </Button>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">
-              {t("customer.lastCollection")}
-            </p>
-            <p className="mt-1 text-sm font-semibold">
-              {insights.last_payment_date
-                ? new Date(insights.last_payment_date).toLocaleDateString("ar-SA")
-                : "—"}
-            </p>
-            {insights.last_payment_amount && (
-              <p className="text-xs text-muted-foreground">
-                {Number(insights.last_payment_amount).toLocaleString("ar-SA")}
-              </p>
-            )}
-          </div>
+          <Separator />
 
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">
-              {t("customer.collectionFrequency")}
+          {statementLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} variant="text" className="h-12" />
+              ))}
+            </div>
+          ) : recentEntries.length === 0 ? (
+            <p className="text-body-sm text-muted-foreground text-center py-6">
+              {t("statement.noTransactions")}
             </p>
-            <p className="mt-1 text-sm font-semibold">
-              {insights.avg_payment_interval_days != null
-                ? `${Math.round(insights.avg_payment_interval_days)} ${t("customer.daysAverage")}`
-                : "—"}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground mb-2">
-              {t("customer.balance")}
-            </p>
-            <RiskBadge score={insights.risk_score} />
-          </div>
+          ) : (
+            <Timeline>
+              {recentEntries.map((entry, idx) => {
+                const tx = entry.transaction;
+                return (
+                  <TimelineItem
+                    key={tx.id}
+                    variant={txTypeVariant(tx.type)}
+                    title={formatCurrency(Math.abs(tx.amount))}
+                    timestamp={formatDate(tx.created_at)}
+                    isLast={idx === recentEntries.length - 1}
+                  >
+                    <div className="mt-1 flex items-center gap-2">
+                      <Badge variant={txBadgeVariant(tx.type)} size="sm">
+                        {t(`statement.transactionTypes.${tx.type}`, tx.type)}
+                      </Badge>
+                      <span className="text-caption text-muted-foreground">
+                        {tx.amount >= 0 ? "+" : "-"}
+                        {formatCurrency(Math.abs(tx.amount))} {tx.currency}
+                      </span>
+                    </div>
+                  </TimelineItem>
+                );
+              })}
+            </Timeline>
+          )}
         </div>
-      ) : null}
-
-      {/* Action buttons */}
-      <div className="grid grid-cols-2 gap-3">
-        {actions.map(({ key, label, icon, color }) => (
-          <button
-            key={key}
-            onClick={() => onAction(key)}
-            className={`flex flex-col items-center justify-center gap-2 rounded-2xl p-5 font-semibold transition-transform active:scale-95 ${color}`}
-          >
-            {icon}
-            <span className="text-sm">{label}</span>
-          </button>
-        ))}
       </div>
     </div>
   );
