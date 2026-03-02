@@ -31,6 +31,26 @@ class CustomerService:
         self._transactions = transaction_repo
         self._cache = cache
 
+    async def create_customer(self, data, user_id: uuid.UUID):
+        customer_dict = data.model_dump()
+        customer_dict["assigned_to"] = user_id
+        return await self._customers.create(customer_dict)
+
+    async def update_customer(
+        self, customer_id: uuid.UUID, data, user_id: uuid.UUID, role: str
+    ):
+        if role == "Sales":
+            customer = await self._customers.get_by_id(customer_id)
+            if not customer or customer.assigned_to != user_id:
+                raise HorizonException(403, "Cannot edit this customer")
+        updated = await self._customers.update(
+            customer_id, data.model_dump(exclude_none=True)
+        )
+        if not updated:
+            raise HorizonException(404, "Customer not found")
+        await self._cache.invalidate_prefix("route:")
+        return updated
+
     async def get_route(self, user_id: str) -> list[CustomerOut]:
         cache_key = f"route:{user_id}"
         cached = await self._cache.get(cache_key)

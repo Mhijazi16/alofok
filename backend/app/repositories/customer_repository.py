@@ -26,5 +26,26 @@ class CustomerRepository:
         )
         return list(result.scalars().all())
 
+    async def create(self, data: dict) -> Customer:
+        customer = Customer(**data)
+        self._db.add(customer)
+        await self._db.commit()
+        await self._db.refresh(customer)
+        return customer
+
+    async def update(self, customer_id, data: dict) -> Customer | None:
+        stmt = select(Customer).where(
+            Customer.id == customer_id, Customer.is_deleted.is_(False)
+        )
+        result = await self._db.execute(stmt)
+        customer = result.scalar_one_or_none()
+        if not customer:
+            return None
+        for k, v in data.items():
+            setattr(customer, k, v)
+        await self._db.commit()
+        await self._db.refresh(customer)
+        return customer
+
     async def update_balance(self, customer: Customer) -> None:
         await self._db.flush()  # persist balance change within the current transaction
