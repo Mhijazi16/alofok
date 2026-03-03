@@ -5,7 +5,7 @@ from app.core.errors import HorizonException
 from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
-from app.schemas.transaction import OrderCreate, TransactionOut
+from app.schemas.transaction import OrderCreate, OrderUpdate, TransactionOut
 
 
 class OrderService:
@@ -79,4 +79,69 @@ class OrderService:
         customer.balance += total
         await self._customers.update_balance(customer)
         txn = await self._transactions.create(txn)
+        return TransactionOut.model_validate(txn)
+
+    async def update_order(
+        self,
+        order_id: uuid.UUID,
+        updater_id: uuid.UUID,
+        body: OrderUpdate,
+    ) -> TransactionOut:
+        """Update an existing order (items, customer, delivery_date, notes).
+        Only undelivered orders can be updated."""
+        txn = await self._transactions.get_by_id(order_id)
+        if txn is None:
+            raise HorizonException(404, "Order not found")
+        if txn.delivered_date is not None:
+            raise HorizonException(400, "Cannot edit delivered orders")
+        if txn.type != TransactionType.Order:
+            raise HorizonException(400, "Can only update orders")
+
+        # Get old customer for balance adjustment
+        old_customer = await self._customers.get_by_id(txn.customer_id)
+        if old_customer is None:
+            raise HorizonException(404, "Customer not found")
+
+        old_amount = txn.amount
+
+        # Update customer if provided
+        if body.customer_id:
+            new_customer = await self._customers.get_by_id(body.customer_id)
+            if new_customer is None:
+                raise HorizonException(404, "New customer not found")
+            txn.customer_id = body.customer_id
+        else:
+            new_customer = old_customer
+
+        # Update items and recalculate amount
+        if body.items:
+            total = sum(
+                Decimal(str(item.get("quantity", 1)))
+                * Decimal(str(item.get("unit_price", "0")))
+                for item in body.items
+            )
+            txn.amount = total
+            txn.data = {"items": body.items}
+
+        # Update other fields
+        if body.delivery_date is not None:
+            txn.delivery_date = body.delivery_date
+        if body.notes is not None:
+            txn.notes = body.notes
+
+        # Adjust balances
+        balance_diff = txn.amount - old_amount
+
+        # If customer changed
+        if txn.customer_id != old_customer.id:
+            old_customer.balance -= old_amount
+            new_customer.balance += txn.amount
+            await self._customers.update_balance(old_customer)
+            await self._customers.update_balance(new_customer)
+        else:
+            # Same customer, just adjust the difference
+            new_customer.balance += balance_diff
+            await self._customers.update_balance(new_customer)
+
+        txn = await self._transactions.update(txn)
         return TransactionOut.model_validate(txn)

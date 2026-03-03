@@ -47,6 +47,13 @@ class OrderCreate(BaseModel):
     delivery_date: date | None = None
 
 
+class OrderUpdate(BaseModel):
+    customer_id: uuid.UUID | None = None
+    items: list[dict] | None = None
+    delivery_date: date | None = None
+    notes: str | None = None
+
+
 class PaymentCreate(BaseModel):
     customer_id: uuid.UUID
     type: TransactionType  # Payment_Cash or Payment_Check
