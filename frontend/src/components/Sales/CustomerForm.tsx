@@ -133,6 +133,9 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
   const handleSubmit = async () => {
     if (!isValid || isPending) return;
 
+    // Ensure avatar_url is always set (fallback to name if seed is empty)
+    const finalAvatarSeed = avatarSeed.trim() || name.trim() || "default";
+
     const payload = {
       name: name.trim(),
       phone: phone.trim() || null,
@@ -141,7 +144,7 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
       notes: notes.trim() || null,
       latitude: position?.[0] ?? null,
       longitude: position?.[1] ?? null,
-      avatar_url: "dicebear:" + avatarSeed,
+      avatar_url: `dicebear:${finalAvatarSeed}`,
     };
 
     if (isEdit) {
