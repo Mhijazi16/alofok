@@ -300,8 +300,12 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                       <Card
                         key={order.id}
                         variant="glass"
-                        className="animate-slide-up overflow-hidden p-0"
+                        className="animate-slide-up overflow-hidden p-0 cursor-pointer"
                         style={{ animationDelay: `${idx * 50}ms` }}
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setOrderModalOpen(true);
+                        }}
                       >
                         {/* Accent stripe */}
                         <div className="flex">
@@ -376,8 +380,12 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                         <Card
                           key={order.id}
                           variant="glass"
-                          className="animate-slide-up overflow-hidden p-0"
+                          className="animate-slide-up overflow-hidden p-0 cursor-pointer"
                           style={{ animationDelay: `${idx * 50}ms` }}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setOrderModalOpen(true);
+                          }}
                         >
                           {/* Accent stripe */}
                           <div className="flex">
@@ -428,6 +436,7 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
           <Plus className="h-6 w-6" />
         </button>
       )}
+
     </div>
   );
 }
