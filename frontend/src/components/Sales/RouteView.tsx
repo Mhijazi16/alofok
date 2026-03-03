@@ -263,7 +263,7 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                     onClick={() => onSelectCustomer(customer)}
                   >
                     <div className="flex items-center gap-3">
-                      <Avatar name={customer.name} size="md" />
+                      <Avatar src={customer.avatar_url ?? undefined} name={customer.name} size="md" />
                       <div className="min-w-0 flex-1">
                         <p className="text-h4 font-semibold text-foreground truncate">
                           {customer.name}
