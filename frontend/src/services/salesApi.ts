@@ -188,6 +188,17 @@ export const salesApi = {
       })
       .then((r) => r.data),
 
+  updateOrder: (id: string, payload: {
+    customer_id?: string;
+    items?: OrderItem[];
+    delivery_date?: string | null;
+    notes?: string;
+  }) =>
+    api.put<Transaction>(`/orders/${id}`, payload).then((r) => r.data),
+
+  confirmOrderDelivery: (id: string) =>
+    api.put<Transaction>(`/orders/${id}/deliver`).then((r) => r.data),
+
   createCustomer: (body: CustomerCreate) =>
     api.post<Customer>("/customers", body).then((r) => r.data),
 
