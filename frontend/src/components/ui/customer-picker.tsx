@@ -45,7 +45,7 @@ export function CustomerPicker({
         <div className="flex items-center gap-3">
           {value ? (
             <>
-              <Avatar name={value.name} size="sm" />
+              <Avatar src={value.avatar_url ?? undefined} name={value.name} size="sm" />
               <div className="min-w-0 flex-1">
                 <p className="text-body-sm font-semibold text-foreground">
                   {value.name}
@@ -89,7 +89,7 @@ export function CustomerPicker({
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar name={customer.name} size="sm" />
+                    <Avatar src={customer.avatar_url ?? undefined} name={customer.name} size="sm" />
                     <div className="min-w-0 flex-1">
                       <p className="text-body-sm font-semibold text-foreground">
                         {customer.name}

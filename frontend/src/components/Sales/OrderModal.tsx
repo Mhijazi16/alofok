@@ -24,7 +24,6 @@ interface OrderModalProps {
   order: OrderWithCustomer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onDeliveryConfirmed?: () => void;
 }
 
 const formatCurrency = (val: number) =>
@@ -34,7 +33,6 @@ export function OrderModal({
   order,
   open,
   onOpenChange,
-  onDeliveryConfirmed,
 }: OrderModalProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -79,20 +77,6 @@ export function OrderModal({
     },
   });
 
-  // Delivery mutation
-  const deliveryMutation = useMutation({
-    mutationFn: () => salesApi.confirmOrderDelivery(order!.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
-      toast({ title: t("toast.success"), variant: "success" });
-      onOpenChange(false);
-      onDeliveryConfirmed?.();
-    },
-    onError: () => {
-      toast({ title: t("toast.error"), variant: "error" });
-    },
-  });
 
   const handleSaveChanges = async () => {
     if (!order || !editItems.length) {
@@ -112,16 +96,6 @@ export function OrderModal({
     updateMutation.mutate(payload);
   };
 
-  const handleConfirmDelivery = () => {
-    if (
-      window.confirm(
-        t("order.confirmDeliveryMessage") ||
-          "Mark this order as delivered? (Cannot be edited after)"
-      )
-    ) {
-      deliveryMutation.mutate();
-    }
-  };
 
   if (!order) return null;
 
@@ -315,13 +289,6 @@ export function OrderModal({
                   {t("actions.save")}
                 </Button>
               )}
-              <Button
-                variant="outline"
-                onClick={handleConfirmDelivery}
-                isLoading={deliveryMutation.isPending}
-              >
-                {t("order.confirmDelivery")}
-              </Button>
             </>
           )}
         </DialogFooter>

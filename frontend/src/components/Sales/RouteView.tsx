@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Users,
   TrendingDown,
@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Clock,
   Receipt,
+  Check,
 } from "lucide-react";
 import { salesApi, type Customer, type OrderWithCustomer } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
@@ -22,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/useToast";
 import { OrderModal } from "./OrderModal";
 
 interface RouteViewProps {
@@ -63,6 +66,8 @@ const formatCurrency = (val: number) =>
 export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedDay, setSelectedDay] = useState(getTodayCode);
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
@@ -97,6 +102,30 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
     queryKey: ["unassigned-orders", selectedDate, selectedDay],
     queryFn: () => salesApi.getUnassignedOrders(selectedDate, selectedDay),
   });
+
+  // Delivery confirmation mutation
+  const deliveryMutation = useMutation({
+    mutationFn: (orderId: string) => salesApi.confirmOrderDelivery(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      toast({ title: t("toast.success"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const handleConfirmDelivery = (order: OrderWithCustomer) => {
+    if (
+      window.confirm(
+        t("order.confirmDeliveryMessage") ||
+          "Mark this order as delivered? (Cannot be edited after)"
+      )
+    ) {
+      deliveryMutation.mutate(order.id);
+    }
+  };
 
   const filtered = useMemo(() => {
     if (!customers) return [];
@@ -299,22 +328,26 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                       ? (order.data.items as unknown[]).length
                       : 0;
 
+                    const isDelivered = !!(order as any).delivered_date;
+
                     return (
                       <Card
                         key={order.id}
                         variant="glass"
-                        className="animate-slide-up overflow-hidden p-0 cursor-pointer"
+                        className="animate-slide-up overflow-hidden p-0"
                         style={{ animationDelay: `${idx * 50}ms` }}
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setOrderModalOpen(true);
-                        }}
                       >
                         {/* Accent stripe */}
                         <div className="flex">
                           <div className="w-1 shrink-0 bg-primary/60 rounded-s-xl" />
                           <div className="flex-1 p-3">
-                            <div className="flex items-center justify-between gap-3">
+                            <div
+                              className="flex items-center justify-between gap-3 cursor-pointer"
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setOrderModalOpen(true);
+                              }}
+                            >
                               <div className="min-w-0 flex-1">
                                 <p className="text-body-sm font-semibold text-foreground truncate">
                                   {order.customer_name}
@@ -334,10 +367,32 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                                   )}
                                 </div>
                               </div>
-                              <Badge variant="success" className="font-mono tabular-nums">
-                                {formatCurrency(order.amount)}
-                              </Badge>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <Badge variant="success" className="font-mono tabular-nums">
+                                  {formatCurrency(order.amount)}
+                                </Badge>
+                                {isDelivered && (
+                                  <Badge variant="success" className="flex items-center gap-1">
+                                    <Check className="h-3 w-3" />
+                                    {t("order.delivered")}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
+                            {!isDelivered && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full mt-3"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleConfirmDelivery(order);
+                                }}
+                                isLoading={deliveryMutation.isPending}
+                              >
+                                {t("order.confirmDelivery")}
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </Card>
@@ -379,22 +434,26 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                         ? (order.data.items as unknown[]).length
                         : 0;
 
+                      const isDelivered = !!(order as any).delivered_date;
+
                       return (
                         <Card
                           key={order.id}
                           variant="glass"
-                          className="animate-slide-up overflow-hidden p-0 cursor-pointer"
+                          className="animate-slide-up overflow-hidden p-0"
                           style={{ animationDelay: `${idx * 50}ms` }}
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setOrderModalOpen(true);
-                          }}
                         >
                           {/* Accent stripe */}
                           <div className="flex">
                             <div className="w-1 shrink-0 bg-amber-500/60 rounded-s-xl" />
                             <div className="flex-1 p-3">
-                              <div className="flex items-center justify-between gap-3">
+                              <div
+                                className="flex items-center justify-between gap-3 cursor-pointer"
+                                onClick={() => {
+                                  setSelectedOrder(order);
+                                  setOrderModalOpen(true);
+                                }}
+                              >
                                 <div className="min-w-0 flex-1">
                                   <p className="text-body-sm font-semibold text-foreground truncate">
                                     {order.customer_name}
@@ -414,10 +473,32 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                                     )}
                                   </div>
                                 </div>
-                                <Badge variant="warning" className="font-mono tabular-nums">
-                                  {formatCurrency(order.amount)}
-                                </Badge>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <Badge variant="warning" className="font-mono tabular-nums">
+                                    {formatCurrency(order.amount)}
+                                  </Badge>
+                                  {isDelivered && (
+                                    <Badge variant="success" className="flex items-center gap-1">
+                                      <Check className="h-3 w-3" />
+                                      {t("order.delivered")}
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
+                              {!isDelivered && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full mt-3"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleConfirmDelivery(order);
+                                  }}
+                                  isLoading={deliveryMutation.isPending}
+                                >
+                                  {t("order.confirmDelivery")}
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </Card>
