@@ -1,173 +1,200 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
+import { FileText } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
+import { TopBar } from "@/components/ui/top-bar";
+import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Timeline, TimelineItem } from "@/components/ui/timeline";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type Preset = "sinceZero" | "lastWeek" | "lastMonth" | "lastYear";
+type FilterPreset = "zero" | "week" | "month" | "year";
 
 interface StatementViewProps {
   customer: Customer;
   onBack: () => void;
 }
 
-function dateRange(preset: Preset): {
-  since_zero_balance?: boolean;
-  start_date?: string;
-  end_date?: string;
-} {
-  const today = new Date();
-  const iso = (d: Date) => d.toISOString().split("T")[0];
-
-  if (preset === "sinceZero") return { since_zero_balance: true };
-  if (preset === "lastWeek") {
-    const d = new Date(today);
-    d.setDate(d.getDate() - 7);
-    return { start_date: iso(d), end_date: iso(today) };
-  }
-  if (preset === "lastMonth") {
-    const d = new Date(today);
-    d.setMonth(d.getMonth() - 1);
-    return { start_date: iso(d), end_date: iso(today) };
-  }
-  // lastYear
-  const d = new Date(today);
-  d.setFullYear(d.getFullYear() - 1);
-  return { start_date: iso(d), end_date: iso(today) };
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  Order: "طلب",
-  Payment_Cash: "نقدي",
-  Payment_Check: "شيك",
-  Check_Return: "شيك مرتجع",
-};
-
-export default function StatementView({
-  customer,
-  onBack,
-}: StatementViewProps) {
+export function StatementView({ customer, onBack }: StatementViewProps) {
   const { t } = useTranslation();
-  const [preset, setPreset] = useState<Preset>("sinceZero");
+  const [preset, setPreset] = useState<FilterPreset>("zero");
 
-  const params = dateRange(preset);
+  const queryParams = useMemo(() => {
+    const now = new Date();
+    switch (preset) {
+      case "zero":
+        return { since_zero_balance: true };
+      case "week": {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 7);
+        return { start_date: d.toISOString().split("T")[0] };
+      }
+      case "month": {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() - 1);
+        return { start_date: d.toISOString().split("T")[0] };
+      }
+      case "year": {
+        const d = new Date(now);
+        d.setFullYear(d.getFullYear() - 1);
+        return { start_date: d.toISOString().split("T")[0] };
+      }
+    }
+  }, [preset]);
 
   const { data: statement, isLoading } = useQuery({
     queryKey: ["statement", customer.id, preset],
-    queryFn: () => salesApi.getStatement(customer.id, params),
+    queryFn: () => salesApi.getStatement(customer.id, queryParams),
   });
 
-  const presets: { key: Preset; label: string }[] = [
-    { key: "sinceZero", label: t("statement.sinceZero") },
-    { key: "lastWeek", label: t("statement.lastWeek") },
-    { key: "lastMonth", label: t("statement.lastMonth") },
-    { key: "lastYear", label: t("statement.lastYear") },
-  ];
+  const entries = statement?.entries ?? [];
+  const closingBalance = statement?.closing_balance ?? customer.balance;
+
+  const openingBalance = useMemo(() => {
+    if (entries.length === 0) return closingBalance;
+    const first = entries[0];
+    return first.running_balance - first.transaction.amount;
+  }, [entries, closingBalance]);
+
+  const formatCurrency = (val: number) =>
+    val.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+  const formatTime = (dateStr: string) =>
+    new Date(dateStr).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  const txTypeVariant = (type: string) => {
+    if (type === "Order") return "warning" as const;
+    if (type.startsWith("Payment")) return "success" as const;
+    if (type === "Check_Return") return "destructive" as const;
+    return "default" as const;
+  };
+
+  const txBadgeVariant = (type: string) => {
+    if (type === "Order") return "warning" as const;
+    if (type.startsWith("Payment")) return "success" as const;
+    if (type === "Check_Return") return "destructive" as const;
+    return "default" as const;
+  };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border">
-        <button
-          onClick={onBack}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-accent"
+    <div className="animate-fade-in">
+      <TopBar
+        title={t("statement.title")}
+        subtitle={customer.name}
+        backButton={{ onBack }}
+      />
+
+      <div className="space-y-4 p-4">
+        {/* Preset Filters */}
+        <Tabs
+          value={preset}
+          onValueChange={(v) => setPreset(v as FilterPreset)}
         >
-          <ArrowRight className="h-5 w-5" />
-        </button>
-        <div>
-          <h2 className="text-lg font-bold">{t("statement.title")}</h2>
-          <p className="text-sm text-muted-foreground">{customer.name}</p>
-        </div>
-      </div>
+          <TabsList variant="pills" className="w-full flex-wrap gap-1.5">
+            <TabsTrigger value="zero">{t("statement.sinceZero")}</TabsTrigger>
+            <TabsTrigger value="week">{t("statement.lastWeek")}</TabsTrigger>
+            <TabsTrigger value="month">{t("statement.lastMonth")}</TabsTrigger>
+            <TabsTrigger value="year">{t("statement.lastYear")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
-      {/* Preset selector */}
-      <div className="flex gap-2 overflow-x-auto px-4 py-3 border-b border-border">
-        {presets.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setPreset(key)}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-              preset === key
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+        {/* Opening Balance */}
+        <StatCard
+          variant="glass"
+          value={formatCurrency(openingBalance)}
+          label={t("statement.openingBalance")}
+          icon={FileText}
+          className="animate-slide-up"
+        />
 
-      {/* Entries */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+        {/* Transactions Timeline */}
         {isLoading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))
-        ) : !statement?.entries.length ? (
-          <p className="text-center text-muted-foreground py-8">
-            لا توجد معاملات
-          </p>
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} variant="text" className="h-16" />
+            ))}
+          </div>
+        ) : entries.length === 0 ? (
+          <EmptyState
+            preset="no-data"
+            title={t("statement.noTransactions")}
+          />
         ) : (
-          statement.entries.map(({ transaction: tx, running_balance }) => {
-            const isDebit = Number(tx.amount) > 0;
-            return (
-              <div
-                key={tx.id}
-                className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3"
-              >
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        tx.type === "Check_Return"
-                          ? "danger"
-                          : isDebit
-                          ? "warning"
-                          : "success"
-                      }
-                    >
-                      {TYPE_LABELS[tx.type] ?? tx.type}
-                    </Badge>
-                    {tx.status === "Returned" && (
-                      <Badge variant="danger">مرتجع</Badge>
+          <Timeline>
+            {entries.map((entry, idx) => {
+              const tx = entry.transaction;
+              const amountSign = tx.amount >= 0 ? "+" : "";
+
+              return (
+                <TimelineItem
+                  key={tx.id}
+                  variant={txTypeVariant(tx.type)}
+                  title={`${amountSign}${formatCurrency(tx.amount)}`}
+                  timestamp={formatDate(tx.created_at)}
+                  isLast={idx === entries.length - 1}
+                  className="animate-slide-up"
+                  style={{ animationDelay: `${idx * 40}ms` }}
+                >
+                  <div className="mt-1 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={txBadgeVariant(tx.type)} size="sm">
+                        {t(
+                          `statement.transactionTypes.${tx.type}`,
+                          tx.type
+                        )}
+                      </Badge>
+                      <Badge variant="outline" size="sm">
+                        {tx.currency}
+                      </Badge>
+                      <span className="text-caption text-muted-foreground">
+                        {formatTime(tx.created_at)}
+                      </span>
+                    </div>
+                    <p className="text-caption text-muted-foreground">
+                      {t("statement.runningBalance")}:{" "}
+                      <span className="font-medium text-foreground">
+                        {formatCurrency(entry.running_balance)}
+                      </span>
+                    </p>
+                    {tx.notes && (
+                      <p className="text-caption text-muted-foreground italic">
+                        {tx.notes}
+                      </p>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(tx.created_at).toLocaleDateString("ar-SA")}
-                  </p>
-                </div>
+                </TimelineItem>
+              );
+            })}
+          </Timeline>
+        )}
 
-                <div className="text-end">
-                  <p
-                    className={`font-bold ${
-                      isDebit ? "text-destructive" : "text-green-600"
-                    }`}
-                  >
-                    {isDebit ? "+" : ""}
-                    {Number(tx.amount).toLocaleString("ar-SA")} {tx.currency}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("statement.runningBalance")}:{" "}
-                    {Number(running_balance).toLocaleString("ar-SA")}
-                  </p>
-                </div>
-              </div>
-            );
-          })
+        {/* Closing Balance */}
+        {!isLoading && entries.length > 0 && (
+          <StatCard
+            variant="gradient"
+            value={formatCurrency(closingBalance)}
+            label={t("statement.closingBalance")}
+            icon={FileText}
+            className="animate-slide-up"
+          />
         )}
       </div>
-
-      {/* Closing balance footer */}
-      {statement && (
-        <div className="border-t border-border p-4 flex justify-between">
-          <span className="font-semibold">{t("customer.balance")}</span>
-          <span className="font-bold text-destructive text-lg">
-            {Number(statement.closing_balance).toLocaleString("ar-SA")}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

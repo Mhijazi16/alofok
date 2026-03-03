@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,8 +57,101 @@ class TransactionRepository:
         result = await self._db.execute(query)
         return list(result.scalars().all())
 
+    async def get_orders_by_rep(
+        self,
+        rep_id: uuid.UUID,
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ) -> list[Transaction]:
+        query = (
+            select(Transaction)
+            .where(
+                Transaction.created_by == rep_id,
+                Transaction.type == TransactionType.Order,
+                Transaction.is_deleted.is_(False),
+                Transaction.is_draft.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        if start:
+            query = query.where(Transaction.created_at >= start)
+        if end:
+            query = query.where(Transaction.created_at < end)
+        result = await self._db.execute(query)
+        return list(result.scalars().all())
+
+    async def get_orders_by_delivery_date(
+        self, rep_id: uuid.UUID, delivery: date
+    ) -> list[Transaction]:
+        result = await self._db.execute(
+            select(Transaction)
+            .where(
+                Transaction.created_by == rep_id,
+                Transaction.type == TransactionType.Order,
+                Transaction.delivery_date == delivery,
+                Transaction.is_deleted.is_(False),
+                Transaction.is_draft.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        return list(result.scalars().all())
+
+    async def get_unassigned_orders_by_delivery_date(
+        self, rep_id: uuid.UUID, delivery: date, assigned_day: str
+    ) -> list[Transaction]:
+        """Get orders with delivery_date = delivery from customers NOT assigned to assigned_day"""
+        from app.models.customer import Customer
+
+        result = await self._db.execute(
+            select(Transaction)
+            .join(Customer, Transaction.customer_id == Customer.id)
+            .where(
+                Transaction.created_by == rep_id,
+                Transaction.type == TransactionType.Order,
+                Transaction.delivery_date == delivery,
+                Customer.assigned_day != assigned_day,
+                Transaction.is_deleted.is_(False),
+                Transaction.is_draft.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        return list(result.scalars().all())
+
     async def create(self, txn: Transaction) -> Transaction:
         self._db.add(txn)
+        await self._db.commit()
+        await self._db.refresh(txn)
+        return txn
+
+    async def get_orders_for_customer(
+        self, customer_id: uuid.UUID
+    ) -> list[Transaction]:
+        result = await self._db.execute(
+            select(Transaction)
+            .where(
+                Transaction.customer_id == customer_id,
+                Transaction.type == TransactionType.Order,
+                Transaction.is_deleted.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        return list(result.scalars().all())
+
+    async def get_drafts_for_customer(
+        self, customer_id: uuid.UUID
+    ) -> list[Transaction]:
+        result = await self._db.execute(
+            select(Transaction)
+            .where(
+                Transaction.customer_id == customer_id,
+                Transaction.is_draft.is_(True),
+                Transaction.is_deleted.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        return list(result.scalars().all())
+
+    async def update(self, txn: Transaction) -> Transaction:
         await self._db.commit()
         await self._db.refresh(txn)
         return txn

@@ -13,7 +13,8 @@ from app.schemas.customer import (
     CustomerOut,
     CustomerUpdate,
 )
-from app.schemas.transaction import StatementOut
+from app.models.customer import AssignedDay
+from app.schemas.transaction import OrderWithCustomerOut, StatementOut, TransactionOut
 
 router = APIRouter()
 
@@ -30,7 +31,7 @@ async def upload_avatar(file: UploadFile):
 
 
 @router.post(
-    "/", response_model=CustomerOut, status_code=201, dependencies=[require_sales]
+    "", response_model=CustomerOut, status_code=201, dependencies=[require_sales]
 )
 async def create_customer(
     body: CustomerCreate, current_user: CurrentUser, service: CustomerSvc
@@ -57,6 +58,70 @@ async def my_route(
     return await service.get_route(current_user["sub"])
 
 
+@router.get(
+    "/by-day/{day}",
+    response_model=list[CustomerOut],
+    dependencies=[require_sales],
+)
+async def customers_by_day(
+    day: AssignedDay, current_user: CurrentUser, service: CustomerSvc
+) -> list[CustomerOut]:
+    return await service.get_route_by_day(UUID(current_user["sub"]), day)
+
+
+@router.get(
+    "/my-customers",
+    response_model=list[CustomerOut],
+    dependencies=[require_sales],
+)
+async def my_customers(
+    current_user: CurrentUser, service: CustomerSvc
+) -> list[CustomerOut]:
+    return await service.get_all_customers(UUID(current_user["sub"]))
+
+
+@router.get(
+    "/my-orders-today",
+    response_model=list[OrderWithCustomerOut],
+    dependencies=[require_sales],
+)
+async def my_orders_today(
+    current_user: CurrentUser, service: CustomerSvc
+) -> list[OrderWithCustomerOut]:
+    return await service.get_my_orders_today(UUID(current_user["sub"]))
+
+
+@router.get(
+    "/route-orders",
+    response_model=list[OrderWithCustomerOut],
+    dependencies=[require_sales],
+)
+async def route_orders(
+    current_user: CurrentUser,
+    service: CustomerSvc,
+    delivery_date: date = Query(...),
+) -> list[OrderWithCustomerOut]:
+    return await service.get_orders_by_delivery_date(
+        UUID(current_user["sub"]), delivery_date
+    )
+
+
+@router.get(
+    "/unassigned-orders",
+    response_model=list[OrderWithCustomerOut],
+    dependencies=[require_sales],
+)
+async def unassigned_orders(
+    current_user: CurrentUser,
+    service: CustomerSvc,
+    delivery_date: date = Query(...),
+    assigned_day: str = Query(...),
+) -> list[OrderWithCustomerOut]:
+    return await service.get_unassigned_orders_by_delivery_date(
+        UUID(current_user["sub"]), delivery_date, assigned_day
+    )
+
+
 @router.get("/{customer_id}/insights", response_model=CustomerInsightsOut)
 async def customer_insights(
     customer_id: uuid.UUID, service: CustomerSvc
@@ -75,3 +140,14 @@ async def customer_statement(
     return await service.get_statement(
         customer_id, start_date, end_date, since_zero_balance
     )
+
+
+@router.get(
+    "/{customer_id}/drafts",
+    response_model=list[TransactionOut],
+    dependencies=[require_sales],
+)
+async def customer_drafts(
+    customer_id: uuid.UUID, service: CustomerSvc
+) -> list[TransactionOut]:
+    return await service.get_draft_orders(customer_id)

@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE =
+  import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000`;
 
 export function getImageUrl(path: string | null | undefined): string | null {
   if (!path) return null;

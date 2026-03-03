@@ -9,9 +9,39 @@ import { useToast } from "@/hooks/useToast";
 import { TopBar } from "@/components/ui/top-bar";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileUpload } from "@/components/ui/file-upload";
+import { Switch } from "@/components/ui/switch";
+
+const PALESTINIAN_CITIES = [
+  { ar: "الخليل", en: "Hebron" },
+  { ar: "رام الله والبيرة", en: "Ramallah & Al-Bireh" },
+  { ar: "نابلس", en: "Nablus" },
+  { ar: "بيت لحم", en: "Bethlehem" },
+  { ar: "القدس", en: "Jerusalem" },
+  { ar: "أريحا", en: "Jericho" },
+  { ar: "جنين", en: "Jenin" },
+  { ar: "طولكرم", en: "Tulkarm" },
+  { ar: "قلقيلية", en: "Qalqilya" },
+  { ar: "سلفيت", en: "Salfit" },
+  { ar: "طوباس", en: "Tubas" },
+  { ar: "غزة", en: "Gaza" },
+  { ar: "خان يونس", en: "Khan Yunis" },
+  { ar: "رفح", en: "Rafah" },
+  { ar: "دير البلح", en: "Deir al-Balah" },
+  { ar: "شمال غزة", en: "North Gaza" },
+];
+import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Button } from "@/components/ui/button";
+
+const VISIT_DAYS = [
+  { value: "Sun", ar: "الأحد", en: "Sunday" },
+  { value: "Mon", ar: "الاثنين", en: "Monday" },
+  { value: "Tue", ar: "الثلاثاء", en: "Tuesday" },
+  { value: "Wed", ar: "الأربعاء", en: "Wednesday" },
+  { value: "Thu", ar: "الخميس", en: "Thursday" },
+  { value: "Sat", ar: "السبت", en: "Saturday" },
+];
 
 // Fix Leaflet default marker icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -44,7 +74,7 @@ interface CustomerFormProps {
 }
 
 export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -55,12 +85,19 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
   const [city, setCity] = useState(customer?.city ?? "");
   const [address, setAddress] = useState(customer?.address ?? "");
   const [notes, setNotes] = useState(customer?.notes ?? "");
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarSeed, setAvatarSeed] = useState(
+    customer?.avatar_url?.startsWith("dicebear:")
+      ? customer.avatar_url.slice(9)
+      : customer?.name ?? ""
+  );
   const [position, setPosition] = useState<[number, number] | null>(
     customer?.latitude != null && customer?.longitude != null
       ? [customer.latitude, customer.longitude]
       : null
   );
+  const [assignedDay, setAssignedDay] = useState(customer?.assigned_day ?? "");
+  const [portalEnabled, setPortalEnabled] = useState(false);
+  const [portalPassword, setPortalPassword] = useState("");
 
   const createMutation = useMutation({
     mutationFn: salesApi.createCustomer,
@@ -87,31 +124,14 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
     },
   });
 
-  const uploadMutation = useMutation({
-    mutationFn: salesApi.uploadAvatar,
-  });
-
   const isPending =
     createMutation.isPending ||
-    updateMutation.isPending ||
-    uploadMutation.isPending;
+    updateMutation.isPending;
 
-  const isValid = name.trim().length > 0;
+  const isValid = name.trim().length > 0 && (isEdit || assignedDay.length > 0);
 
   const handleSubmit = async () => {
     if (!isValid || isPending) return;
-
-    let avatarUrl: string | undefined;
-
-    if (avatarFile) {
-      try {
-        const result = await uploadMutation.mutateAsync(avatarFile);
-        avatarUrl = result.url;
-      } catch {
-        toast({ title: t("toast.error"), variant: "error" });
-        return;
-      }
-    }
 
     const payload = {
       name: name.trim(),
@@ -121,17 +141,16 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
       notes: notes.trim() || null,
       latitude: position?.[0] ?? null,
       longitude: position?.[1] ?? null,
-      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+      avatar_url: "dicebear:" + avatarSeed,
     };
 
     if (isEdit) {
-      updateMutation.mutate(payload);
+      updateMutation.mutate({ ...payload, ...(assignedDay ? { assigned_day: assignedDay } : {}) });
     } else {
       createMutation.mutate({
         ...payload,
-        assigned_day: new Date()
-          .toLocaleDateString("en-US", { weekday: "long" })
-          .toLowerCase(),
+        assigned_day: assignedDay,
+        portal_password: portalEnabled && portalPassword.trim() ? portalPassword.trim() : null,
       });
     }
   };
@@ -144,6 +163,11 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
       />
 
       <div className="space-y-5 p-4">
+        {/* Avatar Picker */}
+        <div className="flex justify-center">
+          <AvatarPicker currentSeed={avatarSeed} onSelect={setAvatarSeed} />
+        </div>
+
         {/* Name */}
         <FormField label={t("customer.customerDetails")} required>
           <Input
@@ -165,11 +189,32 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
 
         {/* City */}
         <FormField label={t("customer.city")}>
-          <Input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder={t("customer.city")}
-          />
+          <Select value={city} onValueChange={setCity}>
+            <SelectTrigger>
+              <SelectValue placeholder={t("customer.city")} />
+            </SelectTrigger>
+            <SelectContent>
+              {PALESTINIAN_CITIES.map((c) => (
+                <SelectItem key={c.ar} value={c.ar}>{i18n.language === "ar" ? c.ar : `${c.en} — ${c.ar}`}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+
+        {/* Visit Day */}
+        <FormField label={t("customer.assignedDay")} required={!isEdit}>
+          <Select value={assignedDay} onValueChange={setAssignedDay}>
+            <SelectTrigger>
+              <SelectValue placeholder={t("customer.assignedDay")} />
+            </SelectTrigger>
+            <SelectContent>
+              {VISIT_DAYS.map((d) => (
+                <SelectItem key={d.value} value={d.value}>
+                  {i18n.language === "ar" ? d.ar : d.en}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FormField>
 
         {/* Address */}
@@ -191,15 +236,32 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
           />
         </FormField>
 
-        {/* Avatar Upload */}
-        <FormField label={t("customer.avatar")}>
-          <FileUpload
-            accept="image/*"
-            maxSize={5 * 1024 * 1024}
-            onUpload={(file) => setAvatarFile(file)}
-            isUploading={uploadMutation.isPending}
-          />
-        </FormField>
+        {/* Portal Account (create only) */}
+        {!isEdit && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-xl border border-border/50 bg-card/50 p-4">
+              <div>
+                <p className="text-body-sm font-medium text-foreground">
+                  {t("portal.activateAccount")}
+                </p>
+                <p className="text-caption text-muted-foreground">
+                  {t("portal.activateAccountDesc")}
+                </p>
+              </div>
+              <Switch checked={portalEnabled} onCheckedChange={setPortalEnabled} />
+            </div>
+            {portalEnabled && (
+              <FormField label={t("portal.portalPassword")}>
+                <Input
+                  type="password"
+                  value={portalPassword}
+                  onChange={(e) => setPortalPassword(e.target.value)}
+                  placeholder={t("portal.portalPassword")}
+                />
+              </FormField>
+            )}
+          </div>
+        )}
 
         {/* Map Picker */}
         <FormField label={t("customer.location")}>

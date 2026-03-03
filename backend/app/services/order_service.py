@@ -17,6 +17,39 @@ class OrderService:
         self._customers = customer_repo
         self._transactions = transaction_repo
 
+    async def confirm_draft(
+        self, order_id: uuid.UUID, confirmer_id: uuid.UUID
+    ) -> TransactionOut:
+        txn = await self._transactions.get_by_id(order_id)
+        if txn is None:
+            raise HorizonException(404, "Order not found")
+        if not txn.is_draft:
+            raise HorizonException(400, "Order is not a draft")
+
+        txn.is_draft = False
+        txn.created_by = confirmer_id
+
+        customer = await self._customers.get_by_id(txn.customer_id)
+        if customer is None:
+            raise HorizonException(404, "Customer not found")
+        customer.balance += txn.amount
+        await self._customers.update_balance(customer)
+        txn = await self._transactions.update(txn)
+        return TransactionOut.model_validate(txn)
+
+    async def reject_draft(
+        self, order_id: uuid.UUID, rejecter_id: uuid.UUID
+    ) -> TransactionOut:
+        txn = await self._transactions.get_by_id(order_id)
+        if txn is None:
+            raise HorizonException(404, "Order not found")
+        if not txn.is_draft:
+            raise HorizonException(400, "Order is not a draft")
+
+        txn.is_deleted = True
+        txn = await self._transactions.update(txn)
+        return TransactionOut.model_validate(txn)
+
     async def create_order(
         self, body: OrderCreate, creator_id: uuid.UUID
     ) -> TransactionOut:
@@ -41,6 +74,7 @@ class OrderService:
             amount=total,  # positive — increases customer debt
             data={"items": body.items},
             notes=body.notes,
+            delivery_date=body.delivery_date,
         )
         customer.balance += total
         await self._customers.update_balance(customer)

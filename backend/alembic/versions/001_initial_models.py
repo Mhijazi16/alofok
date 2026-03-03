@@ -185,7 +185,9 @@ def upgrade() -> None:
         sa.Column("amount", sa.Numeric(12, 2), nullable=False),
         sa.Column(
             "status",
-            sa.Enum("Pending", "Deposited", "Returned", "Cleared", name="transactionstatus"),
+            sa.Enum(
+                "Pending", "Deposited", "Returned", "Cleared", name="transactionstatus"
+            ),
             nullable=True,
         ),
         sa.Column(

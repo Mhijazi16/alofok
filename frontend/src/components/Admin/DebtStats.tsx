@@ -1,123 +1,238 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle } from "lucide-react";
-import { adminApi } from "@/services/adminApi";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Landmark, AlertTriangle } from "lucide-react";
 
-export default function DebtStats() {
+import { PageContainer } from "@/components/layout/page-container";
+import { StatCard } from "@/components/ui/stat-card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { BarChart } from "@/components/ui/bar-chart";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Alert } from "@/components/ui/alert";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { adminApi } from "@/services/adminApi";
+import type { DebtStatsOut, OverdueCheck, CityDebt } from "@/services/adminApi";
+
+function daysOverdue(dueDateStr: string | null): number {
+  if (!dueDateStr) return 0;
+  const due = new Date(dueDateStr);
+  const now = new Date();
+  const diff = Math.floor(
+    (now.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  return Math.max(diff, 0);
+}
+
+export function DebtStats() {
   const { t } = useTranslation();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-debt"],
-    queryFn: adminApi.getDebtStats,
-    staleTime: 2 * 60 * 1000,
+  const { data, isLoading } = useQuery<DebtStatsOut>({
+    queryKey: ["admin-debt-stats"],
+    queryFn: () => adminApi.getDebtStats(),
   });
 
-  const maxDebt = data
-    ? Math.max(...data.by_city.map((c) => Number(c.total_debt)))
-    : 0;
+  const maxCityDebt = useMemo(() => {
+    if (!data?.by_city?.length) return 1;
+    return Math.max(...data.by_city.map((c: CityDebt) => c.total_debt), 1);
+  }, [data]);
+
+  // Chart data for city debts
+  const cityChartData = useMemo(() => {
+    if (!data?.by_city) return [];
+    return data.by_city.map((c: CityDebt) => ({
+      city: c.city,
+      debt: c.total_debt,
+      customers: c.customer_count,
+    }));
+  }, [data]);
+
+  // Flag severely overdue (> 90 days)
+  const hasSeverelyOverdue = useMemo(() => {
+    if (!data?.overdue_checks) return false;
+    return data.overdue_checks.some(
+      (c: OverdueCheck) => daysOverdue(c.due_date) > 90
+    );
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <div className="space-y-6">
+          <Skeleton variant="text" className="h-8 w-48" />
+          <Skeleton variant="card" className="h-32" />
+          <Skeleton variant="card" className="h-72" />
+          <Skeleton variant="card" className="h-64" />
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Total debt card */}
-      {data && (
-        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
-          <p className="text-sm text-muted-foreground">{t("admin.totalDebt")}</p>
-          <p className="mt-1 text-3xl font-black text-destructive">
-            {Number(data.total_debt).toLocaleString("ar-SA")}
-          </p>
-        </div>
-      )}
-
-      {/* By-city section */}
-      <div>
-        <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+    <PageContainer>
+      <div className="space-y-6">
+        {/* Title */}
+        <h1 className="text-h2 font-bold text-foreground">
           {t("admin.debtOverview")}
-        </h3>
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="mb-2 h-16 w-full" />
-          ))
-        ) : !data?.by_city.length ? (
-          <p className="text-center text-muted-foreground py-4">
-            {t("admin.noData")}
-          </p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {data.by_city.map((city) => {
-              const pct = maxDebt > 0 ? (Number(city.total_debt) / maxDebt) * 100 : 0;
-              return (
-                <div
-                  key={city.city}
-                  className="rounded-2xl border border-border bg-card p-4"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">{city.city}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {city.customer_count} عميل
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-destructive/70"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-bold text-destructive shrink-0">
-                      {Number(city.total_debt).toLocaleString("ar-SA")}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        </h1>
+
+        {/* Total debt hero card */}
+        <StatCard
+          variant="gradient"
+          icon={Landmark}
+          value={data?.total_debt.toLocaleString() ?? "0"}
+          label={t("admin.totalDebt")}
+          className="text-center"
+        />
+
+        {/* Severely overdue alert */}
+        {hasSeverelyOverdue && (
+          <Alert
+            variant="error"
+            icon={AlertTriangle}
+            title={t("admin.overdueChecks")}
+            description={t("errors.generic")}
+          />
         )}
-      </div>
 
-      {/* Overdue checks */}
-      <div>
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-          <AlertTriangle className="h-4 w-4 text-destructive" />
-          {t("admin.overdueChecks")}
-          {data?.overdue_checks.length ? (
-            <Badge variant="danger">{data.overdue_checks.length}</Badge>
-          ) : null}
-        </h3>
+        {/* Debt by city: chart + cards */}
+        <Card variant="glass">
+          <CardHeader>
+            <CardTitle>{t("admin.debtByCity")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {cityChartData.length > 0 ? (
+              <div className="space-y-6">
+                <BarChart
+                  data={cityChartData}
+                  xAxisKey="city"
+                  bars={[
+                    {
+                      dataKey: "debt",
+                      label: t("admin.totalDebt"),
+                      color: "hsl(0 72% 51%)",
+                    },
+                  ]}
+                  height={240}
+                />
 
-        {isLoading ? (
-          Array.from({ length: 2 }).map((_, i) => (
-            <Skeleton key={i} className="mb-2 h-16 w-full" />
-          ))
-        ) : !data?.overdue_checks.length ? (
-          <p className="rounded-2xl bg-muted/50 py-4 text-center text-sm text-muted-foreground">
-            لا توجد شيكات متأخرة ✓
-          </p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {data.overdue_checks.map((chk) => (
-              <div
-                key={chk.transaction_id}
-                className="rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm">
-                    {chk.customer_name}
-                  </span>
-                  <span className="font-bold text-destructive">
-                    {Number(chk.amount).toLocaleString("ar-SA")} {chk.currency}
-                  </span>
-                </div>
-                <div className="mt-1 flex gap-3 text-xs text-muted-foreground">
-                  {chk.bank && <span>{chk.bank}</span>}
-                  {chk.due_date && <span>استحقاق: {chk.due_date}</span>}
+                {/* Per-city progress cards */}
+                <div className="space-y-4 border-t border-border pt-4">
+                  {data?.by_city.map((city: CityDebt) => {
+                    const proportion = (city.total_debt / maxCityDebt) * 100;
+                    return (
+                      <div key={city.city} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-body-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">
+                              {city.city}
+                            </span>
+                            <Badge variant="outline" size="sm">
+                              {city.customer_count} {t("nav.customers")}
+                            </Badge>
+                          </div>
+                          <span className="tabular-nums font-semibold text-foreground">
+                            {city.total_debt.toLocaleString()}
+                          </span>
+                        </div>
+                        <Progress
+                          value={proportion}
+                          color={
+                            proportion > 75
+                              ? "destructive"
+                              : proportion > 40
+                                ? "warning"
+                                : "primary"
+                          }
+                          size="default"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            ) : (
+              <EmptyState
+                preset="no-data"
+                title={t("admin.noData")}
+                className="py-6"
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Overdue checks table */}
+        <Card variant="glass">
+          <CardHeader>
+            <CardTitle>{t("admin.overdueChecks")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data?.overdue_checks?.length ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("nav.customers")}</TableHead>
+                    <TableHead>{t("payment.amount")}</TableHead>
+                    <TableHead>{t("payment.currency")}</TableHead>
+                    <TableHead>{t("payment.bank")}</TableHead>
+                    <TableHead>{t("payment.dueDate")}</TableHead>
+                    <TableHead>{t("admin.daysOverdue")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.overdue_checks.map((check: OverdueCheck) => {
+                    const days = daysOverdue(check.due_date);
+                    return (
+                      <TableRow key={check.transaction_id}>
+                        <TableCell className="font-medium">
+                          {check.customer_name}
+                        </TableCell>
+                        <TableCell className="tabular-nums">
+                          {check.amount.toLocaleString()}
+                        </TableCell>
+                        <TableCell>{check.currency}</TableCell>
+                        <TableCell>{check.bank ?? "—"}</TableCell>
+                        <TableCell className="tabular-nums">
+                          {check.due_date ?? "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              days > 90
+                                ? "danger"
+                                : days > 30
+                                  ? "warning"
+                                  : "default"
+                            }
+                            size="sm"
+                          >
+                            {days} {t("admin.daysOverdue")}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <EmptyState
+                preset="no-data"
+                title={t("admin.noData")}
+                className="py-6"
+              />
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 }

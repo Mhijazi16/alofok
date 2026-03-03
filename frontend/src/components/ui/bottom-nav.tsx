@@ -24,12 +24,12 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
       <nav
         ref={ref}
         className={cn(
-          "fixed z-40 bottom-4 inset-x-4 mx-auto max-w-lg rounded-2xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/20 pb-safe",
+          "fixed z-40 bottom-2 inset-x-3 mx-auto max-w-lg rounded-2xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/20 pb-safe",
           className
         )}
         {...props}
       >
-        <div className="flex h-16 items-center justify-around">
+        <div className="flex h-14 items-center justify-around">
           {visibleItems.map((item) => {
             const isActive = item.value === activeValue;
             const Icon = item.icon;

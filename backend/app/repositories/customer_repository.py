@@ -26,6 +26,31 @@ class CustomerRepository:
         )
         return list(result.scalars().all())
 
+    async def get_by_day_and_rep(
+        self, day: AssignedDay, rep_id: uuid.UUID
+    ) -> list[Customer]:
+        result = await self._db.execute(
+            select(Customer)
+            .where(
+                Customer.assigned_day == day,
+                Customer.assigned_to == rep_id,
+                Customer.is_deleted.is_(False),
+            )
+            .order_by(Customer.name)
+        )
+        return list(result.scalars().all())
+
+    async def get_all_by_rep(self, rep_id: uuid.UUID) -> list[Customer]:
+        result = await self._db.execute(
+            select(Customer)
+            .where(
+                Customer.assigned_to == rep_id,
+                Customer.is_deleted.is_(False),
+            )
+            .order_by(Customer.name)
+        )
+        return list(result.scalars().all())
+
     async def create(self, data: dict) -> Customer:
         customer = Customer(**data)
         self._db.add(customer)

@@ -1,8 +1,9 @@
+import datetime as _dt
 import enum
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import Enum as SAEnum, ForeignKey, Numeric, String
+from sqlalchemy import Boolean, Date, Enum as SAEnum, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -35,8 +36,8 @@ class Transaction(BaseMixin, Base):
     customer_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("customers.id"), index=True, nullable=False
     )
-    created_by: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
     type: Mapped[TransactionType] = mapped_column(
         SAEnum(TransactionType, name="transactiontype"), nullable=False
@@ -59,11 +60,15 @@ class Transaction(BaseMixin, Base):
     # Check details (bank, due_date, image_url) and exchange rates
     data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     notes: Mapped[str | None] = mapped_column(String, nullable=True)
+    is_draft: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    delivery_date: Mapped[_dt.date | None] = mapped_column(
+        Date, nullable=True, index=True
+    )
 
     customer: Mapped["Customer"] = relationship(  # type: ignore[name-defined]
         "Customer", foreign_keys=[customer_id]
     )
-    creator: Mapped["User"] = relationship(  # type: ignore[name-defined]
+    creator: Mapped["User | None"] = relationship(  # type: ignore[name-defined]
         "User", foreign_keys=[created_by]
     )
     related_transaction: Mapped["Transaction | None"] = relationship(

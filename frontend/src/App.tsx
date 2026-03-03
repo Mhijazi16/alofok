@@ -1,32 +1,48 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Suspense, lazy } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAppSelector } from "@/store";
+import { FullPageSpinner } from "@/components/ui/spinner";
+import { ErrorBoundary } from "@/components/patterns/error-boundary";
+import { Toaster } from "@/components/ui/toaster";
 import LoginPage from "@/pages/LoginPage";
 
-// Role-specific root components (populated as features are built)
-import AdminRoot from "@/components/Admin";
-import DesignerRoot from "@/components/Designer";
-import SalesRoot from "@/components/Sales";
+const SalesRoot = lazy(() => import("@/components/Sales"));
+const DesignerRoot = lazy(() => import("@/components/Designer"));
+const AdminRoot = lazy(() => import("@/components/Admin"));
+const CustomerRoot = lazy(() => import("@/components/Customer"));
 
 function RoleRouter() {
-  const role = useAppSelector((s) => s.auth.role);
-  const token = useAppSelector((s) => s.auth.token);
+  const { token, role } = useAppSelector((state) => state.auth);
 
   if (!token || !role) {
     return <LoginPage />;
   }
 
-  if (role === "Admin") return <AdminRoot />;
-  if (role === "Designer") return <DesignerRoot />;
-  return <SalesRoot />;
+  switch (role) {
+    case "Admin":
+      return <AdminRoot />;
+    case "Designer":
+      return <DesignerRoot />;
+    case "Sales":
+      return <SalesRoot />;
+    case "Customer":
+      return <CustomerRoot />;
+    default:
+      return <Navigate to="/" replace />;
+  }
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/*" element={<RoleRouter />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Suspense fallback={<FullPageSpinner />}>
+          <Routes>
+            <Route path="/*" element={<RoleRouter />} />
+          </Routes>
+        </Suspense>
+        <Toaster />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

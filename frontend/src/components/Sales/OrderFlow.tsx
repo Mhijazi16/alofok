@@ -16,7 +16,6 @@ import {
   type Product,
 } from "@/services/salesApi";
 import { getImageUrl } from "@/lib/image";
-import { cn } from "@/lib/utils";
 import { salesApi } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { SearchInput } from "@/components/ui/search-input";
@@ -41,163 +40,16 @@ interface OrderFlowProps {
   updateCartQty: (productId: string, qty: number) => void;
   removeFromCart: (productId: string) => void;
   onViewCart?: () => void;
+  onViewProduct?: (product: Product) => void;
 }
 
-function ProductGridCard({
-  product,
-  expanded,
-  onToggle,
-  onAddToCart,
-  cartQty,
-}: {
-  product: Product;
-  expanded: boolean;
-  onToggle: () => void;
-  onAddToCart: (product: Product, qty: number) => void;
-  cartQty: number;
-}) {
-  const { t, i18n } = useTranslation();
-  const [qty, setQty] = useState(1);
-  const lang = i18n.language;
-  const name = lang === "ar" ? product.name_ar : product.name_en;
-  const description = lang === "ar" ? product.description_ar : product.description_en;
-
-  return (
-    <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-300">
-      {/* Image */}
-      <button onClick={onToggle} className="w-full text-start">
-        <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-          {product.image_url ? (
-            <img
-              src={getImageUrl(product.image_url)!}
-              alt={name}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <Package className="h-12 w-12 text-muted-foreground/30" />
-            </div>
-          )}
-          {/* Badges */}
-          <div className="absolute top-2 start-2 flex flex-col gap-1">
-            {product.is_bestseller && (
-              <Badge variant="warning" className="text-[0.6rem]">
-                <Star className="h-3 w-3 me-0.5" /> {t("catalog.bestSellers")}
-              </Badge>
-            )}
-            {product.is_discounted && (
-              <Badge variant="success" className="text-[0.6rem]">
-                <Tag className="h-3 w-3 me-0.5" />{" "}
-                {product.discount_percentage
-                  ? `${product.discount_percentage}%`
-                  : t("catalog.discounted")}
-              </Badge>
-            )}
-          </div>
-          {/* Cart indicator */}
-          {cartQty > 0 && (
-            <div className="absolute top-2 end-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-              {cartQty}
-            </div>
-          )}
-        </div>
-        {/* Info below image */}
-        <div className="p-3">
-          <p className="text-body-sm font-medium text-foreground truncate">
-            {name}
-          </p>
-          <div className="flex items-center gap-2 mt-1">
-            {product.discounted_price ? (
-              <>
-                <span className="text-primary font-bold text-body-sm">
-                  {new Intl.NumberFormat(lang, {
-                    style: "currency",
-                    currency: "ILS",
-                  }).format(product.discounted_price)}
-                </span>
-                <span className="text-muted-foreground line-through text-caption">
-                  {new Intl.NumberFormat(lang, {
-                    style: "currency",
-                    currency: "ILS",
-                  }).format(product.price)}
-                </span>
-              </>
-            ) : (
-              <span className="text-primary font-bold text-body-sm">
-                {new Intl.NumberFormat(lang, {
-                  style: "currency",
-                  currency: "ILS",
-                }).format(product.price)}
-              </span>
-            )}
-          </div>
-        </div>
-      </button>
-
-      {/* Expandable section */}
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-300 ease-in-out",
-          expanded ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
-        )}
-      >
-        <div className="border-t border-border p-3 space-y-3">
-          {description && (
-            <p className="text-caption text-muted-foreground line-clamp-2">
-              {description}
-            </p>
-          )}
-          {product.unit && product.unit !== "piece" && (
-            <Badge variant="outline" className="text-[0.6rem]">
-              {t(`product.unitOptions.${product.unit}`)}
-            </Badge>
-          )}
-          {/* Quantity picker */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-accent"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
-            <span className="text-body-sm font-medium w-8 text-center">
-              {qty}
-            </span>
-            <button
-              onClick={() => setQty((q) => q + 1)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-accent"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-          <Button
-            variant="gradient"
-            size="sm"
-            className="w-full"
-            onClick={() => {
-              onAddToCart(product, qty);
-              setQty(1);
-            }}
-          >
-            <ShoppingCart className="h-4 w-4 me-1.5" />
-            {t("catalog.addToOrder")}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function OrderFlow({ customer, onBack, onDone, cart, addToCart, updateCartQty, removeFromCart, onViewCart }: OrderFlowProps) {
+export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, updateCartQty, removeFromCart: _removeFromCart, onViewCart, onViewProduct }: OrderFlowProps) {
   const { t, i18n } = useTranslation();
 
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">(
     () => (localStorage.getItem("catalog-view") as "grid" | "list") || "grid"
   );
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-
   useEffect(() => {
     localStorage.setItem("catalog-view", viewMode);
   }, [viewMode]);
@@ -243,7 +95,7 @@ export function OrderFlow({ customer, onBack, onDone, cart, addToCart, updateCar
   }, [cart, updateCartQty]);
 
   const formatCurrency = (val: number) =>
-    val.toLocaleString(i18n.language === "ar" ? "ar-SA" : "en-US", {
+    val.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -353,6 +205,73 @@ export function OrderFlow({ customer, onBack, onDone, cart, addToCart, updateCar
     );
   };
 
+  const renderGridCard = (product: Product) => {
+    const name = i18n.language === "ar" ? product.name_ar : product.name_en;
+    const cartQty = cart.get(product.id)?.quantity ?? 0;
+
+    return (
+      <div
+        key={product.id}
+        className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:bg-card-hover active:scale-[0.98]"
+        onClick={() => onViewProduct?.(product)}
+      >
+        <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+          {product.image_url ? (
+            <img
+              src={getImageUrl(product.image_url)!}
+              alt={name}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <Package className="h-12 w-12 text-muted-foreground/30" />
+            </div>
+          )}
+          <div className="absolute top-2 start-2 flex flex-col gap-1">
+            {product.is_bestseller && (
+              <Badge variant="warning" className="text-[0.6rem]">
+                <Star className="h-3 w-3 me-0.5" /> {t("catalog.bestSellers")}
+              </Badge>
+            )}
+            {product.is_discounted && (
+              <Badge variant="success" className="text-[0.6rem]">
+                <Tag className="h-3 w-3 me-0.5" />{" "}
+                {product.discount_percentage
+                  ? `${product.discount_percentage}%`
+                  : t("catalog.discounted")}
+              </Badge>
+            )}
+          </div>
+          {cartQty > 0 && (
+            <div className="absolute top-2 end-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+              {cartQty}
+            </div>
+          )}
+        </div>
+        <div className="p-3">
+          <p className="text-body-sm font-medium text-foreground truncate">{name}</p>
+          <div className="flex items-center gap-2 mt-1">
+            {product.discounted_price ? (
+              <>
+                <span className="text-primary font-bold text-body-sm">
+                  {formatCurrency(product.discounted_price)}
+                </span>
+                <span className="text-muted-foreground line-through text-caption">
+                  {formatCurrency(product.price)}
+                </span>
+              </>
+            ) : (
+              <span className="text-primary font-bold text-body-sm">
+                {formatCurrency(product.price)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderSection = (
     title: string,
     items: Product[],
@@ -364,16 +283,7 @@ export function OrderFlow({ customer, onBack, onDone, cart, addToCart, updateCar
         <Separator label={title} />
         {viewMode === "grid" ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {items.map((p) => (
-              <ProductGridCard
-                key={p.id}
-                product={p}
-                expanded={expandedId === p.id}
-                onToggle={() => setExpandedId((prev) => (prev === p.id ? null : p.id))}
-                onAddToCart={(product, qty) => addToCart(product, qty)}
-                cartQty={cart.get(p.id)?.quantity ?? 0}
-              />
-            ))}
+            {items.map((p) => renderGridCard(p))}
           </div>
         ) : (
           <div className="space-y-2">

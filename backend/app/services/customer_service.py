@@ -1,22 +1,30 @@
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
 from app.core.errors import HorizonException
+from app.core.security import hash_password
 from app.models.customer import AssignedDay
+from app.repositories.customer_auth_repository import CustomerAuthRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.customer import CustomerInsightsOut, CustomerOut
-from app.schemas.transaction import StatementEntryOut, StatementOut, TransactionOut
+from app.schemas.transaction import (
+    OrderWithCustomerOut,
+    StatementEntryOut,
+    StatementOut,
+    TransactionOut,
+)
 from app.utils.cache import CacheBackend, TTL_INSIGHTS, TTL_ROUTE
 
-# Python weekday() → AssignedDay  (Mon=0 … Sun=6; Fri/Sat have no route)
+# Python weekday() → AssignedDay  (Mon=0 … Sun=6; Fri has no route)
 _WEEKDAY_MAP: dict[int, AssignedDay] = {
     6: AssignedDay.Sun,
     0: AssignedDay.Mon,
     1: AssignedDay.Tue,
     2: AssignedDay.Wed,
     3: AssignedDay.Thu,
+    5: AssignedDay.Sat,
 }
 
 
@@ -26,15 +34,35 @@ class CustomerService:
         customer_repo: CustomerRepository,
         transaction_repo: TransactionRepository,
         cache: CacheBackend,
+        auth_repo: CustomerAuthRepository,
     ):
         self._customers = customer_repo
         self._transactions = transaction_repo
         self._cache = cache
+        self._auth = auth_repo
 
     async def create_customer(self, data, user_id: uuid.UUID):
-        customer_dict = data.model_dump()
+        portal_password = (
+            data.portal_password if hasattr(data, "portal_password") else None
+        )
+        customer_dict = data.model_dump(exclude={"portal_password"})
         customer_dict["assigned_to"] = user_id
-        return await self._customers.create(customer_dict)
+        customer = await self._customers.create(customer_dict)
+
+        if portal_password and customer_dict.get("phone"):
+            await self._auth.create(
+                {
+                    "customer_id": customer.id,
+                    "phone": customer_dict["phone"],
+                    "password_hash": hash_password(portal_password),
+                }
+            )
+
+        return customer
+
+    async def get_draft_orders(self, customer_id: uuid.UUID) -> list[TransactionOut]:
+        drafts = await self._transactions.get_drafts_for_customer(customer_id)
+        return [TransactionOut.model_validate(d) for d in drafts]
 
     async def update_customer(
         self, customer_id: uuid.UUID, data, user_id: uuid.UUID, role: str
@@ -50,6 +78,68 @@ class CustomerService:
             raise HorizonException(404, "Customer not found")
         await self._cache.invalidate_prefix("route:")
         return updated
+
+    async def get_route_by_day(
+        self, user_id: uuid.UUID, day: AssignedDay
+    ) -> list[CustomerOut]:
+        customers = await self._customers.get_by_day_and_rep(day, user_id)
+        return [CustomerOut.model_validate(c) for c in customers]
+
+    async def get_all_customers(self, user_id: uuid.UUID) -> list[CustomerOut]:
+        customers = await self._customers.get_all_by_rep(user_id)
+        return [CustomerOut.model_validate(c) for c in customers]
+
+    async def get_my_orders_today(
+        self, user_id: uuid.UUID
+    ) -> list[OrderWithCustomerOut]:
+        now = datetime.now(timezone.utc)
+        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timedelta(days=1)
+        orders = await self._transactions.get_orders_by_rep(user_id, start, end)
+        results = []
+        for o in orders:
+            customer = await self._customers.get_by_id(o.customer_id)
+            results.append(
+                OrderWithCustomerOut(
+                    **TransactionOut.model_validate(o).model_dump(),
+                    customer_name=customer.name if customer else "—",
+                )
+            )
+        return results
+
+    async def get_orders_by_delivery_date(
+        self, user_id: uuid.UUID, delivery: date
+    ) -> list[OrderWithCustomerOut]:
+        orders = await self._transactions.get_orders_by_delivery_date(
+            user_id, delivery
+        )
+        results = []
+        for o in orders:
+            customer = await self._customers.get_by_id(o.customer_id)
+            results.append(
+                OrderWithCustomerOut(
+                    **TransactionOut.model_validate(o).model_dump(),
+                    customer_name=customer.name if customer else "—",
+                )
+            )
+        return results
+
+    async def get_unassigned_orders_by_delivery_date(
+        self, user_id: uuid.UUID, delivery: date, assigned_day: str
+    ) -> list[OrderWithCustomerOut]:
+        orders = await self._transactions.get_unassigned_orders_by_delivery_date(
+            user_id, delivery, assigned_day
+        )
+        results = []
+        for o in orders:
+            customer = await self._customers.get_by_id(o.customer_id)
+            results.append(
+                OrderWithCustomerOut(
+                    **TransactionOut.model_validate(o).model_dump(),
+                    customer_name=customer.name if customer else "—",
+                )
+            )
+        return results
 
     async def get_route(self, user_id: str) -> list[CustomerOut]:
         cache_key = f"route:{user_id}"

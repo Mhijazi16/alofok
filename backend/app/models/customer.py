@@ -15,6 +15,7 @@ class AssignedDay(str, enum.Enum):
     Tue = "Tue"
     Wed = "Wed"
     Thu = "Thu"
+    Sat = "Sat"
 
 
 class Customer(BaseMixin, Base):

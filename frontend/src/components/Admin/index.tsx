@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
@@ -9,7 +9,7 @@ import {
   Package,
   PlusCircle,
 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+// import { useMutation } from "@tanstack/react-query";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageContainer } from "@/components/layout/page-container";
@@ -18,10 +18,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { logout } from "@/store/authSlice";
-import { useToast } from "@/hooks/useToast";
-import { adminApi } from "@/services/adminApi";
+// import { useToast } from "@/hooks/useToast";
+// import { adminApi } from "@/services/adminApi";
 
 import { Overview } from "./Overview";
 import { SalesStats } from "./SalesStats";
@@ -36,26 +37,32 @@ type AdminView = "overview" | "sales" | "debt" | "customers" | "products" | "add
 export default function AdminPanel() {
   const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
-  const { toast } = useToast();
   const userId = useAppSelector((s) => s.auth.userId);
   const role = useAppSelector((s) => s.auth.role);
 
   const [activeView, setActiveView] = useState<AdminView>("overview");
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
+  const [avatarSeed, setAvatarSeed] = useState(
+    () => localStorage.getItem("alofok-avatar-seed") || userId || "admin"
+  );
+  useEffect(() => {
+    localStorage.setItem("alofok-avatar-seed", avatarSeed);
+  }, [avatarSeed]);
 
-  const eodMutation = useMutation({
-    mutationFn: () => adminApi.sendEodReport(),
-    onSuccess: (data) => {
-      toast({
-        title: t("admin.reportSent"),
-        description: `${data.date} — ${data.rows} rows`,
-        variant: "success",
-      });
-    },
-    onError: () => {
-      toast({ title: t("toast.error"), variant: "error" });
-    },
-  });
+  // TODO: wire up to EOD report button
+  // const eodMutation = useMutation({
+  //   mutationFn: () => adminApi.sendEodReport(),
+  //   onSuccess: (data) => {
+  //     toast({
+  //       title: t("admin.reportSent"),
+  //       description: `${data.date} — ${data.rows} rows`,
+  //       variant: "success",
+  //     });
+  //   },
+  //   onError: () => {
+  //     toast({ title: t("toast.error"), variant: "error" });
+  //   },
+  // });
 
   const navItems = [
     { icon: LayoutDashboard, label: t("nav.overview"), value: "overview" },
@@ -127,9 +134,10 @@ export default function AdminPanel() {
                 <CardContent className="p-6 space-y-5">
                   {/* User info */}
                   <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/15">
-                      <User className="h-7 w-7 text-primary" />
-                    </div>
+                    <AvatarPicker
+                      currentSeed={avatarSeed}
+                      onSelect={setAvatarSeed}
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="text-body-sm font-semibold text-foreground truncate">
                         {userId ?? "—"}

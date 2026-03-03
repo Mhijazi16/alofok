@@ -15,3 +15,25 @@ async def create_order(
     body: OrderCreate, current_user: CurrentUser, service: OrderSvc
 ) -> TransactionOut:
     return await service.create_order(body, uuid.UUID(current_user["sub"]))
+
+
+@router.put(
+    "/{order_id}/confirm",
+    response_model=TransactionOut,
+    dependencies=[require_sales],
+)
+async def confirm_draft(
+    order_id: uuid.UUID, current_user: CurrentUser, service: OrderSvc
+) -> TransactionOut:
+    return await service.confirm_draft(order_id, uuid.UUID(current_user["sub"]))
+
+
+@router.put(
+    "/{order_id}/reject",
+    response_model=TransactionOut,
+    dependencies=[require_sales],
+)
+async def reject_draft(
+    order_id: uuid.UUID, current_user: CurrentUser, service: OrderSvc
+) -> TransactionOut:
+    return await service.reject_draft(order_id, uuid.UUID(current_user["sub"]))

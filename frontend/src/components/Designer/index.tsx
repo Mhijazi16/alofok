@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Package, PlusCircle, User, LogOut, Globe } from "lucide-react";
+import { Package, PlusCircle, User, LogOut, Globe, Pencil } from "lucide-react";
 
 import { useAppSelector, useAppDispatch } from "@/store";
 import { logout } from "@/store/authSlice";
@@ -10,16 +10,17 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageContainer } from "@/components/layout/page-container";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
+import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 import { ProductList } from "./ProductList";
 import { ProductForm } from "./ProductForm";
+import { ProductDetail } from "@/components/ui/product-detail";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type View = "list" | "create" | "edit" | "profile";
+type View = "list" | "detail" | "create" | "edit" | "profile";
 
 const APP_VERSION = "1.0.0";
 
@@ -34,6 +35,12 @@ export default function DesignerShell() {
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(
     undefined
   );
+  const [avatarSeed, setAvatarSeed] = useState(
+    () => localStorage.getItem("alofok-avatar-seed") || userId || "designer"
+  );
+  useEffect(() => {
+    localStorage.setItem("alofok-avatar-seed", avatarSeed);
+  }, [avatarSeed]);
 
   // ── Navigation helpers ─────────────────────────────────────────────────────
 
@@ -42,6 +49,11 @@ export default function DesignerShell() {
       setView(value as View);
       setEditingProduct(undefined);
     }
+  };
+
+  const handleViewProduct = (product: Product) => {
+    setEditingProduct(product);
+    setView("detail");
   };
 
   const handleEdit = (product: Product) => {
@@ -60,8 +72,12 @@ export default function DesignerShell() {
   };
 
   const handleFormBack = () => {
-    setEditingProduct(undefined);
-    setView("list");
+    if (editingProduct && view === "edit") {
+      setView("detail");
+    } else {
+      setEditingProduct(undefined);
+      setView("list");
+    }
   };
 
   const toggleLanguage = () => {
@@ -84,7 +100,7 @@ export default function DesignerShell() {
   ];
 
   const activeNavValue =
-    view === "edit" ? "list" : view === "create" ? "create" : view;
+    view === "edit" || view === "detail" ? "list" : view === "create" ? "create" : view;
 
   // ── Profile view ───────────────────────────────────────────────────────────
 
@@ -94,9 +110,9 @@ export default function DesignerShell() {
         {/* User card */}
         <Card variant="glass">
           <CardContent className="flex flex-col items-center gap-3 p-6">
-            <Avatar
-              size="lg"
-              name={userId ?? "Designer"}
+            <AvatarPicker
+              currentSeed={avatarSeed}
+              onSelect={setAvatarSeed}
             />
             <div className="text-center">
               <p className="text-h3 font-bold text-foreground">
@@ -167,7 +183,29 @@ export default function DesignerShell() {
 
   switch (view) {
     case "list":
-      content = <ProductList onEdit={handleEdit} onAdd={handleAdd} />;
+      content = <ProductList onEdit={handleViewProduct} onAdd={handleAdd} />;
+      break;
+    case "detail":
+      content = editingProduct ? (
+        <ProductDetail
+          product={editingProduct}
+          onBack={() => {
+            setEditingProduct(undefined);
+            setView("list");
+          }}
+          actions={
+            <Button
+              variant="gradient"
+              size="lg"
+              className="w-full"
+              onClick={() => handleEdit(editingProduct)}
+            >
+              <Pencil className="h-4 w-4" />
+              {t("actions.edit")}
+            </Button>
+          }
+        />
+      ) : null;
       break;
     case "create":
       content = (

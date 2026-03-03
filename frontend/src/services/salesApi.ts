@@ -47,6 +47,7 @@ export interface CustomerCreate {
   longitude?: number | null;
   avatar_url?: string | null;
   notes?: string | null;
+  portal_password?: string | null;
 }
 
 export interface CustomerUpdate {
@@ -71,6 +72,7 @@ export interface CustomerInsights {
 
 export interface Transaction {
   id: string;
+  customer_id: string;
   type: string;
   currency: string;
   amount: number;
@@ -79,6 +81,7 @@ export interface Transaction {
   data: Record<string, unknown> | null;
   created_at: string;
   related_transaction_id: string | null;
+  delivery_date: string | null;
 }
 
 export interface StatementEntry {
@@ -98,10 +101,16 @@ export interface OrderItem {
   unit_price: number;
 }
 
+export interface OrderWithCustomer extends Transaction {
+  customer_name: string;
+  customer_id: string;
+}
+
 export interface OrderCreate {
   customer_id: string;
   items: OrderItem[];
   notes?: string;
+  delivery_date?: string | null;
 }
 
 export interface PaymentCreate {
@@ -133,6 +142,21 @@ export const salesApi = {
 
   getMyRoute: () =>
     api.get<Customer[]>("/customers/my-route").then((r) => r.data),
+
+  getRouteByDay: (day: string) =>
+    api.get<Customer[]>(`/customers/by-day/${day}`).then((r) => r.data),
+
+  getMyCustomers: () =>
+    api.get<Customer[]>("/customers/my-customers").then((r) => r.data),
+
+  getMyOrdersToday: () =>
+    api.get<OrderWithCustomer[]>("/customers/my-orders-today").then((r) => r.data),
+
+  getRouteOrders: (date: string) =>
+    api.get<OrderWithCustomer[]>("/customers/route-orders", { params: { delivery_date: date } }).then((r) => r.data),
+
+  getUnassignedOrders: (date: string, assignedDay: string) =>
+    api.get<OrderWithCustomer[]>("/customers/unassigned-orders", { params: { delivery_date: date, assigned_day: assignedDay } }).then((r) => r.data),
 
   getInsights: (customerId: string) =>
     api
@@ -177,4 +201,19 @@ export const salesApi = {
       .post<{ url: string }>("/customers/upload-avatar", form)
       .then((r) => r.data);
   },
+
+  getDraftOrders: (customerId: string) =>
+    api
+      .get<Transaction[]>(`/customers/${customerId}/drafts`)
+      .then((r) => r.data),
+
+  confirmDraft: (orderId: string) =>
+    api
+      .put<Transaction>(`/orders/${orderId}/confirm`)
+      .then((r) => r.data),
+
+  rejectDraft: (orderId: string) =>
+    api
+      .put<Transaction>(`/orders/${orderId}/reject`)
+      .then((r) => r.data),
 };

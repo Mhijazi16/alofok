@@ -1,101 +1,192 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { User, Lock, Languages, Phone } from "lucide-react";
 import { useAppDispatch } from "@/store";
 import { setCredentials, type UserRole } from "@/store/authSlice";
 import { salesApi } from "@/services/salesApi";
+import { customerApi } from "@/services/customerApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+
+function decodeJwt(token: string): { sub: string; role: string; customer_id?: string } | null {
+  try {
+    const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(b64));
+    return { sub: payload.sub, role: payload.role, customer_id: payload.customer_id };
+  } catch {
+    return null;
+  }
+}
 
 export default function LoginPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
+  const [loginMode, setLoginMode] = useState<"staff" | "customer">("staff");
   const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    setIsLoading(true);
+
     try {
-      const { access_token } = await salesApi.login(username, password);
-      // Decode JWT payload to get sub + role
-      const b64 = access_token
-        .split(".")[1]
-        .replace(/-/g, "+")
-        .replace(/_/g, "/");
-      const payload = JSON.parse(atob(b64));
+      const data =
+        loginMode === "staff"
+          ? await salesApi.login(username, password)
+          : await customerApi.login(phone, password);
+      const decoded = decodeJwt(data.access_token);
+
+      if (!decoded) {
+        setError(t("auth.invalidCredentials"));
+        setIsLoading(false);
+        return;
+      }
+
       dispatch(
         setCredentials({
-          token: access_token,
-          userId: payload.sub as string,
-          role: payload.role as UserRole,
+          token: data.access_token,
+          userId: decoded.sub,
+          role: decoded.role as UserRole,
+          customerId: decoded.customer_id,
         })
       );
+
+      navigate("/");
     } catch {
       setError(t("auth.invalidCredentials"));
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6">
-      {/* Logo area */}
-      <div className="mb-10 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg">
-          <span className="text-2xl font-black text-primary-foreground">أ</span>
-        </div>
-        <h1 className="text-3xl font-black text-foreground">{t("app.name")}</h1>
-      </div>
-
-      {/* Form card */}
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-md"
+    <div className="gradient-glow relative flex min-h-dvh items-center justify-center px-4">
+      {/* Language toggle */}
+      <button
+        type="button"
+        onClick={toggleLanguage}
+        className="glass absolute end-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+        aria-label="Toggle language"
       >
-        <div className="mb-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-foreground">
-              {t("auth.username")}
-            </label>
-            <Input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-              required
-              dir="ltr"
-            />
-          </div>
+        <Languages className="h-4 w-4" />
+      </button>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-foreground">
-              {t("auth.password")}
-            </label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-              dir="ltr"
-            />
+      {/* Login card */}
+      <div className="glass-strong w-full max-w-sm animate-scale-in rounded-2xl p-8">
+        {/* Logo + branding */}
+        <div className="mb-8 flex flex-col items-center gap-4">
+          <div className="gradient-primary flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg glow-sm">
+            <span className="text-h1 text-white">أ</span>
+          </div>
+          <div className="text-center">
+            <h1 className="text-display text-gradient-primary">أفق</h1>
+            <p className="mt-1 text-body-sm text-muted-foreground">
+              {t("app.tagline")}
+            </p>
           </div>
         </div>
 
+        {/* Login mode toggle */}
+        <div className="mb-6 flex rounded-xl bg-muted/50 p-1">
+          <button
+            type="button"
+            onClick={() => setLoginMode("staff")}
+            className={`flex-1 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors ${
+              loginMode === "staff"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("portal.staffLogin")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setLoginMode("customer")}
+            className={`flex-1 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors ${
+              loginMode === "customer"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("portal.customerLogin")}
+          </button>
+        </div>
+
+        {/* Error badge */}
         {error && (
-          <p className="mb-4 rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
-            {error}
-          </p>
+          <div className="mb-4 flex justify-center animate-slide-up">
+            <Badge variant="destructive" size="lg">
+              {error}
+            </Badge>
+          </div>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "…" : t("auth.login")}
-        </Button>
-      </form>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="animate-slide-up" style={{ animationDelay: "50ms", animationFillMode: "both" }}>
+            {loginMode === "staff" ? (
+              <Input
+                inputSize="lg"
+                type="text"
+                placeholder={t("auth.username")}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                startIcon={<User className="h-4 w-4" />}
+                required
+                autoComplete="username"
+              />
+            ) : (
+              <Input
+                inputSize="lg"
+                type="tel"
+                placeholder={t("portal.phone")}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                startIcon={<Phone className="h-4 w-4" />}
+                required
+                autoComplete="tel"
+              />
+            )}
+          </div>
+
+          <div className="animate-slide-up" style={{ animationDelay: "120ms", animationFillMode: "both" }}>
+            <Input
+              inputSize="lg"
+              type="password"
+              placeholder={t("auth.password")}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              startIcon={<Lock className="h-4 w-4" />}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+
+          <div className="animate-slide-up" style={{ animationDelay: "190ms", animationFillMode: "both" }}>
+            <Button
+              type="submit"
+              variant="gradient"
+              size="lg"
+              className="w-full"
+              isLoading={isLoading}
+            >
+              {t("auth.login")}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

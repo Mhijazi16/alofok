@@ -38,12 +38,15 @@ async def send_eod_alert(report_date: date, rows: list[dict]) -> None:
     by_rep: dict[str, list[str]] = {}
     for r in rows:
         rep = r["username"]
-        line = f"  • {r['type']} / {r['currency']}: {r['total']:.2f} ({r['cnt']} entries)"
+        line = (
+            f"  • {r['type']} / {r['currency']}: {r['total']:.2f} ({r['cnt']} entries)"
+        )
         by_rep.setdefault(rep, []).append(line)
 
-    sections = "\n".join(
-        f"*{rep}*\n" + "\n".join(lines) for rep, lines in by_rep.items()
-    ) or "No transactions today."
+    sections = (
+        "\n".join(f"*{rep}*\n" + "\n".join(lines) for rep, lines in by_rep.items())
+        or "No transactions today."
+    )
 
     text = f":bar_chart: *EOD Report — {report_date}*\n\n{sections}"
     try:

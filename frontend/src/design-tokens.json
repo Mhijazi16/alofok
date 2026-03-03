@@ -1,0 +1,92 @@
+{
+  "colors": {
+    "primary": {
+      "default": "#dc2626",
+      "hover": "#b91c1c",
+      "subtle": "rgba(220, 38, 38, 0.12)",
+      "foreground": "#ffffff"
+    },
+    "background": {
+      "default": "#0a0a0a",
+      "subtle": "#121212"
+    },
+    "card": {
+      "default": "#141414",
+      "hover": "#1c1c1c",
+      "foreground": "#f2f2f2"
+    },
+    "foreground": "#f2f2f2",
+    "muted": {
+      "default": "#262626",
+      "foreground": "#8c8c8c"
+    },
+    "border": {
+      "default": "#292929",
+      "hover": "#404040"
+    },
+    "semantic": {
+      "success": "#16a34a",
+      "warning": "#eab308",
+      "info": "#3b82f6",
+      "destructive": "#ef4444"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "arabic": "Cairo",
+      "latin": "Inter",
+      "stack": "'Cairo', 'Inter', system-ui, sans-serif"
+    },
+    "scale": {
+      "display": { "size": "48px", "mobileSize": "36px", "lineHeight": "1.1", "weight": 900 },
+      "h1": { "size": "36px", "mobileSize": "28px", "lineHeight": "1.2", "weight": 800 },
+      "h2": { "size": "28px", "mobileSize": "24px", "lineHeight": "1.3", "weight": 700 },
+      "h3": { "size": "22px", "mobileSize": "20px", "lineHeight": "1.4", "weight": 600 },
+      "h4": { "size": "18px", "mobileSize": "16px", "lineHeight": "1.4", "weight": 600 },
+      "body-lg": { "size": "16px", "lineHeight": "1.6", "weight": 400 },
+      "body": { "size": "14px", "lineHeight": "1.6", "weight": 400 },
+      "body-sm": { "size": "13px", "lineHeight": "1.5", "weight": 400 },
+      "caption": { "size": "12px", "lineHeight": "1.4", "weight": 500 }
+    }
+  },
+  "spacing": {
+    "unit": 8,
+    "scale": {
+      "0.5": "4px",
+      "1": "8px",
+      "1.5": "12px",
+      "2": "16px",
+      "2.5": "20px",
+      "3": "24px",
+      "4": "32px",
+      "5": "40px",
+      "6": "48px",
+      "8": "64px"
+    }
+  },
+  "radius": {
+    "sm": "8px",
+    "md": "10px",
+    "lg": "12px",
+    "xl": "16px",
+    "2xl": "20px",
+    "full": "9999px"
+  },
+  "glass": {
+    "blur": "12px",
+    "background": "rgba(10, 10, 10, 0.7)",
+    "border": "rgba(255, 255, 255, 0.08)"
+  },
+  "animation": {
+    "durations": {
+      "fast": "150ms",
+      "normal": "200ms",
+      "slow": "300ms"
+    },
+    "easings": {
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "easeInOut": "cubic-bezier(0.4, 0, 0.2, 1)"
+    }
+  }
+}

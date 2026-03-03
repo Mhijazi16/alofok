@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin,
   Package,
   User,
+  Users,
   Globe,
   LogOut,
   Info,
@@ -12,19 +13,28 @@ import {
   Plus,
   Minus,
   Trash2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { TopBar } from "@/components/ui/top-bar";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { OfflineBanner } from "@/components/ui/offline-banner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
+import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatCard } from "@/components/ui/stat-card";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { DatePicker } from "@/components/ui/date-picker";
+import { FormField } from "@/components/ui/form-field";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { SearchInput } from "@/components/ui/search-input";
+import { Avatar } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "@/store";
@@ -33,6 +43,7 @@ import { salesApi, type Customer, type Product, type OrderItem } from "@/service
 import { syncQueue } from "@/lib/syncQueue";
 import { getImageUrl } from "@/lib/image";
 
+import { ProductDetail } from "@/components/ui/product-detail";
 import { RouteView } from "./RouteView";
 import { CustomerDashboard } from "./CustomerDashboard";
 import { OrderFlow, type CartItem } from "./OrderFlow";
@@ -44,12 +55,204 @@ type View =
   | "route"
   | "catalog"
   | "cart"
+  | "customers"
   | "profile"
   | "customer"
   | "order"
   | "payment"
   | "statement"
-  | "customerForm";
+  | "customerForm"
+  | "productDetail";
+
+/* ------------------------------------------------------------------ */
+/*  AllCustomersView — browse all rep's customers                      */
+/* ------------------------------------------------------------------ */
+const DAYS_LIST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"] as const;
+
+interface AllCustomersViewProps {
+  onSelectCustomer: (customer: Customer) => void;
+  onAddCustomer: () => void;
+}
+
+function AllCustomersView({ onSelectCustomer, onAddCustomer }: AllCustomersViewProps) {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+  const [search, setSearch] = useState("");
+  const [dayFilter, setDayFilter] = useState("all");
+
+  const { data: customers, isLoading } = useQuery({
+    queryKey: ["my-customers"],
+    queryFn: salesApi.getMyCustomers,
+  });
+
+  const filtered = useMemo(() => {
+    if (!customers) return [];
+    let list = customers;
+    if (dayFilter !== "all") {
+      list = list.filter((c) => c.assigned_day === dayFilter);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.city.toLowerCase().includes(q) ||
+          (c.phone && c.phone.includes(q))
+      );
+    }
+    return list;
+  }, [customers, search, dayFilter]);
+
+  // Group by assigned_day
+  const grouped = useMemo(() => {
+    if (dayFilter !== "all") return null;
+    const map = new Map<string, Customer[]>();
+    for (const c of filtered) {
+      const existing = map.get(c.assigned_day) ?? [];
+      existing.push(c);
+      map.set(c.assigned_day, existing);
+    }
+    return map;
+  }, [filtered, dayFilter]);
+
+  const formatCurrency = (val: number) =>
+    val.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+
+  const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
+
+  const renderCustomerCard = (customer: Customer, idx: number) => {
+    const balanceVariant: "success" | "warning" | "danger" =
+      customer.balance <= 0
+        ? "success"
+        : customer.balance < 5000
+          ? "warning"
+          : "danger";
+
+    return (
+      <Card
+        key={customer.id}
+        variant="interactive"
+        className="animate-slide-up p-4"
+        style={{ animationDelay: `${idx * 40}ms` }}
+        onClick={() => onSelectCustomer(customer)}
+      >
+        <div className="flex items-center gap-3">
+          <Avatar name={customer.name} size="md" />
+          <div className="min-w-0 flex-1">
+            <p className="text-body-sm font-semibold text-foreground truncate">
+              {customer.name}
+            </p>
+            <p className="text-caption text-muted-foreground truncate">
+              {customer.city}
+              {customer.phone && ` · ${customer.phone}`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Badge variant={balanceVariant} dot size="sm">
+              {formatCurrency(customer.balance)}
+            </Badge>
+            <ChevronIcon className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="animate-fade-in">
+      <TopBar
+        title={t("customer.allCustomers")}
+        subtitle={!isLoading ? `${customers?.length ?? 0} ${t("customer.totalCustomers").toLowerCase()}` : undefined}
+      />
+
+      <div className="space-y-4 p-4">
+        {/* Day filter pills */}
+        <div className="overflow-x-auto -mx-4 px-4 scrollbar-none">
+          <Tabs value={dayFilter} onValueChange={setDayFilter}>
+            <TabsList variant="segment" className="w-full">
+              <TabsTrigger value="all" className="flex-1 min-w-0">
+                {t("actions.viewAll")}
+              </TabsTrigger>
+              {DAYS_LIST.map((day) => (
+                <TabsTrigger
+                  key={day}
+                  value={day}
+                  className="flex-1 min-w-0"
+                >
+                  {t(`customer.days.${day}`)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {/* Search */}
+        <SearchInput
+          placeholder={t("customer.searchCustomers")}
+          onSearch={setSearch}
+        />
+
+        {/* Customer List */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} variant="card" className="h-20" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          search.trim() ? (
+            <EmptyState preset="no-results" />
+          ) : (
+            <EmptyState
+              icon={Users}
+              title={t("customer.noCustomers")}
+              action={{ label: t("customer.addNew"), onClick: onAddCustomer }}
+            />
+          )
+        ) : grouped ? (
+          // Grouped by day
+          <div className="space-y-5">
+            {DAYS_LIST.filter((d) => grouped.has(d)).map((day) => {
+              const dayCustomers = grouped.get(day)!;
+              return (
+                <div key={day}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-caption font-semibold text-primary uppercase tracking-wider">
+                      {t(`customer.days.${day}`)}
+                    </span>
+                    <div className="h-px flex-1 bg-border" />
+                    <Badge variant="outline" size="sm">
+                      {dayCustomers.length}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {dayCustomers.map((c, idx) => renderCustomerCard(c, idx))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          // Flat list (filtered by specific day)
+          <div className="space-y-2">
+            {filtered.map((c, idx) => renderCustomerCard(c, idx))}
+          </div>
+        )}
+      </div>
+
+      {/* FAB — Add Customer */}
+      <button
+        onClick={onAddCustomer}
+        className="fixed bottom-20 end-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 active:scale-95 transition-transform"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+    </div>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /*  CartView — full-page cart                                          */
@@ -80,7 +283,7 @@ function CartView({
   const cartItems = useMemo(() => Array.from(cart.values()), [cart]);
 
   const formatCurrency = (val: number) =>
-    val.toLocaleString(i18n.language === "ar" ? "ar-SA" : "en-US", {
+    val.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -240,6 +443,37 @@ function CartView({
 }
 
 /* ------------------------------------------------------------------ */
+/*  Helper: Calculate auto delivery date                                */
+/* ------------------------------------------------------------------ */
+function getAutoDeliveryDate(customerAssignedDay: string): Date {
+  const today = new Date();
+  const daysMap: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+
+  const customerDayNum = daysMap[customerAssignedDay];
+  const todayNum = today.getDay();
+
+  if (customerDayNum === todayNum) {
+    return today;
+  }
+
+  // Calculate days until next occurrence
+  let daysUntil = (customerDayNum - todayNum + 7) % 7;
+  if (daysUntil === 0) daysUntil = 7;
+
+  const nextDate = new Date(today);
+  nextDate.setDate(today.getDate() + daysUntil);
+  return nextDate;
+}
+
+/* ------------------------------------------------------------------ */
 /*  SalesRoot                                                          */
 /* ------------------------------------------------------------------ */
 export default function SalesRoot() {
@@ -259,6 +493,16 @@ export default function SalesRoot() {
     Customer | undefined
   >();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
+  const [customDeliveryDate, setCustomDeliveryDate] = useState(false);
+  const [avatarSeed, setAvatarSeed] = useState(
+    () => localStorage.getItem("alofok-avatar-seed") || userId || "user"
+  );
+  useEffect(() => {
+    localStorage.setItem("alofok-avatar-seed", avatarSeed);
+  }, [avatarSeed]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [prevViewBeforeProduct, setPrevViewBeforeProduct] = useState<View>("catalog");
 
   /* ---- Cart state — lifted from OrderFlow for persistence ---- */
   const [cart, setCart] = useState<Map<string, CartItem>>(() => {
@@ -332,6 +576,7 @@ export default function SalesRoot() {
     onSuccess: () => {
       if (selectedCustomer) {
         queryClient.invalidateQueries({ queryKey: ["my-route"] });
+        queryClient.invalidateQueries({ queryKey: ["route-orders"] });
         queryClient.invalidateQueries({ queryKey: ["insights", selectedCustomer.id] });
         queryClient.invalidateQueries({ queryKey: ["statement", selectedCustomer.id] });
       }
@@ -349,6 +594,8 @@ export default function SalesRoot() {
       toast({ title: t("cart.selectCustomer"), variant: "warning" });
       return;
     }
+    setDeliveryDate(getAutoDeliveryDate(selectedCustomer.assigned_day));
+    setCustomDeliveryDate(false);
     setConfirmOpen(true);
   }, [selectedCustomer, toast, t]);
 
@@ -361,7 +608,13 @@ export default function SalesRoot() {
       unit_price: ci.product.discounted_price ?? ci.product.price,
     }));
 
-    const payload = { customer_id: selectedCustomer.id, items };
+    const payload = {
+      customer_id: selectedCustomer.id,
+      items,
+      delivery_date: deliveryDate
+        ? deliveryDate.toISOString().split("T")[0]
+        : null,
+    };
 
     if (isOnline) {
       orderMutation.mutate(payload);
@@ -372,7 +625,8 @@ export default function SalesRoot() {
       setView("customer");
     }
     setConfirmOpen(false);
-  }, [selectedCustomer, cart, isOnline, orderMutation, clearCart, toast, t]);
+    setDeliveryDate(undefined);
+  }, [selectedCustomer, cart, isOnline, orderMutation, clearCart, toast, t, deliveryDate]);
 
   /* ---- Navigation helpers ---- */
   const navigateToCustomer = useCallback((customer: Customer) => {
@@ -391,6 +645,9 @@ export default function SalesRoot() {
         setView("route");
       }
       setEditingCustomer(undefined);
+    } else if (view === "productDetail") {
+      setSelectedProduct(null);
+      setView(prevViewBeforeProduct);
     } else if (
       view === "order" ||
       view === "payment" ||
@@ -398,7 +655,7 @@ export default function SalesRoot() {
     ) {
       setView("customer");
     }
-  }, [view, selectedCustomer]);
+  }, [view, selectedCustomer, prevViewBeforeProduct]);
 
   const navigateToAddCustomer = useCallback(() => {
     setEditingCustomer(undefined);
@@ -430,6 +687,12 @@ export default function SalesRoot() {
     setView("customer");
   }, []);
 
+  const navigateToProduct = useCallback((product: Product) => {
+    setSelectedProduct(product);
+    setPrevViewBeforeProduct(view as View);
+    setView("productDetail");
+  }, [view]);
+
   const toggleLanguage = () => {
     const next = i18n.language === "ar" ? "en" : "ar";
     i18n.changeLanguage(next);
@@ -438,10 +701,11 @@ export default function SalesRoot() {
   };
 
   const isMainView =
-    view === "route" || view === "catalog" || view === "cart" || view === "profile";
+    view === "route" || view === "catalog" || view === "cart" || view === "customers" || view === "profile";
 
   const bottomNavItems = [
     { icon: MapPin, label: t("nav.route"), value: "route" },
+    { icon: Users, label: t("nav.customers"), value: "customers" },
     { icon: Package, label: t("nav.catalog"), value: "catalog" },
     { icon: ShoppingCart, label: t("cart.title"), value: "cart", badge: cart.size || undefined },
     { icon: User, label: t("nav.profile"), value: "profile" },
@@ -468,6 +732,7 @@ export default function SalesRoot() {
             updateCartQty={updateCartQty}
             removeFromCart={removeFromCart}
             onViewCart={() => setView("cart")}
+            onViewProduct={navigateToProduct}
           />
         ) : (
           <OrderFlow
@@ -479,6 +744,15 @@ export default function SalesRoot() {
             updateCartQty={updateCartQty}
             removeFromCart={removeFromCart}
             onViewCart={() => setView("cart")}
+            onViewProduct={navigateToProduct}
+          />
+        );
+
+      case "customers":
+        return (
+          <AllCustomersView
+            onSelectCustomer={navigateToCustomer}
+            onAddCustomer={navigateToAddCustomer}
           />
         );
 
@@ -504,10 +778,9 @@ export default function SalesRoot() {
               {/* User Card */}
               <Card variant="glass" className="animate-slide-up">
                 <CardContent className="flex items-center gap-4 p-5">
-                  <Avatar
-                    name={userId ?? "User"}
-                    size="lg"
-                    status="online"
+                  <AvatarPicker
+                    currentSeed={avatarSeed}
+                    onSelect={setAvatarSeed}
                   />
                   <div className="min-w-0 flex-1">
                     <p className="text-h3 font-bold text-foreground truncate">
@@ -610,6 +883,33 @@ export default function SalesRoot() {
       );
     }
 
+    if (view === "productDetail" && selectedProduct) {
+      return (
+        <ProductDetail
+          product={selectedProduct}
+          onBack={() => {
+            setSelectedProduct(null);
+            setView(prevViewBeforeProduct);
+          }}
+          actions={
+            <Button
+              variant="gradient"
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                addToCart(selectedProduct);
+                setSelectedProduct(null);
+                setView(prevViewBeforeProduct);
+              }}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {t("catalog.addToOrder")}
+            </Button>
+          }
+        />
+      );
+    }
+
     if (!selectedCustomer) return null;
 
     switch (view) {
@@ -633,6 +933,7 @@ export default function SalesRoot() {
             updateCartQty={updateCartQty}
             removeFromCart={removeFromCart}
             onViewCart={() => setView("cart")}
+            onViewProduct={navigateToProduct}
           />
         );
       case "payment":
@@ -677,17 +978,43 @@ export default function SalesRoot() {
         {isMainView ? renderMainView() : renderSubView()}
       </div>
 
-      {/* Order Confirmation Dialog */}
-      <ConfirmationDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        title={t("confirm.orderTitle")}
-        description={t("confirm.orderDesc")}
-        confirmLabel={t("actions.confirm")}
-        cancelLabel={t("actions.cancel")}
-        onConfirm={handleConfirmOrder}
-        isLoading={orderMutation.isPending}
-      />
+      {/* Order Confirmation Dialog with Delivery Date */}
+      <Dialog open={confirmOpen} onOpenChange={(open) => { setConfirmOpen(open); if (!open) setDeliveryDate(undefined); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("confirm.orderTitle")}</DialogTitle>
+            <DialogDescription>{t("confirm.orderDesc")}</DialogDescription>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="custom-delivery"
+                checked={customDeliveryDate}
+                onCheckedChange={(checked) => setCustomDeliveryDate(checked as boolean)}
+              />
+              <label htmlFor="custom-delivery" className="text-sm text-muted-foreground cursor-pointer">
+                {t("catalog.customDeliveryDate") || "Set custom delivery date"}
+              </label>
+            </div>
+            <FormField label={t("catalog.deliveryDate")}>
+              <DatePicker
+                value={deliveryDate}
+                onChange={setDeliveryDate}
+                placeholder={t("catalog.selectDeliveryDate")}
+                disabled={!customDeliveryDate}
+              />
+            </FormField>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setConfirmOpen(false); setDeliveryDate(undefined); }} disabled={orderMutation.isPending}>
+              {t("actions.cancel")}
+            </Button>
+            <Button onClick={handleConfirmOrder} isLoading={orderMutation.isPending}>
+              {t("actions.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

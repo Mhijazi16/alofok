@@ -1,43 +1,190 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 25% 97%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --border: 214 24% 89%;
-    --input: 214 24% 89%;
-    --ring: 175 74% 26%;
-    --primary: 175 74% 26%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 30% 94%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 30% 94%;
-    --muted-foreground: 215 20% 50%;
-    --accent: 210 30% 94%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --radius: 0.75rem;
-  }
-}
+    /* Background scale */
+    --background: 0 0% 4%;
+    --background-subtle: 0 0% 7%;
+    --foreground: 0 0% 95%;
 
-@layer base {
+    /* Card surfaces */
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 95%;
+    --card-hover: 0 0% 11%;
+
+    /* Primary: Red */
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 0 72% 45%;
+
+    /* Secondary */
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 85%;
+
+    /* Muted */
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 55%;
+
+    /* Accent */
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 95%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Focus */
+    --border: 0 0% 16%;
+    --border-hover: 0 0% 25%;
+    --input: 0 0% 16%;
+    --ring: 0 72% 51%;
+
+    /* Semantic */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    /* Glass */
+    --glass-bg: 0 0% 6% / 0.7;
+    --glass-border: 0 0% 100% / 0.08;
+    --glass-blur: 12px;
+  }
+
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Cairo', system-ui, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Cairo', 'Inter', system-ui, sans-serif;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(0 0% 25%);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(0 0% 35%);
+  }
+
+  /* Focus visible for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 }
 
-/* Safe area for mobile bottom nav */
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+@layer utilities {
+  /* Glass morphism */
+  .glass {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    background: hsl(var(--glass-bg));
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  .glass-strong {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: hsl(0 0% 6% / 0.85);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+  }
+
+  /* Gradients */
+  .gradient-header {
+    background: linear-gradient(135deg, hsl(0 72% 51% / 0.15), hsl(0 0% 4%) 60%);
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(0 72% 51%), hsl(0 72% 40%));
+  }
+
+  .gradient-surface {
+    background: linear-gradient(180deg, hsl(0 0% 10%), hsl(0 0% 6%));
+  }
+
+  .gradient-glow {
+    background: radial-gradient(ellipse at 50% 0%, hsl(0 72% 51% / 0.12) 0%, transparent 60%);
+  }
+
+  .gradient-card {
+    background: linear-gradient(145deg, hsl(0 0% 10%), hsl(0 0% 7%));
+  }
+
+  /* Text gradients */
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(0 72% 60%), hsl(0 72% 45%));
+  }
+
+  /* Safe area */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Glass fallback for older browsers */
+  @supports not (backdrop-filter: blur(12px)) {
+    .glass {
+      background: hsl(0 0% 8% / 0.95);
+    }
+    .glass-strong {
+      background: hsl(0 0% 6% / 0.98);
+    }
+  }
+
+  /* Hide scrollbar */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glow effects */
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(0 72% 51% / 0.15), 0 0 40px hsl(0 72% 51% / 0.05);
+  }
+
+  .glow-sm {
+    box-shadow: 0 0 10px hsl(0 72% 51% / 0.1);
+  }
+
+  /* Toast progress bar shrink */
+  @keyframes shrink-x {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+
+  /* Noise texture overlay */
+  .noise {
+    position: relative;
+  }
+  .noise::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
 }

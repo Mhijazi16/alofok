@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   DollarSign,
   Calendar,
@@ -10,17 +10,20 @@ import {
   FileText,
   RotateCcw,
   Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
 
 type CustomerAction = "order" | "payment" | "statement" | "check";
@@ -38,7 +41,34 @@ export function CustomerDashboard({
   onAction,
   onEditCustomer,
 }: CustomerDashboardProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: drafts, isLoading: draftsLoading } = useQuery({
+    queryKey: ["drafts", customer.id],
+    queryFn: () => salesApi.getDraftOrders(customer.id),
+  });
+
+  const confirmMutation = useMutation({
+    mutationFn: salesApi.confirmDraft,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["drafts", customer.id] });
+      queryClient.invalidateQueries({ queryKey: ["insights", customer.id] });
+      queryClient.invalidateQueries({ queryKey: ["statement", customer.id] });
+      toast({ title: t("portal.draftConfirmedSuccess"), variant: "success" });
+    },
+    onError: () => toast({ title: t("toast.error"), variant: "error" }),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: salesApi.rejectDraft,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["drafts", customer.id] });
+      toast({ title: t("portal.draftRejectedSuccess"), variant: "success" });
+    },
+    onError: () => toast({ title: t("toast.error"), variant: "error" }),
+  });
 
   const { data: insights, isLoading: insightsLoading } = useQuery({
     queryKey: ["insights", customer.id],
@@ -53,17 +83,17 @@ export function CustomerDashboard({
   const recentEntries = recentStatement?.entries.slice(-3).reverse() ?? [];
 
   const formatCurrency = (val: number) =>
-    Math.abs(val).toLocaleString(i18n.language === "ar" ? "ar-SA" : "en-US", {
+    Math.abs(val).toLocaleString("en-US", {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     });
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString(
-      i18n.language === "ar" ? "ar-SA" : "en-US",
-      { month: "short", day: "numeric" }
-    );
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const riskStatusVariant = (risk: string | undefined) => {
@@ -266,6 +296,70 @@ export function CustomerDashboard({
             );
           })}
         </div>
+
+        {/* Pending Drafts */}
+        {draftsLoading ? (
+          <Skeleton variant="card" className="h-20" />
+        ) : drafts && drafts.length > 0 ? (
+          <div className="space-y-3">
+            <h3 className="text-h4 font-semibold text-foreground">
+              {t("portal.pendingDrafts")}
+              <Badge variant="warning" size="sm" className="ms-2">
+                {drafts.length}
+              </Badge>
+            </h3>
+            {drafts.map((draft, idx) => (
+              <Card
+                key={draft.id}
+                variant="glass"
+                className="animate-slide-up"
+                style={{ animationDelay: `${idx * 40}ms` }}
+              >
+                <CardContent className="flex items-center justify-between p-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="warning" size="sm">
+                        {t("portal.draftPending")}
+                      </Badge>
+                      <span className="text-caption text-muted-foreground">
+                        {new Date(draft.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-body-sm font-bold text-foreground mt-1">
+                      {Math.abs(draft.amount).toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      {draft.currency}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-9 w-9 border-success/50 text-success hover:bg-success/10"
+                      onClick={() => confirmMutation.mutate(draft.id)}
+                      disabled={confirmMutation.isPending || rejectMutation.isPending}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-9 w-9 border-destructive/50 text-destructive hover:bg-destructive/10"
+                      onClick={() => rejectMutation.mutate(draft.id)}
+                      disabled={confirmMutation.isPending || rejectMutation.isPending}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : null}
 
         {/* Recent Activity */}
         <div className="space-y-3">

@@ -162,7 +162,8 @@ export function ProductList({ onEdit, onAdd }: ProductListProps) {
               <Card
                 key={product.id}
                 variant="interactive"
-                className="group relative overflow-hidden"
+                className="group relative cursor-pointer overflow-hidden"
+                onClick={() => onEdit(product)}
               >
                 {/* Image */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">

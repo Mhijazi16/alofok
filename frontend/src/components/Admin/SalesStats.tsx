@@ -1,136 +1,240 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { adminApi, type SalesRepStats } from "@/services/adminApi";
+import { ShoppingCart, Banknote } from "lucide-react";
+
+import { PageContainer } from "@/components/layout/page-container";
+import { StatCard } from "@/components/ui/stat-card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { BarChart } from "@/components/ui/bar-chart";
+import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { adminApi } from "@/services/adminApi";
+import type { SalesStatsOut, SalesRepStats } from "@/services/adminApi";
 
 type Period = "week" | "month" | "year";
 
-function periodDates(p: Period): { start: string; end: string } {
-  const today = new Date();
-  const iso = (d: Date) => d.toISOString().split("T")[0];
-  const end = iso(today);
-  const start = new Date(today);
-  if (p === "week") start.setDate(start.getDate() - 7);
-  else if (p === "month") start.setMonth(start.getMonth() - 1);
-  else start.setFullYear(start.getFullYear() - 1);
-  return { start: iso(start), end };
+function getDateRange(period: Period): { start: string; end: string } {
+  const now = new Date();
+  const end = now.toISOString().split("T")[0];
+  const startDate = new Date(now);
+
+  switch (period) {
+    case "week":
+      startDate.setDate(startDate.getDate() - 7);
+      break;
+    case "month":
+      startDate.setMonth(startDate.getMonth() - 1);
+      break;
+    case "year":
+      startDate.setFullYear(startDate.getFullYear() - 1);
+      break;
+  }
+
+  const start = startDate.toISOString().split("T")[0];
+  return { start, end };
 }
 
-function RepBar({ rep, max }: { rep: SalesRepStats; max: number }) {
-  const orderPct = max > 0 ? (Number(rep.total_orders) / max) * 100 : 0;
-  const collectPct = max > 0 ? (Number(rep.total_collected) / max) * 100 : 0;
-
-  return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4">
-      <div className="flex items-center justify-between">
-        <span className="font-semibold">{rep.username}</span>
-        <span className="text-xs text-muted-foreground">
-          {rep.order_count} طلب · {rep.collection_count} تحصيل
-        </span>
-      </div>
-
-      {/* Orders bar */}
-      <div>
-        <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-          <span>طلبات</span>
-          <span className="font-medium text-foreground">
-            {Number(rep.total_orders).toLocaleString("ar-SA")}
-          </span>
-        </div>
-        <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${orderPct}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Collections bar */}
-      <div>
-        <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-          <span>تحصيل</span>
-          <span className="font-medium text-green-600">
-            {Number(rep.total_collected).toLocaleString("ar-SA")}
-          </span>
-        </div>
-        <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
-          <div
-            className="h-full rounded-full bg-green-500 transition-all"
-            style={{ width: `${collectPct}%` }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function SalesStats() {
+export function SalesStats() {
   const { t } = useTranslation();
-  const [period, setPeriod] = useState<Period>("month");
-  const dates = periodDates(period);
+  const [period, setPeriod] = useState<Period>("week");
+  const dateRange = useMemo(() => getDateRange(period), [period]);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-sales", period],
-    queryFn: () => adminApi.getSalesStats(dates.start, dates.end),
-    staleTime: 2 * 60 * 1000,
+  const { data, isLoading } = useQuery<SalesStatsOut>({
+    queryKey: ["admin-sales-stats", dateRange.start, dateRange.end],
+    queryFn: () => adminApi.getSalesStats(dateRange.start, dateRange.end),
   });
 
-  const maxVal = data
-    ? Math.max(...data.reps.map((r) => Math.max(Number(r.total_orders), Number(r.total_collected))))
-    : 0;
+  // Max values for progress bar normalization
+  const maxOrders = useMemo(() => {
+    if (!data?.reps?.length) return 1;
+    return Math.max(...data.reps.map((r: SalesRepStats) => r.total_orders), 1);
+  }, [data]);
 
-  const periods: Period[] = ["week", "month", "year"];
+  const maxCollected = useMemo(() => {
+    if (!data?.reps?.length) return 1;
+    return Math.max(...data.reps.map((r: SalesRepStats) => r.total_collected), 1);
+  }, [data]);
+
+  // Chart data: reps comparison
+  const chartData = useMemo(() => {
+    if (!data?.reps) return [];
+    return data.reps.map((rep: SalesRepStats) => ({
+      name: rep.username,
+      orders: rep.total_orders,
+      collections: rep.total_collected,
+    }));
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <div className="space-y-6">
+          <Skeleton variant="text" className="h-8 w-48" />
+          <Skeleton variant="card" className="h-12" />
+          <div className="grid grid-cols-2 gap-3">
+            <Skeleton variant="card" className="h-28" />
+            <Skeleton variant="card" className="h-28" />
+          </div>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} variant="card" className="h-36" />
+          ))}
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Period selector */}
-      <div className="flex rounded-xl border border-border overflow-hidden">
-        {periods.map((p) => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            className={`flex-1 py-2 text-sm font-semibold transition-colors ${
-              period === p
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-muted-foreground"
-            }`}
-          >
-            {t(`admin.period.${p}`)}
-          </button>
-        ))}
+    <PageContainer>
+      <div className="space-y-6">
+        {/* Title */}
+        <h1 className="text-h2 font-bold text-foreground">
+          {t("admin.salesStats")}
+        </h1>
+
+        {/* Period tabs */}
+        <Tabs
+          value={period}
+          onValueChange={(v) => setPeriod(v as Period)}
+        >
+          <TabsList variant="segment">
+            <TabsTrigger value="week">{t("admin.period.week")}</TabsTrigger>
+            <TabsTrigger value="month">{t("admin.period.month")}</TabsTrigger>
+            <TabsTrigger value="year">{t("admin.period.year")}</TabsTrigger>
+          </TabsList>
+
+          {/* Single content block — tabs only change the query period */}
+          <TabsContent value={period}>
+            <div className="space-y-6">
+              {/* Grand totals */}
+              <div className="grid grid-cols-2 gap-3">
+                <StatCard
+                  variant="glass"
+                  icon={ShoppingCart}
+                  value={data?.grand_total_orders.toLocaleString() ?? "0"}
+                  label={t("admin.totalOrders")}
+                />
+                <StatCard
+                  variant="glass"
+                  icon={Banknote}
+                  value={data?.grand_total_collected.toLocaleString() ?? "0"}
+                  label={t("admin.totalCollected")}
+                />
+              </div>
+
+              {/* Rep comparison chart */}
+              {chartData.length > 0 && (
+                <Card variant="glass">
+                  <CardHeader>
+                    <CardTitle>{t("admin.repPerformance")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <BarChart
+                      data={chartData}
+                      xAxisKey="name"
+                      bars={[
+                        {
+                          dataKey: "orders",
+                          label: t("admin.totalOrders"),
+                          color: "hsl(0 72% 51%)",
+                        },
+                        {
+                          dataKey: "collections",
+                          label: t("admin.totalCollected"),
+                          color: "hsl(0 0% 95%)",
+                        },
+                      ]}
+                      height={260}
+                      showLegend
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Per-rep cards */}
+              {data?.reps?.length ? (
+                <div className="space-y-3">
+                  {data.reps.map((rep: SalesRepStats) => {
+                    const collectionRate =
+                      rep.total_orders > 0
+                        ? Math.round(
+                            (rep.total_collected / rep.total_orders) * 100
+                          )
+                        : 0;
+
+                    return (
+                      <Card key={rep.user_id} variant="glass">
+                        <CardContent className="p-4 space-y-4">
+                          {/* Rep header */}
+                          <div className="flex items-center gap-3">
+                            <Avatar name={rep.username} size="md" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-body-sm font-semibold text-foreground truncate">
+                                {rep.username}
+                              </p>
+                              <div className="mt-1 flex items-center gap-2">
+                                <Badge
+                                  variant={
+                                    collectionRate >= 75
+                                      ? "success"
+                                      : collectionRate >= 40
+                                        ? "warning"
+                                        : "destructive"
+                                  }
+                                  size="sm"
+                                >
+                                  {t("admin.collectionRate")} {collectionRate}%
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Progress bars */}
+                          <div className="space-y-3">
+                            <Progress
+                              value={(rep.total_orders / maxOrders) * 100}
+                              label={`${t("admin.totalOrders")} — ${rep.total_orders.toLocaleString()}`}
+                              color="primary"
+                              showPercentage={false}
+                            />
+                            <Progress
+                              value={
+                                (rep.total_collected / maxCollected) * 100
+                              }
+                              label={`${t("admin.totalCollected")} — ${rep.total_collected.toLocaleString()}`}
+                              color="success"
+                              showPercentage={false}
+                            />
+                          </div>
+
+                          {/* Counts row */}
+                          <div className="flex items-center justify-between text-caption text-muted-foreground border-t border-border pt-3">
+                            <span>
+                              {rep.order_count} {t("admin.orderCount")}
+                            </span>
+                            <span>
+                              {rep.collection_count} {t("admin.collectionCount")}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyState
+                  preset="no-data"
+                  title={t("admin.noData")}
+                />
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {/* Totals */}
-      {data && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">{t("admin.totalOrders")}</p>
-            <p className="mt-1 text-xl font-bold text-primary">
-              {Number(data.grand_total_orders).toLocaleString("ar-SA")}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground">{t("admin.totalCollected")}</p>
-            <p className="mt-1 text-xl font-bold text-green-600">
-              {Number(data.grand_total_collected).toLocaleString("ar-SA")}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Per-rep bars */}
-      {isLoading ? (
-        Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 w-full" />
-        ))
-      ) : !data?.reps.length ? (
-        <p className="py-8 text-center text-muted-foreground">{t("admin.noData")}</p>
-      ) : (
-        data.reps.map((rep) => (
-          <RepBar key={rep.user_id} rep={rep} max={maxVal} />
-        ))
-      )}
-    </div>
+    </PageContainer>
   );
 }

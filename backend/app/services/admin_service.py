@@ -27,9 +27,7 @@ class AdminService:
 
     # ── Sales stats ─────────────────────────────────────────────────────────
 
-    async def get_sales_stats(
-        self, start_date: date, end_date: date
-    ) -> SalesStatsOut:
+    async def get_sales_stats(self, start_date: date, end_date: date) -> SalesStatsOut:
         start_dt = datetime.combine(start_date, time.min)
         end_dt = datetime.combine(end_date, time.max)
 
@@ -85,8 +83,7 @@ class AdminService:
 
     async def get_debt_stats(self) -> DebtStatsOut:
         # Total + by city
-        city_rows = await self.db.execute(
-            text("""
+        city_rows = await self.db.execute(text("""
                 SELECT city,
                        SUM(balance)  AS total_debt,
                        COUNT(id)     AS customer_count
@@ -94,8 +91,7 @@ class AdminService:
                 WHERE is_deleted = false
                 GROUP BY city
                 ORDER BY total_debt DESC
-            """)
-        )
+            """))
         by_city = [
             CityDebtOut(
                 city=r.city,

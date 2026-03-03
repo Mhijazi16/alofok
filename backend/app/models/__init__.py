@@ -45,3 +45,4 @@ from app.models.transaction import (  # noqa: E402, F401
     TransactionStatus,
     Currency,
 )
+from app.models.customer_auth import CustomerAuth  # noqa: E402, F401
