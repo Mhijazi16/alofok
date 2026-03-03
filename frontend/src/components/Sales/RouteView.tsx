@@ -12,7 +12,7 @@ import {
   Clock,
   Receipt,
 } from "lucide-react";
-import { salesApi, type Customer } from "@/services/salesApi";
+import { salesApi, type Customer, type OrderWithCustomer } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OrderModal } from "./OrderModal";
 
 interface RouteViewProps {
   onSelectCustomer: (customer: Customer) => void;
@@ -64,6 +65,8 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
   const isRTL = i18n.language === "ar";
   const [selectedDay, setSelectedDay] = useState(getTodayCode);
   const [search, setSearch] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
 
   // Compute actual calendar date for the selected day tab (current week)
   const selectedDate = useMemo(() => {
@@ -437,6 +440,12 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
         </button>
       )}
 
+      {/* Order Modal */}
+      <OrderModal
+        order={selectedOrder}
+        open={orderModalOpen}
+        onOpenChange={setOrderModalOpen}
+      />
     </div>
   );
 }
