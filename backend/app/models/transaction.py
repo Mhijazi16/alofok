@@ -65,7 +65,7 @@ class Transaction(BaseMixin, Base):
         Date, nullable=True, index=True
     )
     delivered_date: Mapped[_dt.datetime | None] = mapped_column(
-        DateTime, nullable=True, index=True
+        DateTime(timezone=True), nullable=True, index=True
     )
 
     customer: Mapped["Customer"] = relationship(  # type: ignore[name-defined]
