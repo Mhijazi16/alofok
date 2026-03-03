@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from app.core.errors import HorizonException
@@ -143,5 +144,21 @@ class OrderService:
             new_customer.balance += balance_diff
             await self._customers.update_balance(new_customer)
 
+        txn = await self._transactions.update(txn)
+        return TransactionOut.model_validate(txn)
+
+    async def confirm_delivery(
+        self, order_id: uuid.UUID, confirmer_id: uuid.UUID
+    ) -> TransactionOut:
+        """Mark an order as delivered (locks it from editing)."""
+        txn = await self._transactions.get_by_id(order_id)
+        if txn is None:
+            raise HorizonException(404, "Order not found")
+        if txn.type != TransactionType.Order:
+            raise HorizonException(400, "Can only confirm order delivery")
+        if txn.delivered_date is not None:
+            raise HorizonException(400, "Order already marked as delivered")
+
+        txn.delivered_date = datetime.now(timezone.utc)
         txn = await self._transactions.update(txn)
         return TransactionOut.model_validate(txn)

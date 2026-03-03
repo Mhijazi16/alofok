@@ -49,3 +49,14 @@ async def reject_draft(
     order_id: uuid.UUID, current_user: CurrentUser, service: OrderSvc
 ) -> TransactionOut:
     return await service.reject_draft(order_id, uuid.UUID(current_user["sub"]))
+
+
+@router.put(
+    "/{order_id}/deliver",
+    response_model=TransactionOut,
+    dependencies=[require_sales],
+)
+async def deliver_order(
+    order_id: uuid.UUID, current_user: CurrentUser, service: OrderSvc
+) -> TransactionOut:
+    return await service.confirm_delivery(order_id, uuid.UUID(current_user["sub"]))
