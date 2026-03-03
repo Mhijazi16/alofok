@@ -3,7 +3,7 @@ import enum
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, Enum as SAEnum, ForeignKey, Numeric, String
+from sqlalchemy import Boolean, Date, DateTime, Enum as SAEnum, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -63,6 +63,9 @@ class Transaction(BaseMixin, Base):
     is_draft: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     delivery_date: Mapped[_dt.date | None] = mapped_column(
         Date, nullable=True, index=True
+    )
+    delivered_date: Mapped[_dt.datetime | None] = mapped_column(
+        DateTime, nullable=True, index=True
     )
 
     customer: Mapped["Customer"] = relationship(  # type: ignore[name-defined]
