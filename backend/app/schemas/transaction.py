@@ -20,6 +20,7 @@ class TransactionOut(BaseModel):
     related_transaction_id: uuid.UUID | None
     is_draft: bool = False
     delivery_date: date | None = None
+    delivered_date: datetime | None = None
 
     model_config = {"from_attributes": True}
 
