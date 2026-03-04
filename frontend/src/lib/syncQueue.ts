@@ -6,7 +6,8 @@
 
 const DB_NAME = "alofok_offline";
 const STORE = "sync_queue";
-const VERSION = 1;
+const VERSION = 2;
+export const IMAGE_STORE = "check_images";
 
 export interface QueueItem {
   id?: number;
@@ -23,6 +24,12 @@ function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: "id", autoIncrement: true });
       }
+      if (!db.objectStoreNames.contains(IMAGE_STORE)) {
+        db.createObjectStore(IMAGE_STORE, { keyPath: "id", autoIncrement: true });
+      }
+    };
+    req.onblocked = () => {
+      console.warn("[syncQueue] IndexedDB upgrade blocked — close other tabs");
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
