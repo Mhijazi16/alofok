@@ -34,7 +34,9 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
   2. User can select a bank name from previously used banks or type a new one
   3. All existing check payment records load without errors across statement, admin, and sales views
   4. Backend rejects malformed check payloads and validates check fields via typed schema
-**Plans**: TBD
+**Plans**: 2 plans
+  - [ ] 06-01-PLAN.md -- Backend CheckData schema, service validation, data migration, frontend types, locales
+  - [ ] 06-02-PLAN.md -- BankAutocomplete component, PaymentFlow form expansion, logout cleanup
 
 ### Phase 7: SVG Check Preview
 **Goal**: User sees a live, realistic bank check SVG beside the form that reflects exactly what they have entered
@@ -76,7 +78,7 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 6. Check Data Foundation | v1.1 | 0/? | Not started | - |
+| 6. Check Data Foundation | v1.1 | 0/2 | Planning complete | - |
 | 7. SVG Check Preview | v1.1 | 0/? | Not started | - |
 | 8. Check Lifecycle Management | v1.1 | 0/? | Not started | - |
 | 9. Image Capture and OCR | v1.1 | 0/? | Not started | - |
