@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Check Enhancement
 status: unknown
-last_updated: "2026-03-04T12:09:04.450Z"
+last_updated: "2026-03-04T12:13:37.564Z"
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # State: Alofok
@@ -23,24 +23,24 @@ See: .planning/PROJECT.md (updated 2026-03-04)
 ## Current Position
 
 Phase: 6 of 9 (Check Data Foundation)
-Plan: 1 of 2 in current phase
-Status: Executing — 06-01 complete, 06-02 pending
-Last activity: 2026-03-04 — 06-01 executed: CheckData schema, payment service, migration, frontend types, locale keys
+Plan: 2 of 2 in current phase — PHASE COMPLETE
+Status: Phase 6 complete — 06-01 and 06-02 both done
+Last activity: 2026-03-04 — 06-02 executed: BankAutocomplete, expanded check form (6 fields), logout bank history cleanup
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
+- Total plans completed: 2
 - Average duration: ~2.5 min
-- Total execution time: 143s
+- Total execution time: 284s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 06 | 1/2 | 143s | 143s |
+| 06 | 2/2 | 284s | 142s |
 
 *Updated after each plan completion*
 
@@ -58,6 +58,9 @@ Recent decisions affecting current work:
 - [v1.1 scope]: Bank autocomplete localStorage scoped by user ID to prevent cross-user leakage
 - [Phase 06]: All CheckData fields optional (None defaults) for backward compat with pre-v1.1 check rows
 - [Phase 06]: model_dump(exclude_none=True) used before JSONB storage to keep stored JSON clean
+- [Phase 06]: cmdk v1 named imports used (CommandInput/CommandList/CommandItem) + shouldFilter=false for manual history filtering
+- [Phase 06]: userId-scoped localStorage key pattern: alofok_banks_{userId} prevents cross-user history leakage
+- [Phase 06]: saveBankToHistory called before isOnline check so offline check submissions also build autocomplete history
 
 ### Pending Todos
 
@@ -71,5 +74,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-04
-Stopped at: Completed 06-01-PLAN.md. CheckData schema foundation built. Ready to execute 06-02: BankAutocomplete + PaymentFlow form.
+Stopped at: Completed 06-02-PLAN.md. BankAutocomplete + expanded check form built. Phase 6 complete. Ready for Phase 7: SVG check preview.
 Resume file: None

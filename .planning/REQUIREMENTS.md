@@ -13,7 +13,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **CHK-02**: User can enter branch number (required for check payments)
 - [x] **CHK-03**: User can enter account number (required for check payments)
 - [x] **CHK-04**: User can enter holder name (optional)
-- [ ] **CHK-05**: User can select bank name from dropdown of previously used banks or type a new one
+- [x] **CHK-05**: User can select bank name from dropdown of previously used banks or type a new one
 - [x] **CHK-06**: Existing check records (pre-v1.1) load without errors through all read paths
 - [x] **CHK-07**: Backend validates check data via typed CheckData model (not raw dict)
 
@@ -86,7 +86,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHK-02 | Phase 6 | Complete |
 | CHK-03 | Phase 6 | Complete |
 | CHK-04 | Phase 6 | Complete |
-| CHK-05 | Phase 6 | Pending |
+| CHK-05 | Phase 6 | Complete |
 | CHK-06 | Phase 6 | Complete |
 | CHK-07 | Phase 6 | Complete |
 | PRV-01 | Phase 7 | Pending |
