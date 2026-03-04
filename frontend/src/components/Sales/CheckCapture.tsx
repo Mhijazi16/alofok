@@ -1,8 +1,7 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Camera, Image as ImageIcon, RefreshCw, ScanLine, X } from "lucide-react";
+import { Camera, Image as ImageIcon, RefreshCw, X } from "lucide-react";
 import { compressImage } from "@/lib/imageCompression";
-import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -11,8 +10,6 @@ interface CheckCaptureProps {
   imagePreviewUrl: string | null;
   onCapture: (blob: Blob, previewUrl: string) => void;
   onRemove: () => void;
-  isScanning?: boolean;
-  onScanCheck?: () => void;
 }
 
 export function CheckCapture({
@@ -20,8 +17,6 @@ export function CheckCapture({
   imagePreviewUrl,
   onCapture,
   onRemove,
-  isScanning,
-  onScanCheck,
 }: CheckCaptureProps) {
   const { t } = useTranslation();
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -91,14 +86,6 @@ export function CheckCapture({
               className="w-full rounded-lg object-cover border border-border"
               style={{ maxHeight: "220px" }}
             />
-            {isScanning && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 rounded-lg">
-                <Spinner size="lg" color="white" />
-                <span className="text-body-sm font-medium text-white">
-                  {t("capture.scanning")}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Action buttons row */}
@@ -109,7 +96,6 @@ export function CheckCapture({
               size="sm"
               className="flex-1"
               onClick={handleRetake}
-              disabled={isScanning}
             >
               <RefreshCw className="h-4 w-4 me-1.5" />
               {t("capture.retake")}
@@ -120,27 +106,12 @@ export function CheckCapture({
               size="sm"
               className="flex-1 border-destructive/50 text-destructive hover:bg-destructive/10"
               onClick={onRemove}
-              disabled={isScanning}
             >
               <X className="h-4 w-4 me-1.5" />
               {t("capture.removePhoto")}
             </Button>
           </div>
 
-          {/* Scan Check button (wired in Plan 03) */}
-          {onScanCheck && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="w-full max-w-xs"
-              onClick={onScanCheck}
-              disabled={isScanning}
-            >
-              <ScanLine className="h-4 w-4 me-1.5" />
-              {isScanning ? t("capture.scanning") : t("capture.scanCheck")}
-            </Button>
-          )}
         </div>
       ) : (
         /* Capture mode */

@@ -45,6 +45,7 @@ import { CustomerDashboard } from "./CustomerDashboard";
 import { OrderFlow } from "./OrderFlow";
 import { PaymentFlow } from "./PaymentFlow";
 import { StatementView } from "./StatementView";
+import { ReturnedChecksView } from "./ReturnedChecksView";
 import { CustomerForm } from "./CustomerForm";
 import { AllCustomersView } from "./AllCustomersView";
 
@@ -58,6 +59,7 @@ type View =
   | "order"
   | "payment"
   | "statement"
+  | "returnedChecks"
   | "customerForm"
   | "productDetail";
 
@@ -473,7 +475,8 @@ export default function SalesRoot() {
     } else if (
       view === "order" ||
       view === "payment" ||
-      view === "statement"
+      view === "statement" ||
+      view === "returnedChecks"
     ) {
       setView("customer");
     }
@@ -492,7 +495,7 @@ export default function SalesRoot() {
   const handleCustomerAction = useCallback(
     (action: "order" | "payment" | "statement" | "check") => {
       if (action === "check") {
-        setView("statement");
+        setView("returnedChecks");
       } else {
         setView(action);
       }
@@ -786,6 +789,13 @@ export default function SalesRoot() {
       case "statement":
         return (
           <StatementView
+            customer={selectedCustomer}
+            onBack={navigateBack}
+          />
+        );
+      case "returnedChecks":
+        return (
+          <ReturnedChecksView
             customer={selectedCustomer}
             onBack={navigateBack}
           />

@@ -455,9 +455,15 @@
     "removePhoto": "Remove Photo",
     "scanCheck": "Scan Check",
     "scanning": "Scanning...",
-    "uploadPending": "Upload Pending"
+    "uploadPending": "Upload Pending",
+    "ocrFailed": "OCR scan failed. Please enter details manually.",
+    "ocrNoResults": "Could not read any fields from this image. Please enter details manually."
   },
-  "ocrFailed": "OCR scan failed. Please enter details manually.",
+  "returnedChecks": {
+    "empty": "No Returned Checks",
+    "emptyDesc": "This customer has no returned checks.",
+    "count": "returned checks"
+  },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",
     "offline": "You are offline. Data will sync when connection resumes.",
