@@ -4,7 +4,8 @@ import uuid
 from fastapi import APIRouter, File, UploadFile
 
 from app.api.deps import AdminSvc, CurrentUser, CustomerSvc, UserRepo, require_admin
-from app.schemas.admin import DebtStatsOut, ImportResult, SalesStatsOut
+from app.models.transaction import TransactionStatus
+from app.schemas.admin import CheckOut, DebtStatsOut, ImportResult, SalesStatsOut
 from app.schemas.customer import (
     AdminCustomerCreate,
     CustomerOut,
@@ -89,3 +90,11 @@ async def update_customer(
 async def list_sales_reps(repo: UserRepo) -> list[SalesRepOut]:
     reps = await repo.get_sales_reps()
     return [SalesRepOut.model_validate(r) for r in reps]
+
+
+@router.get("/checks", response_model=list[CheckOut], dependencies=[require_admin])
+async def list_checks(
+    service: AdminSvc,
+    status: TransactionStatus | None = None,
+) -> list[CheckOut]:
+    return await service.get_all_checks(status)

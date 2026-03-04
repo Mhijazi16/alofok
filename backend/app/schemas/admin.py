@@ -1,7 +1,11 @@
 import uuid
+from datetime import datetime
 from decimal import Decimal
 
 from pydantic import BaseModel
+
+from app.models.transaction import Currency, TransactionStatus, TransactionType
+from app.schemas.transaction import CheckData
 
 
 class SalesRepStatsOut(BaseModel):
@@ -45,3 +49,19 @@ class DebtStatsOut(BaseModel):
 class ImportResult(BaseModel):
     created: int
     errors: list[str]
+
+
+class CheckOut(BaseModel):
+    id: uuid.UUID
+    customer_id: uuid.UUID
+    customer_name: str
+    type: TransactionType
+    currency: Currency
+    amount: Decimal
+    status: TransactionStatus | None
+    notes: str | None
+    data: CheckData | None
+    created_at: datetime
+    related_transaction_id: uuid.UUID | None
+
+    model_config = {"from_attributes": True}

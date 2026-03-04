@@ -11,6 +11,7 @@ from app.models.transaction import Transaction, TransactionStatus, TransactionTy
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.admin import (
+    CheckOut,
     CityDebtOut,
     DebtStatsOut,
     ImportResult,
@@ -177,6 +178,42 @@ class AdminService:
         summary = [dict(r._mapping) for r in rows]
         await send_eod_alert(target, summary)
         return {"date": target.isoformat(), "rows": len(summary)}
+
+    # ── Check list ───────────────────────────────────────────────────────────
+
+    async def get_all_checks(
+        self, status: TransactionStatus | None = None
+    ) -> list[CheckOut]:
+        query = (
+            select(Transaction, Customer.name.label("customer_name"))
+            .join(Customer, Transaction.customer_id == Customer.id)
+            .where(
+                Transaction.type == TransactionType.Payment_Check,
+                Transaction.is_deleted.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        if status is not None:
+            query = query.where(Transaction.status == status)
+
+        result = await self.db.execute(query)
+        rows = result.all()
+        return [
+            CheckOut(
+                id=row.Transaction.id,
+                customer_id=row.Transaction.customer_id,
+                customer_name=row.customer_name,
+                type=row.Transaction.type,
+                currency=row.Transaction.currency,
+                amount=row.Transaction.amount,
+                status=row.Transaction.status,
+                notes=row.Transaction.notes,
+                data=row.Transaction.data,
+                created_at=row.Transaction.created_at,
+                related_transaction_id=row.Transaction.related_transaction_id,
+            )
+            for row in rows
+        ]
 
     # ── Customer import ──────────────────────────────────────────────────────
 
