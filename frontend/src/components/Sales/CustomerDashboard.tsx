@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertTriangle,
   DollarSign,
   Calendar,
   Clock,
@@ -14,6 +16,8 @@ import {
   X,
 } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
+import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
+import type { CheckOut } from "@/services/adminApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +47,15 @@ export function CustomerDashboard({
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const [returnedCheckIdx, setReturnedCheckIdx] = useState(0);
+  const [returnedCheckDialogOpen, setReturnedCheckDialogOpen] = useState(false);
+
+  const { data: returnedChecks } = useQuery({
+    queryKey: ["returned-checks", customer.id],
+    queryFn: () => salesApi.getReturnedChecks(customer.id),
+    enabled: (customer.returned_checks_count ?? 0) > 0,
+  });
 
   const { data: drafts, isLoading: draftsLoading } = useQuery({
     queryKey: ["drafts", customer.id],
@@ -192,6 +205,33 @@ export function CustomerDashboard({
       />
 
       <div className="space-y-5 p-4">
+        {(customer.returned_checks_count ?? 0) > 0 && (
+          <Card
+            variant="glass"
+            className="border-destructive/30 bg-destructive/5 cursor-pointer animate-slide-up"
+            onClick={() => {
+              setReturnedCheckIdx(0);
+              setReturnedCheckDialogOpen(true);
+            }}
+          >
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/15">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-body-sm font-semibold text-destructive">
+                  {t("checkDetail.returnedWarning", {
+                    count: customer.returned_checks_count,
+                  })}
+                </p>
+                <p className="text-caption text-muted-foreground">
+                  {t("checkDetail.viewCheck")}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Insight Stats — horizontal cards */}
         {insightsLoading ? (
           <div className="space-y-3">
@@ -449,6 +489,30 @@ export function CustomerDashboard({
           )}
         </div>
       </div>
+
+      {returnedChecks && returnedChecks.length > 0 && (
+        <CheckDetailDialog
+          check={returnedChecks[returnedCheckIdx] ?? null}
+          open={returnedCheckDialogOpen}
+          onOpenChange={setReturnedCheckDialogOpen}
+          navigation={
+            returnedChecks.length > 1
+              ? {
+                  current: returnedCheckIdx + 1,
+                  total: returnedChecks.length,
+                  onPrev:
+                    returnedCheckIdx > 0
+                      ? () => setReturnedCheckIdx((i) => i - 1)
+                      : undefined,
+                  onNext:
+                    returnedCheckIdx < returnedChecks.length - 1
+                      ? () => setReturnedCheckIdx((i) => i + 1)
+                      : undefined,
+                }
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }
