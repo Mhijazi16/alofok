@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Check Enhancement
 status: unknown
-last_updated: "2026-03-04T12:53:08.633Z"
+last_updated: "2026-03-04T12:57:32.626Z"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # State: Alofok
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Sales Reps can visit customers, take orders, collect payments, and resolve balance disputes — even offline.
-**Current focus:** v1.1 Check Enhancement — Phase 7: SVG Check Preview
+**Current focus:** v1.1 Check Enhancement — Phase 8: Check Lifecycle Management
 
 ## Current Position
 
-Phase: 7 of 9 (SVG Check Preview)
-Plan: 1 of 2 complete
-Status: In Progress — 07-01 complete, ready for 07-02
-Last activity: 2026-03-04 — 07-01 complete (amountToWords + MICR font foundation)
+Phase: 7 of 9 (SVG Check Preview) — COMPLETE
+Plan: 2 of 2 complete
+Status: Phase 7 done — ready for Phase 8 (Check Lifecycle Management)
+Last activity: 2026-03-04 — 07-02 complete (CheckPreview SVG + PaymentFlow integration)
 
-Progress: [███░░░░░░░] 30%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
@@ -41,7 +41,7 @@ Progress: [███░░░░░░░] 30%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 06 | 2/2 | 284s | 142s |
-| 07 | 1/2 | 143s | 143s |
+| 07 | 2/2 | 274s | 137s |
 
 *Updated after each plan completion*
 
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - [Phase 06]: saveBankToHistory called before isOnline check so offline check submissions also build autocomplete history
 - [Phase 07]: to-words@5.2.0 with doNotAddOnly:true removes 'Only' suffix — produces clean 'X Shekels And Y Agorot' output
 - [Phase 07]: MICR font is placeholder (Strategy B) — needs manual replacement with OFL-licensed font file
+- [Phase 07]: dir=ltr on outer div and direction=ltr on SVG text elements for belt-and-suspenders RTL protection
+- [Phase 07]: focusedField state lives in PaymentFlow, passed as prop to CheckPreview (single source of truth)
+- [Phase 07]: textLength + lengthAdjust=spacingAndGlyphs for written amount overflow (no truncation)
 
 ### Pending Todos
 
@@ -77,5 +80,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-04
-Stopped at: Completed 07-01-PLAN.md — amountToWords utility and MICR font foundation
-Resume with: /gsd:execute-phase 07 (plan 07-02)
+Stopped at: Completed 07-02-PLAN.md — CheckPreview SVG integration into PaymentFlow
+Resume with: /gsd:execute-phase 08 (Phase 8: Check Lifecycle Management)
