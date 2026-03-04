@@ -47,7 +47,9 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
   2. The amount displays as both digits and written-out English words on the check face
   3. The check SVG remains left-to-right when the app is in Arabic mode
   4. Typing in the form fields does not cause perceptible lag on a mid-range Android device
-**Plans**: TBD
+**Plans**: 2 plans
+  - [ ] 07-01-PLAN.md -- Install to-words, create amountToWords.ts utility, add MICR font and @font-face
+  - [ ] 07-02-PLAN.md -- Create CheckPreview SVG component, integrate into PaymentFlow with focusedField tracking
 
 ### Phase 8: Check Lifecycle Management
 **Goal**: Admin can advance check status from Pending to Deposited, and mark any non-terminal check as Returned, with the UI preventing invalid transitions
@@ -79,6 +81,6 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 6. Check Data Foundation | 2/2 | Complete   | 2026-03-04 | - |
-| 7. SVG Check Preview | v1.1 | 0/? | Not started | - |
+| 7. SVG Check Preview | v1.1 | 0/2 | Planned | - |
 | 8. Check Lifecycle Management | v1.1 | 0/? | Not started | - |
 | 9. Image Capture and OCR | v1.1 | 0/? | Not started | - |
