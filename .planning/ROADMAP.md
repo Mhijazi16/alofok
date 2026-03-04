@@ -76,7 +76,12 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
   4. User can trigger OCR on a captured photo and see pre-filled form fields with per-field confidence indicators
   5. OCR results are never auto-submitted — the user must review and confirm each field
   6. If OCR fails or is unavailable, the form remains fully usable and shows a clear error state
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 09-01-PLAN.md -- Backend upload endpoint, IndexedDB V2 upgrade, checkImageQueue, imageCompression, salesApi upload
+- [ ] 09-02-PLAN.md -- CheckCapture component with camera/gallery, PaymentFlow integration, offline blob queueing
+- [ ] 09-03-PLAN.md -- useOcr hook (Tesseract.js), OCR field extraction, confidence borders, error handling
+- [ ] 09-04-PLAN.md -- CheckPhotoThumbnail component, photo display in Admin/Sales/Customer views
 
 ## Progress
 
@@ -85,4 +90,4 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
 | 6. Check Data Foundation | 2/2 | Complete   | 2026-03-04 | - |
 | 7. SVG Check Preview | 2/2 | Complete   | 2026-03-04 | - |
 | 8. Check Lifecycle Management | 2/2 | Complete   | 2026-03-04 | - |
-| 9. Image Capture and OCR | v1.1 | 0/? | Not started | - |
+| 9. Image Capture and OCR | v1.1 | 0/4 | Not started | - |
