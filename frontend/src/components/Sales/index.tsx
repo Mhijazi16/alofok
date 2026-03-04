@@ -539,7 +539,6 @@ export default function SalesRoot() {
         return (
           <RouteView
             onSelectCustomer={navigateToCustomer}
-            onAddCustomer={navigateToAddCustomer}
           />
         );
 

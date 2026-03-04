@@ -7,11 +7,11 @@ import {
   Wallet,
   ChevronLeft,
   ChevronRight,
-  Plus,
   ShoppingBag,
   Clock,
   Receipt,
   Check,
+  Undo2,
 } from "lucide-react";
 import { salesApi, type Customer, type OrderWithCustomer } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
@@ -24,12 +24,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useToast } from "@/hooks/useToast";
 import { OrderModal } from "./OrderModal";
 
 interface RouteViewProps {
   onSelectCustomer: (customer: Customer) => void;
-  onAddCustomer?: () => void;
 }
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"] as const;
@@ -63,7 +63,7 @@ const formatCurrency = (val: number) =>
     maximumFractionDigits: 0,
   });
 
-export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
+export function RouteView({ onSelectCustomer }: RouteViewProps) {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const { toast } = useToast();
@@ -72,6 +72,8 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [confirmDeliverOrder, setConfirmDeliverOrder] = useState<OrderWithCustomer | null>(null);
+  const [confirmUndeliverOrder, setConfirmUndeliverOrder] = useState<OrderWithCustomer | null>(null);
 
   // Compute actual calendar date for the selected day tab (current week)
   const selectedDate = useMemo(() => {
@@ -107,6 +109,21 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
   const deliveryMutation = useMutation({
     mutationFn: (orderId: string) => salesApi.confirmOrderDelivery(orderId),
     onSuccess: () => {
+      setConfirmDeliverOrder(null);
+      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      toast({ title: t("toast.success"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  // Undeliver mutation
+  const undeliverMutation = useMutation({
+    mutationFn: (orderId: string) => salesApi.undeliverOrder(orderId),
+    onSuccess: () => {
+      setConfirmUndeliverOrder(null);
       queryClient.invalidateQueries({ queryKey: ["route-orders"] });
       queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
@@ -117,14 +134,11 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
   });
 
   const handleConfirmDelivery = (order: OrderWithCustomer) => {
-    if (
-      window.confirm(
-        t("order.confirmDeliveryMessage") ||
-          "Mark this order as delivered? (Cannot be edited after)"
-      )
-    ) {
-      deliveryMutation.mutate(order.id);
-    }
+    setConfirmDeliverOrder(order);
+  };
+
+  const handleUndeliver = (order: OrderWithCustomer) => {
+    setConfirmUndeliverOrder(order);
   };
 
   const filtered = useMemo(() => {
@@ -380,7 +394,7 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                                 )}
                               </div>
                             </div>
-                            {!isDelivered && (
+                            {!isDelivered ? (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -392,6 +406,20 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                                 isLoading={deliveryMutation.isPending}
                               >
                                 {t("order.confirmDelivery")}
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full mt-3"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUndeliver(order);
+                                }}
+                                isLoading={undeliverMutation.isPending}
+                              >
+                                <Undo2 className="h-3.5 w-3.5" />
+                                {t("order.undeliver")}
                               </Button>
                             )}
                           </div>
@@ -486,7 +514,7 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                                   )}
                                 </div>
                               </div>
-                              {!isDelivered && (
+                              {!isDelivered ? (
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -498,6 +526,20 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                                   isLoading={deliveryMutation.isPending}
                                 >
                                   {t("order.confirmDelivery")}
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full mt-3"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUndeliver(order);
+                                  }}
+                                  isLoading={undeliverMutation.isPending}
+                                >
+                                  <Undo2 className="h-3.5 w-3.5" />
+                                  {t("order.undeliver")}
                                 </Button>
                               )}
                             </div>
@@ -512,21 +554,35 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
           </>
       </div>
 
-      {/* FAB — Add Customer */}
-      {onAddCustomer && (
-        <button
-          onClick={onAddCustomer}
-          className="fixed bottom-20 end-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 active:scale-95 transition-transform"
-        >
-          <Plus className="h-6 w-6" />
-        </button>
-      )}
-
       {/* Order Modal */}
       <OrderModal
         order={selectedOrder}
         open={orderModalOpen}
         onOpenChange={setOrderModalOpen}
+      />
+
+      {/* Confirm Delivery Dialog */}
+      <ConfirmationDialog
+        open={!!confirmDeliverOrder}
+        onOpenChange={(open) => { if (!open) setConfirmDeliverOrder(null); }}
+        title={t("order.confirmDelivery")}
+        description={t("order.confirmDeliveryMessage")}
+        confirmLabel={t("actions.confirm")}
+        cancelLabel={t("actions.cancel")}
+        onConfirm={() => confirmDeliverOrder && deliveryMutation.mutate(confirmDeliverOrder.id)}
+        isLoading={deliveryMutation.isPending}
+      />
+
+      {/* Confirm Undeliver Dialog */}
+      <ConfirmationDialog
+        open={!!confirmUndeliverOrder}
+        onOpenChange={(open) => { if (!open) setConfirmUndeliverOrder(null); }}
+        title={t("order.undeliver")}
+        description={t("order.undeliverMessage")}
+        confirmLabel={t("actions.confirm")}
+        cancelLabel={t("actions.cancel")}
+        onConfirm={() => confirmUndeliverOrder && undeliverMutation.mutate(confirmUndeliverOrder.id)}
+        isLoading={undeliverMutation.isPending}
       />
     </div>
   );

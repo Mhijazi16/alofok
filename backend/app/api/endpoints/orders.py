@@ -60,3 +60,25 @@ async def deliver_order(
     order_id: uuid.UUID, current_user: CurrentUser, service: OrderSvc
 ) -> TransactionOut:
     return await service.confirm_delivery(order_id, uuid.UUID(current_user["sub"]))
+
+
+@router.delete(
+    "/{order_id}",
+    response_model=TransactionOut,
+    dependencies=[require_sales],
+)
+async def delete_order(
+    order_id: uuid.UUID, current_user: CurrentUser, service: OrderSvc
+) -> TransactionOut:
+    return await service.delete_order(order_id, uuid.UUID(current_user["sub"]))
+
+
+@router.put(
+    "/{order_id}/undeliver",
+    response_model=TransactionOut,
+    dependencies=[require_sales],
+)
+async def undeliver_order(
+    order_id: uuid.UUID, current_user: CurrentUser, service: OrderSvc
+) -> TransactionOut:
+    return await service.undeliver_order(order_id, uuid.UUID(current_user["sub"]))

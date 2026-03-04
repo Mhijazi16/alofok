@@ -49,6 +49,7 @@ export interface Customer {
   longitude?: number | null;
   avatar_url?: string | null;
   notes?: string | null;
+  assigned_to?: string | null;
 }
 
 export interface CustomerCreate {
@@ -227,6 +228,12 @@ export const salesApi = {
 
   confirmOrderDelivery: (id: string) =>
     api.put<Transaction>(`/orders/${id}/deliver`).then((r) => r.data),
+
+  deleteOrder: (id: string) =>
+    api.delete<Transaction>(`/orders/${id}`).then((r) => r.data),
+
+  undeliverOrder: (id: string) =>
+    api.put<Transaction>(`/orders/${id}/undeliver`).then((r) => r.data),
 
   createCustomer: (body: CustomerCreate) =>
     api.post<Customer>("/customers", body).then((r) => r.data),

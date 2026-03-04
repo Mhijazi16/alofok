@@ -47,6 +47,7 @@ class CustomerOut(BaseModel):
     longitude: float | None = None
     avatar_url: str | None = None
     notes: str | None = None
+    assigned_to: uuid.UUID | None = None
 
     model_config = {"from_attributes": True}
 
@@ -79,6 +80,7 @@ class CustomerUpdate(BaseModel):
     longitude: float | None = None
     avatar_url: str | None = None
     notes: str | None = None
+    assigned_to: uuid.UUID | None = None
 
     @field_validator("assigned_day", mode="before")
     @classmethod

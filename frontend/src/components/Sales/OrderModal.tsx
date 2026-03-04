@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Trash2, Undo2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
 import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/textarea";
@@ -77,6 +77,38 @@ export function OrderModal({
     },
   });
 
+
+  // Delete mutation
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const deleteMutation = useMutation({
+    mutationFn: () => salesApi.deleteOrder(order!.id),
+    onSuccess: () => {
+      setConfirmDeleteOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      toast({ title: t("toast.success"), variant: "success" });
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  // Undeliver mutation
+  const [confirmUndeliverOpen, setConfirmUndeliverOpen] = useState(false);
+  const undeliverMutation = useMutation({
+    mutationFn: () => salesApi.undeliverOrder(order!.id),
+    onSuccess: () => {
+      setConfirmUndeliverOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      toast({ title: t("toast.success"), variant: "success" });
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
 
   const handleSaveChanges = async () => {
     if (!order || !editItems.length) {
@@ -271,8 +303,23 @@ export function OrderModal({
         </Tabs>
 
         <DialogFooter className="flex gap-2">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setConfirmDeleteOpen(true)}
+          >
+            <Trash2 className="h-4 w-4" />
+            {t("order.deleteOrder")}
+          </Button>
           {isDelivered ? (
-            <Badge variant="success">{t("order.delivered")}</Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmUndeliverOpen(true)}
+            >
+              <Undo2 className="h-4 w-4" />
+              {t("order.undeliver")}
+            </Button>
           ) : (
             <>
               <Button
@@ -293,6 +340,29 @@ export function OrderModal({
           )}
         </DialogFooter>
       </DialogContent>
+
+      <ConfirmationDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={t("order.deleteOrder")}
+        description={t("order.deleteOrderMessage")}
+        confirmLabel={t("actions.delete")}
+        cancelLabel={t("actions.cancel")}
+        onConfirm={() => deleteMutation.mutate()}
+        variant="destructive"
+        isLoading={deleteMutation.isPending}
+      />
+
+      <ConfirmationDialog
+        open={confirmUndeliverOpen}
+        onOpenChange={setConfirmUndeliverOpen}
+        title={t("order.undeliver")}
+        description={t("order.undeliverMessage")}
+        confirmLabel={t("actions.confirm")}
+        cancelLabel={t("actions.cancel")}
+        onConfirm={() => undeliverMutation.mutate()}
+        isLoading={undeliverMutation.isPending}
+      />
     </Dialog>
   );
 }

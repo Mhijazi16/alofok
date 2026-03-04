@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users, UserPlus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -128,6 +128,14 @@ export function AllCustomersView({
       <TopBar
         title={t("customer.allCustomers")}
         subtitle={!isLoading ? `${customers?.length ?? 0} ${t("customer.totalCustomers").toLowerCase()}` : undefined}
+        actions={
+          <button
+            onClick={onAddCustomer}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground active:scale-95 transition-transform"
+          >
+            <UserPlus className="h-4 w-4" />
+          </button>
+        }
       />
 
       <div className="space-y-4 p-4">
@@ -203,13 +211,6 @@ export function AllCustomersView({
         )}
       </div>
 
-      {/* FAB — Add Customer */}
-      <button
-        onClick={onAddCustomer}
-        className="fixed bottom-20 end-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 active:scale-95 transition-transform"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
     </div>
   );
 }

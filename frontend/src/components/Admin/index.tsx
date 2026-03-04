@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   Users,
@@ -58,6 +58,11 @@ export default function AdminPanel() {
   const { toast } = useToast();
   const userId = useAppSelector((s) => s.auth.userId);
   const role = useAppSelector((s) => s.auth.role);
+
+  const { data: salesReps = [] } = useQuery({
+    queryKey: ["admin-sales-reps"],
+    queryFn: adminApi.getSalesReps,
+  });
 
   const [activeView, setActiveView] = useState<AdminView>("overview");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -229,9 +234,11 @@ export default function AdminPanel() {
           />
         ) : null;
       case "editCustomer":
-        return (
+        return editingCustomer ? (
           <CustomerForm
             customer={editingCustomer}
+            salesReps={salesReps}
+            createFn={adminApi.updateCustomer.bind(null, editingCustomer.id)}
             onDone={() => {
               setEditingCustomer(undefined);
               setActiveView("customerDetail");
@@ -242,10 +249,11 @@ export default function AdminPanel() {
               setActiveView("customerDetail");
             }}
           />
-        );
+        ) : null;
       case "addCustomer":
         return (
           <CustomerForm
+            salesReps={salesReps}
             onDone={() => {
               setActiveView("customers");
               queryClient.invalidateQueries({ queryKey: ["admin-customers"] });

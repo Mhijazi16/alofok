@@ -162,3 +162,40 @@ class OrderService:
         txn.delivered_date = datetime.now(timezone.utc)
         txn = await self._transactions.update(txn)
         return TransactionOut.model_validate(txn)
+
+    async def delete_order(
+        self, order_id: uuid.UUID, user_id: uuid.UUID
+    ) -> TransactionOut:
+        """Soft-delete an order and reverse the customer balance."""
+        txn = await self._transactions.get_by_id(order_id)
+        if txn is None:
+            raise HorizonException(404, "Order not found")
+        if txn.type != TransactionType.Order:
+            raise HorizonException(400, "Can only delete orders")
+
+        customer = await self._customers.get_by_id(txn.customer_id)
+        if customer is None:
+            raise HorizonException(404, "Customer not found")
+
+        customer.balance -= txn.amount
+        await self._customers.update_balance(customer)
+
+        txn.is_deleted = True
+        txn = await self._transactions.update(txn)
+        return TransactionOut.model_validate(txn)
+
+    async def undeliver_order(
+        self, order_id: uuid.UUID, user_id: uuid.UUID
+    ) -> TransactionOut:
+        """Clear delivered_date so the order can be edited again."""
+        txn = await self._transactions.get_by_id(order_id)
+        if txn is None:
+            raise HorizonException(404, "Order not found")
+        if txn.type != TransactionType.Order:
+            raise HorizonException(400, "Can only undeliver orders")
+        if txn.delivered_date is None:
+            raise HorizonException(400, "Order is not delivered")
+
+        txn.delivered_date = None
+        txn = await self._transactions.update(txn)
+        return TransactionOut.model_validate(txn)

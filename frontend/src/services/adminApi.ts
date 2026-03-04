@@ -90,4 +90,7 @@ export const adminApi = {
 
   getSalesReps: () =>
     api.get<SalesRep[]>("/admin/users/sales-reps").then((r) => r.data),
+
+  updateCustomer: (id: string, body: Partial<AdminCustomerCreate>) =>
+    api.put<Customer>(`/admin/customers/${id}`, body).then((r) => r.data),
 };

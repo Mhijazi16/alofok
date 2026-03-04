@@ -3,9 +3,9 @@ import uuid
 
 from fastapi import APIRouter, File, UploadFile
 
-from app.api.deps import AdminSvc, CustomerSvc, UserRepo, require_admin
+from app.api.deps import AdminSvc, CurrentUser, CustomerSvc, UserRepo, require_admin
 from app.schemas.admin import DebtStatsOut, ImportResult, SalesStatsOut
-from app.schemas.customer import AdminCustomerCreate, CustomerOut, SalesRepOut
+from app.schemas.customer import AdminCustomerCreate, CustomerOut, CustomerUpdate, SalesRepOut
 
 router = APIRouter()
 
@@ -53,6 +53,15 @@ async def list_all_customers(service: CustomerSvc) -> list[CustomerOut]:
 @router.post("/customers", response_model=CustomerOut, status_code=201, dependencies=[require_admin])
 async def create_customer_for_rep(body: AdminCustomerCreate, service: CustomerSvc) -> CustomerOut:
     return await service.create_customer_for_rep(body)
+
+
+@router.put("/customers/{customer_id}", response_model=CustomerOut, dependencies=[require_admin])
+async def update_customer(
+    customer_id: uuid.UUID, body: CustomerUpdate, current_user: CurrentUser, service: CustomerSvc
+) -> CustomerOut:
+    return await service.update_customer(
+        customer_id, body, uuid.UUID(current_user["sub"]), current_user["role"]
+    )
 
 
 @router.get("/users/sales-reps", response_model=list[SalesRepOut], dependencies=[require_admin])

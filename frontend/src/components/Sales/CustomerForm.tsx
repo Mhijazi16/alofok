@@ -102,7 +102,7 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
   const [assignedDay, setAssignedDay] = useState(customer?.assigned_day ?? "");
   const [portalEnabled, setPortalEnabled] = useState(false);
   const [portalPassword, setPortalPassword] = useState("");
-  const [selectedRepId, setSelectedRepId] = useState<string>("");
+  const [selectedRepId, setSelectedRepId] = useState<string>(customer?.assigned_to ?? "");
 
   const createMutation = useMutation({
     mutationFn: salesApi.createCustomer,
