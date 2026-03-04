@@ -79,17 +79,28 @@ class CustomerService:
         await self._cache.invalidate_prefix("route:")
         return updated
 
+    async def _enrich_with_returned_checks(self, customers: list) -> list[CustomerOut]:
+        """Validate customer models and attach returned_checks_count."""
+        if not customers:
+            return []
+        out = [CustomerOut.model_validate(c) for c in customers]
+        ids = [c.id for c in out]
+        counts = await self._customers.get_returned_checks_counts(ids)
+        for c in out:
+            c.returned_checks_count = counts.get(c.id, 0)
+        return out
+
     async def get_route_by_day(
         self, user_id: uuid.UUID, day: AssignedDay, delivery_date: date | None = None
     ) -> list[CustomerOut]:
         customers = await self._customers.get_by_day_and_rep(
             day, user_id, delivery_date
         )
-        return [CustomerOut.model_validate(c) for c in customers]
+        return await self._enrich_with_returned_checks(customers)
 
     async def get_all_customers(self, user_id: uuid.UUID) -> list[CustomerOut]:
         customers = await self._customers.get_all_by_rep(user_id)
-        return [CustomerOut.model_validate(c) for c in customers]
+        return await self._enrich_with_returned_checks(customers)
 
     async def get_my_orders_today(
         self, user_id: uuid.UUID
@@ -136,7 +147,7 @@ class CustomerService:
             return []  # Friday / Saturday — no route
 
         customers = await self._customers.get_by_day(assigned_day)
-        out = [CustomerOut.model_validate(c) for c in customers]
+        out = await self._enrich_with_returned_checks(customers)
         await self._cache.set(
             cache_key, [c.model_dump(mode="json") for c in out], ttl=TTL_ROUTE
         )
@@ -233,7 +244,7 @@ class CustomerService:
 
     async def get_all_customers_admin(self) -> list[CustomerOut]:
         customers = await self._customers.get_all()
-        return [CustomerOut.model_validate(c) for c in customers]
+        return await self._enrich_with_returned_checks(customers)
 
     async def create_customer_for_rep(self, data: AdminCustomerCreate) -> CustomerOut:
         payload = data.model_dump()

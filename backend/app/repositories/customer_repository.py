@@ -1,11 +1,11 @@
 import datetime
 import uuid
 
-from sqlalchemy import select, union
+from sqlalchemy import func as sa_func, select, union
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import AssignedDay, Customer
-from app.models.transaction import Transaction, TransactionType
+from app.models.transaction import Transaction, TransactionStatus, TransactionType
 
 
 class CustomerRepository:
@@ -108,6 +108,27 @@ class CustomerRepository:
         await self._db.commit()
         await self._db.refresh(customer)
         return customer
+
+    async def get_returned_checks_counts(
+        self, customer_ids: list[uuid.UUID]
+    ) -> dict[uuid.UUID, int]:
+        """Return {customer_id: count} of returned Payment_Check transactions."""
+        if not customer_ids:
+            return {}
+        result = await self._db.execute(
+            select(
+                Transaction.customer_id,
+                sa_func.count().label("cnt"),
+            )
+            .where(
+                Transaction.customer_id.in_(customer_ids),
+                Transaction.type == TransactionType.Payment_Check,
+                Transaction.status == TransactionStatus.Returned,
+                Transaction.is_deleted.is_(False),
+            )
+            .group_by(Transaction.customer_id)
+        )
+        return {row.customer_id: row.cnt for row in result.all()}
 
     async def update_balance(self, customer: Customer) -> None:
         await self._db.flush()  # persist balance change within the current transaction

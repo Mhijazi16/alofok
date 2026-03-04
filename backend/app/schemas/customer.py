@@ -50,6 +50,7 @@ class CustomerOut(BaseModel):
     avatar_url: str | None = None
     notes: str | None = None
     assigned_to: uuid.UUID | None = None
+    returned_checks_count: int = 0
 
     model_config = {"from_attributes": True}
 
