@@ -70,6 +70,7 @@
       "Tue": "الثلاثاء",
       "Wed": "الأربعاء",
       "Thu": "الخميس",
+      "Fri": "الجمعة",
       "Sat": "السبت"
     }
   },
@@ -445,7 +446,8 @@
     "returnedWarning": "هذا العميل لديه {{count}} شيك(ات) مرتجعة",
     "returnedWarningShort": "{{count}} مرتجع",
     "viewCheck": "عرض الشيك",
-    "of": "من"
+    "of": "من",
+    "photo": "صورة الشيك"
   },
   "capture": {
     "checkPhoto": "صورة الشيك",

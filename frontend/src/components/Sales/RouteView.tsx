@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -27,7 +27,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useToast } from "@/hooks/useToast";
@@ -37,23 +36,30 @@ interface RouteViewProps {
   onSelectCustomer: (customer: Customer) => void;
 }
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"] as const;
+const DAY_CODES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
-function getTodayCode(): string {
-  const jsDay = new Date().getDay(); // 0=Sun … 6=Sat
-  const map: Record<number, string> = {
-    0: "Sun",
-    1: "Mon",
-    2: "Tue",
-    3: "Wed",
-    4: "Thu",
-    5: "Fri",
-    6: "Sat",
-  };
-  const code = map[jsDay];
-  // If today is Friday (no route), default to Saturday
-  return code === "Fri" ? "Sat" : code;
+function getDayCode(date: Date): string {
+  return DAY_CODES[date.getDay()];
 }
+
+function toDateStr(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function generateDateRange(): Date[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dates: Date[] = [];
+  // 2 weeks back + 4 weeks forward
+  for (let i = -14; i <= 28; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+const TODAY_INDEX = 14; // index of today in the 43-day range
 
 function formatTime(iso: string, lang: string) {
   return new Date(iso).toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-US", {
@@ -73,7 +79,9 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
   const isRTL = i18n.language === "ar";
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedDay, setSelectedDay] = useState(getTodayCode);
+  const dateRange = useMemo(() => generateDateRange(), []);
+  const [selectedIdx, setSelectedIdx] = useState(TODAY_INDEX);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -112,17 +120,19 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     }
   }, []);
 
-  // Compute actual calendar date for the selected day tab (current week)
-  const selectedDate = useMemo(() => {
-    const today = new Date();
-    const todayJsDay = today.getDay(); // 0=Sun
-    const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Sat: 6 };
-    const targetJsDay = dayMap[selectedDay] ?? todayJsDay;
-    const diff = targetJsDay - todayJsDay;
-    const d = new Date(today);
-    d.setDate(today.getDate() + diff);
-    return d.toISOString().split("T")[0]; // YYYY-MM-DD
-  }, [selectedDay]);
+  const selectedDateObj = dateRange[selectedIdx];
+  const selectedDay = getDayCode(selectedDateObj);
+  const selectedDate = toDateStr(selectedDateObj);
+
+  // Auto-scroll today into view on mount
+  useEffect(() => {
+    if (scrollRef.current) {
+      const todayEl = scrollRef.current.children[TODAY_INDEX] as HTMLElement;
+      if (todayEl) {
+        todayEl.scrollIntoView({ inline: "center", block: "nearest" });
+      }
+    }
+  }, []);
 
   // Fetch customers for selected day
   const { data: customers, isLoading: customersLoading } = useQuery({
@@ -268,26 +278,51 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
       />
 
       <div className="space-y-4 p-4">
-        {/* ── Day Switcher ── */}
-        <div className="overflow-x-auto -mx-4 px-4 scrollbar-none">
-          <Tabs value={selectedDay} onValueChange={setSelectedDay}>
-            <TabsList variant="pills" className="w-full justify-between">
-              {DAYS.map((day) => (
-                <TabsTrigger
-                  key={day}
-                  value={day}
-                  className="flex-1 min-w-0"
-                >
-                  <span className="relative">
-                    {t(`customer.days.${day}`)}
-                    {day === getTodayCode() && (
-                      <span className="absolute -bottom-1 start-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-primary" />
-                    )}
-                  </span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+        {/* ── Date Switcher ── */}
+        <div
+          ref={scrollRef}
+          className="flex gap-1.5 overflow-x-auto overflow-y-hidden -mx-4 px-4 scrollbar-none snap-x snap-mandatory touch-pan-x overscroll-x-contain"
+        >
+          {dateRange.map((date, idx) => {
+            const isToday = idx === TODAY_INDEX;
+            const isSelected = idx === selectedIdx;
+            const dayCode = getDayCode(date);
+            const dayNum = date.getDate();
+            const isPast = idx < TODAY_INDEX;
+
+            return (
+              <button
+                key={idx}
+                onClick={() => setSelectedIdx(idx)}
+                className={`
+                  flex flex-col items-center justify-center shrink-0 snap-center
+                  w-[calc(20%-0.3rem)] min-w-[3.5rem] rounded-xl py-2 px-1
+                  transition-all duration-200
+                  ${isSelected
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                    : isToday
+                      ? "bg-primary/15 text-foreground ring-1 ring-primary/30"
+                      : isPast
+                        ? "bg-card/50 text-muted-foreground"
+                        : "bg-card text-foreground"
+                  }
+                `}
+              >
+                <span className={`text-[10px] font-medium leading-none ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                  {t(`customer.days.${dayCode}`)}
+                </span>
+                <span className={`text-lg font-bold leading-tight mt-0.5 ${isSelected ? "" : ""}`}>
+                  {dayNum}
+                </span>
+                {isToday && !isSelected && (
+                  <span className="h-1 w-1 rounded-full bg-primary mt-0.5" />
+                )}
+                {isToday && isSelected && (
+                  <span className="h-1 w-1 rounded-full bg-primary-foreground mt-0.5" />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Stats Row ── */}

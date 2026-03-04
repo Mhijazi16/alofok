@@ -12,6 +12,7 @@ _DAY_ALIASES: dict[str, AssignedDay] = {
     "tuesday": AssignedDay.Tue,
     "wednesday": AssignedDay.Wed,
     "thursday": AssignedDay.Thu,
+    "friday": AssignedDay.Fri,
     "saturday": AssignedDay.Sat,
 }
 

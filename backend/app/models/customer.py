@@ -15,6 +15,7 @@ class AssignedDay(str, enum.Enum):
     Tue = "Tue"
     Wed = "Wed"
     Thu = "Thu"
+    Fri = "Fri"
     Sat = "Sat"
 
 

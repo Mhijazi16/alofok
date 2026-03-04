@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Customer } from "@/services/salesApi";
 
-const DAYS_LIST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"] as const;
+const DAYS_LIST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 interface AllCustomersViewProps {
   queryKey: string[];
@@ -80,7 +80,7 @@ export function AllCustomersView({
   // Order days based on language
   // Arabic: Sat, Sun, Mon (first line) + Tue, Wed, Thu (second line)
   // English: Sun, Mon, Tue, Wed, Thu, Sat (natural left-to-right order)
-  const orderedDays = isRTL ? ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu"] : DAYS_LIST;
+  const orderedDays = isRTL ? ["Sat", "Fri", "Sun", "Mon", "Tue", "Wed", "Thu"] : DAYS_LIST;
 
   const renderCustomerCard = (customer: Customer, idx: number) => {
     const balanceVariant: "success" | "warning" | "danger" =

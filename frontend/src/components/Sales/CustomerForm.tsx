@@ -42,6 +42,7 @@ const VISIT_DAYS = [
   { value: "Tue", ar: "الثلاثاء", en: "Tuesday" },
   { value: "Wed", ar: "الأربعاء", en: "Wednesday" },
   { value: "Thu", ar: "الخميس", en: "Thursday" },
+  { value: "Fri", ar: "الجمعة", en: "Friday" },
   { value: "Sat", ar: "السبت", en: "Saturday" },
 ];
 
