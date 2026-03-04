@@ -447,6 +447,16 @@
     "viewCheck": "View Check",
     "of": "of"
   },
+  "capture": {
+    "checkPhoto": "Check Photo",
+    "takePhoto": "Take Photo",
+    "chooseFromGallery": "Choose from Gallery",
+    "retake": "Retake",
+    "removePhoto": "Remove Photo",
+    "scanCheck": "Scan Check",
+    "scanning": "Scanning...",
+    "uploadPending": "Upload Pending"
+  },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",
     "offline": "You are offline. Data will sync when connection resumes.",
