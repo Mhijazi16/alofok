@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
+import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
 import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -174,6 +175,9 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
                         >
                           {t(`checks.status.${tx.status}`, tx.status)}
                         </Badge>
+                      )}
+                      {tx.type === "Payment_Check" && (
+                        <CheckPhotoThumbnail imageUrl={tx.data?.image_url} />
                       )}
                       <span className="text-caption text-muted-foreground">
                         {formatTime(tx.created_at)}

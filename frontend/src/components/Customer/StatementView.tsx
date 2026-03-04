@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import { customerApi } from "@/services/customerApi";
+import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
 import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -175,6 +176,15 @@ export function CustomerStatementView() {
                         >
                           {t(`checks.status.${tx.status}`, tx.status)}
                         </Badge>
+                      )}
+                      {tx.type === "Payment_Check" && (
+                        <CheckPhotoThumbnail
+                          imageUrl={
+                            typeof tx.data?.image_url === "string"
+                              ? tx.data.image_url
+                              : null
+                          }
+                        />
                       )}
                       {tx.is_draft && (
                         <Badge variant="warning" size="sm">

@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
+import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
 import { useToast } from "@/hooks/useToast";
 
 type StatusFilter = "Pending" | "Deposited" | "Returned" | "all";
@@ -143,6 +144,7 @@ export function AdminChecksView() {
                     </span>
                     {check.data?.bank && <span>· {check.data.bank}</span>}
                     {check.data?.due_date && <span>· {check.data.due_date}</span>}
+                    <CheckPhotoThumbnail imageUrl={check.data?.image_url} />
                   </div>
                   {/* Action buttons — hidden (not disabled) for invalid transitions */}
                   <div className="flex items-center gap-2">
