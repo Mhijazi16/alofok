@@ -82,40 +82,40 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CHK-01 | — | Pending |
-| CHK-02 | — | Pending |
-| CHK-03 | — | Pending |
-| CHK-04 | — | Pending |
-| CHK-05 | — | Pending |
-| CHK-06 | — | Pending |
-| CHK-07 | — | Pending |
-| PRV-01 | — | Pending |
-| PRV-02 | — | Pending |
-| PRV-03 | — | Pending |
-| PRV-04 | — | Pending |
-| PRV-05 | — | Pending |
-| LCY-01 | — | Pending |
-| LCY-02 | — | Pending |
-| LCY-03 | — | Pending |
-| LCY-04 | — | Pending |
-| LCY-05 | — | Pending |
-| IMG-01 | — | Pending |
-| IMG-02 | — | Pending |
-| IMG-03 | — | Pending |
-| IMG-04 | — | Pending |
-| IMG-05 | — | Pending |
-| OCR-01 | — | Pending |
-| OCR-02 | — | Pending |
-| OCR-03 | — | Pending |
-| OCR-04 | — | Pending |
-| OCR-05 | — | Pending |
-| OCR-06 | — | Pending |
+| CHK-01 | Phase 6 | Pending |
+| CHK-02 | Phase 6 | Pending |
+| CHK-03 | Phase 6 | Pending |
+| CHK-04 | Phase 6 | Pending |
+| CHK-05 | Phase 6 | Pending |
+| CHK-06 | Phase 6 | Pending |
+| CHK-07 | Phase 6 | Pending |
+| PRV-01 | Phase 7 | Pending |
+| PRV-02 | Phase 7 | Pending |
+| PRV-03 | Phase 7 | Pending |
+| PRV-04 | Phase 7 | Pending |
+| PRV-05 | Phase 7 | Pending |
+| LCY-01 | Phase 8 | Pending |
+| LCY-02 | Phase 8 | Pending |
+| LCY-03 | Phase 8 | Pending |
+| LCY-04 | Phase 8 | Pending |
+| LCY-05 | Phase 8 | Pending |
+| IMG-01 | Phase 9 | Pending |
+| IMG-02 | Phase 9 | Pending |
+| IMG-03 | Phase 9 | Pending |
+| IMG-04 | Phase 9 | Pending |
+| IMG-05 | Phase 9 | Pending |
+| OCR-01 | Phase 9 | Pending |
+| OCR-02 | Phase 9 | Pending |
+| OCR-03 | Phase 9 | Pending |
+| OCR-04 | Phase 9 | Pending |
+| OCR-05 | Phase 9 | Pending |
+| OCR-06 | Phase 9 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28 ⚠️
+- Mapped to phases: 28
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-04*
-*Last updated: 2026-03-04 after initial definition*
+*Last updated: 2026-03-04 after roadmap creation*
