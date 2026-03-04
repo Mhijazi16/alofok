@@ -279,9 +279,12 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
 
       <div className="space-y-4 p-4">
         {/* ── Date Switcher ── */}
+        <div className="-mx-4 relative">
+        <div className="pointer-events-none absolute inset-y-0 start-0 w-8 z-10 bg-gradient-to-r rtl:bg-gradient-to-l from-primary/30 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 end-0 w-8 z-10 bg-gradient-to-l rtl:bg-gradient-to-r from-primary/30 to-transparent" />
         <div
           ref={scrollRef}
-          className="flex gap-1.5 overflow-x-auto overflow-y-hidden -mx-4 px-4 scrollbar-none snap-x snap-mandatory touch-pan-x overscroll-x-contain"
+          className="flex gap-1.5 overflow-x-auto overflow-y-hidden px-4 py-1 scrollbar-none snap-x snap-mandatory touch-pan-x overscroll-x-contain"
         >
           {dateRange.map((date, idx) => {
             const isToday = idx === TODAY_INDEX;
@@ -323,6 +326,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
               </button>
             );
           })}
+        </div>
         </div>
 
         {/* ── Stats Row ── */}
