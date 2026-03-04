@@ -50,6 +50,7 @@ export interface Customer {
   avatar_url?: string | null;
   notes?: string | null;
   assigned_to?: string | null;
+  returned_checks_count?: number;
 }
 
 export interface CustomerCreate {
@@ -266,5 +267,12 @@ export const salesApi = {
   rejectDraft: (orderId: string) =>
     api
       .put<Transaction>(`/orders/${orderId}/reject`)
+      .then((r) => r.data),
+
+  getReturnedChecks: (customerId: string) =>
+    api
+      .get<import("./adminApi").CheckOut[]>(
+        `/customers/${customerId}/returned-checks`
+      )
       .then((r) => r.data),
 };
