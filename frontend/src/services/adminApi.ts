@@ -116,6 +116,9 @@ export const adminApi = {
   depositCheck: (checkId: string) =>
     api.put<CheckOut>(`/payments/checks/${checkId}/deposit`).then((r) => r.data),
 
+  undepositCheck: (checkId: string) =>
+    api.put<CheckOut>(`/payments/checks/${checkId}/undeposit`).then((r) => r.data),
+
   returnCheck: (checkId: string, notes?: string) =>
     api
       .put<CheckOut>(`/payments/checks/${checkId}/return`, { notes: notes || null })

@@ -61,6 +61,17 @@ export function AdminChecksView() {
     },
   });
 
+  const undepositMutation = useMutation({
+    mutationFn: (checkId: string) => adminApi.undepositCheck(checkId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
+      toast({ title: t("checks.undepositSuccess"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
   const returnMutation = useMutation({
     mutationFn: ({ checkId, notes }: { checkId: string; notes?: string }) =>
       adminApi.returnCheck(checkId, notes),
@@ -146,6 +157,19 @@ export function AdminChecksView() {
                       >
                         <Banknote className="h-3.5 w-3.5" />
                         {t("checks.deposit")}
+                      </Button>
+                    )}
+                    {check.status === "Deposited" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          undepositMutation.mutate(check.id);
+                        }}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        {t("checks.undeposit")}
                       </Button>
                     )}
                     {(check.status === "Pending" || check.status === "Deposited") && (
@@ -240,6 +264,10 @@ export function AdminChecksView() {
         onOpenChange={setDetailDialogOpen}
         onDeposit={(id) => {
           depositMutation.mutate(id);
+          setDetailDialogOpen(false);
+        }}
+        onUndeposit={(id) => {
+          undepositMutation.mutate(id);
           setDetailDialogOpen(false);
         }}
         onReturn={(id) => {

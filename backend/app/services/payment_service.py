@@ -79,6 +79,18 @@ class PaymentService:
         check_txn = await self._transactions.update(check_txn)
         return TransactionOut.model_validate(check_txn)
 
+    async def undeposit_check(
+        self, transaction_id: uuid.UUID, creator_id: uuid.UUID
+    ) -> TransactionOut:
+        check_txn = await self._transactions.get_by_id(transaction_id)
+        if check_txn is None or check_txn.type != TransactionType.Payment_Check:
+            raise HorizonException(404, "Check transaction not found")
+        if check_txn.status != TransactionStatus.Deposited:
+            raise HorizonException(409, "Only Deposited checks can be undeposited")
+        check_txn.status = TransactionStatus.Pending
+        check_txn = await self._transactions.update(check_txn)
+        return TransactionOut.model_validate(check_txn)
+
     async def return_check(
         self, transaction_id: uuid.UUID, creator_id: uuid.UUID, notes: str | None = None
     ) -> TransactionOut:

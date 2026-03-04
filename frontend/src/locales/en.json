@@ -415,6 +415,8 @@
     "deposit": "Deposit",
     "return": "Return",
     "depositSuccess": "Check marked as deposited",
+    "undepositSuccess": "Check reverted to pending",
+    "undeposit": "Undeposit",
     "returnSuccess": "Check returned and balance updated",
     "depositConfirmTitle": "Deposit Check",
     "depositConfirmDesc": "Mark this check as deposited?",

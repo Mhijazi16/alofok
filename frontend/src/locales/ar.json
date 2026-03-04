@@ -415,6 +415,8 @@
     "deposit": "إيداع",
     "return": "إرجاع",
     "depositSuccess": "تم تحديد الشيك كمودع",
+    "undepositSuccess": "تم إرجاع الشيك إلى قيد الانتظار",
+    "undeposit": "إلغاء الإيداع",
     "returnSuccess": "تم إرجاع الشيك وتحديث الرصيد",
     "depositConfirmTitle": "إيداع الشيك",
     "depositConfirmDesc": "هل تريد تحديد هذا الشيك كمودع؟",

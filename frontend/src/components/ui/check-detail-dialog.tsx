@@ -24,6 +24,7 @@ interface CheckDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDeposit?: (id: string) => void;
+  onUndeposit?: (id: string) => void;
   onReturn?: (id: string) => void;
   navigation?: CheckDetailNavigation;
 }
@@ -40,6 +41,7 @@ export function CheckDetailDialog({
   open,
   onOpenChange,
   onDeposit,
+  onUndeposit,
   onReturn,
   navigation,
 }: CheckDetailDialogProps) {
@@ -177,12 +179,18 @@ export function CheckDetailDialog({
         )}
 
         {/* Action buttons */}
-        {(onDeposit || onReturn) && (
+        {(onDeposit || onUndeposit || onReturn) && (
           <div className="flex items-center gap-2 pt-2">
             {onDeposit && check.status === "Pending" && (
               <Button className="flex-1" onClick={() => onDeposit(check.id)}>
                 <Banknote className="h-4 w-4" />
                 {t("checks.deposit")}
+              </Button>
+            )}
+            {onUndeposit && check.status === "Deposited" && (
+              <Button variant="outline" className="flex-1" onClick={() => onUndeposit(check.id)}>
+                <RotateCcw className="h-4 w-4" />
+                {t("checks.undeposit")}
               </Button>
             )}
             {onReturn &&

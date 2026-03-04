@@ -47,6 +47,19 @@ async def deposit_check(
 
 
 @router.put(
+    "/checks/{transaction_id}/undeposit",
+    response_model=TransactionOut,
+    dependencies=[require_admin],
+)
+async def undeposit_check(
+    transaction_id: uuid.UUID,
+    current_user: CurrentUser,
+    service: PaymentSvc,
+) -> TransactionOut:
+    return await service.undeposit_check(transaction_id, uuid.UUID(current_user["sub"]))
+
+
+@router.put(
     "/checks/{transaction_id}/return",
     response_model=TransactionOut,
     dependencies=[require_admin],
