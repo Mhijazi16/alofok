@@ -16,6 +16,7 @@ import {
   X,
   CheckSquare,
   Square,
+  AlertTriangle,
 } from "lucide-react";
 import { salesApi, type Customer, type OrderWithCustomer } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
@@ -375,6 +376,14 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
+                        {(customer.returned_checks_count ?? 0) > 0 && (
+                          <div className="flex items-center gap-1">
+                            <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                            <Badge variant="destructive" size="sm">
+                              {customer.returned_checks_count}
+                            </Badge>
+                          </div>
+                        )}
                         <Badge variant={balanceVariant} dot>
                           {formatCurrency(balanceNum)}
                         </Badge>
