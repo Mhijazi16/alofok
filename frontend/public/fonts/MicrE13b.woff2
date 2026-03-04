@@ -1,0 +1,5 @@
+# MICR E13B Font Placeholder
+# This file must be replaced with a real MICR E13B woff2 font.
+# A free OFL-licensed option: https://www.1001fonts.com/magnetic-ink-e13b-font.html
+# Or use GnuMICR from: https://sourceforge.net/projects/gnumicr/
+# The check strip will use Courier New as fallback until this is replaced.

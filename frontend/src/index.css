@@ -1,3 +1,16 @@
+/* MICR E13B font for check strip rendering.
+   NOTE: MicrE13b.woff2 is currently a placeholder.
+   Replace frontend/public/fonts/MicrE13b.woff2 with a real OFL-licensed
+   MICR E13B font (e.g. GnuMICR from sourceforge.net/projects/gnumicr).
+   The check strip falls back to 'Courier New', monospace until replaced. */
+@font-face {
+  font-family: "MICR";
+  src: url("/fonts/MicrE13b.woff2") format("woff2");
+  font-display: block;
+  font-weight: normal;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
