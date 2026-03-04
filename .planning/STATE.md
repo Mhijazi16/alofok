@@ -74,5 +74,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-04
-Stopped at: Phase 6 complete. User chose to run /gsd:discuss-phase 7 before planning. Context window ran high — /clear and resume.
+Stopped at: Phase 6 complete. Phase 7 directory created. Context window high — needs /clear.
 Resume with: /gsd:discuss-phase 7
