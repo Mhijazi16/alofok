@@ -7,6 +7,7 @@ import { syncQueue } from "@/lib/syncQueue";
 import { checkImageQueue } from "@/lib/checkImageQueue";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
+import { useOcr, type OcrConfidenceLevel, confidenceBorderClass } from "@/hooks/useOcr";
 import { useAppSelector } from "@/store";
 import { BankAutocomplete, saveBankToHistory } from "@/components/ui/bank-autocomplete";
 import { CheckPreview } from "./CheckPreview";
@@ -110,6 +111,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
     setImageBlob(blob);
     setImagePreviewUrl(previewUrl);
     setImageUrl(null); // Clear any previously uploaded server URL
+    setOcrConfidence({});
   }
 
   function handleRemovePhoto() {
@@ -117,6 +119,43 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
     setImageBlob(null);
     setImagePreviewUrl(null);
     setImageUrl(null);
+    setOcrConfidence({});
+  }
+
+  async function handleScanCheck() {
+    if (!imageBlob) return;
+    const result = await scan(imageBlob);
+
+    // Pre-fill form fields from OCR result and record confidence per field
+    const nextConfidence: Record<string, OcrConfidenceLevel | null> = { ...ocrConfidence };
+
+    if (result.bankNumber) {
+      setBankNumber(result.bankNumber.value);
+      nextConfidence.bankNumber = result.bankNumber.confidence;
+    }
+    if (result.branchNumber) {
+      setBranchNumber(result.branchNumber.value);
+      nextConfidence.branchNumber = result.branchNumber.confidence;
+    }
+    if (result.accountNumber) {
+      setAccountNumber(result.accountNumber.value);
+      nextConfidence.accountNumber = result.accountNumber.confidence;
+    }
+    if (result.amount) {
+      setAmount(result.amount.value);
+      nextConfidence.amount = result.amount.confidence;
+    }
+    if (result.holderName) {
+      setHolderName(result.holderName.value);
+      nextConfidence.holderName = result.holderName.confidence;
+    }
+
+    setOcrConfidence(nextConfidence);
+
+    // Show error toast if OCR encountered an issue (OCR-06)
+    if (ocrError) {
+      toast({ title: t("ocrFailed"), variant: "destructive" });
+    }
   }
 
   const handleSubmit = async () => {
@@ -235,9 +274,15 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                   inputMode="decimal"
                   dir="ltr"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                    setOcrConfidence((prev) => ({ ...prev, amount: null }));
+                  }}
                   placeholder="0.00"
-                  className="h-16 border-primary/50 text-center text-h1 font-bold text-foreground focus-visible:ring-primary max-w-xs"
+                  className={cn(
+                    "h-16 border-primary/50 text-center text-h1 font-bold text-foreground focus-visible:ring-primary max-w-xs",
+                    confidenceBorderClass(ocrConfidence.amount)
+                  )}
                   inputSize="lg"
                   min={0}
                   step="0.01"
@@ -283,6 +328,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                     imagePreviewUrl={imagePreviewUrl}
                     onCapture={handleCapture}
                     onRemove={handleRemovePhoto}
+                    isScanning={isScanning}
+                    onScanCheck={imageBlob ? handleScanCheck : undefined}
                   />
 
                   {/* Check SVG Preview — always LTR */}
@@ -314,11 +361,15 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                   <FormField label={t("payment.bankNumber")} required>
                     <Input
                       value={bankNumber}
-                      onChange={(e) => setBankNumber(e.target.value)}
+                      onChange={(e) => {
+                        setBankNumber(e.target.value);
+                        setOcrConfidence((prev) => ({ ...prev, bankNumber: null }));
+                      }}
                       placeholder={t("payment.bankNumber")}
                       inputMode="numeric"
                       dir="ltr"
                       startIcon={<Hash className="h-4 w-4" />}
+                      className={cn(confidenceBorderClass(ocrConfidence.bankNumber))}
                       onFocus={() => setFocusedField("bankNumber")}
                       onBlur={() => setFocusedField(null)}
                     />
@@ -327,11 +378,15 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                   <FormField label={t("payment.branchNumber")} required>
                     <Input
                       value={branchNumber}
-                      onChange={(e) => setBranchNumber(e.target.value)}
+                      onChange={(e) => {
+                        setBranchNumber(e.target.value);
+                        setOcrConfidence((prev) => ({ ...prev, branchNumber: null }));
+                      }}
                       placeholder={t("payment.branchNumber")}
                       inputMode="numeric"
                       dir="ltr"
                       startIcon={<Hash className="h-4 w-4" />}
+                      className={cn(confidenceBorderClass(ocrConfidence.branchNumber))}
                       onFocus={() => setFocusedField("branchNumber")}
                       onBlur={() => setFocusedField(null)}
                     />
@@ -340,11 +395,15 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                   <FormField label={t("payment.accountNumber")} required>
                     <Input
                       value={accountNumber}
-                      onChange={(e) => setAccountNumber(e.target.value)}
+                      onChange={(e) => {
+                        setAccountNumber(e.target.value);
+                        setOcrConfidence((prev) => ({ ...prev, accountNumber: null }));
+                      }}
                       placeholder={t("payment.accountNumber")}
                       inputMode="numeric"
                       dir="ltr"
                       startIcon={<Hash className="h-4 w-4" />}
+                      className={cn(confidenceBorderClass(ocrConfidence.accountNumber))}
                       onFocus={() => setFocusedField("accountNumber")}
                       onBlur={() => setFocusedField(null)}
                     />
@@ -353,9 +412,13 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                   <FormField label={t("payment.holderName")}>
                     <Input
                       value={holderName}
-                      onChange={(e) => setHolderName(e.target.value)}
+                      onChange={(e) => {
+                        setHolderName(e.target.value);
+                        setOcrConfidence((prev) => ({ ...prev, holderName: null }));
+                      }}
                       placeholder={t("payment.holderName")}
                       startIcon={<User className="h-4 w-4" />}
+                      className={cn(confidenceBorderClass(ocrConfidence.holderName))}
                       onFocus={() => setFocusedField("holderName")}
                       onBlur={() => setFocusedField(null)}
                     />

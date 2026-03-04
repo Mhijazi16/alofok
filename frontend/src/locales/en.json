@@ -457,6 +457,7 @@
     "scanning": "Scanning...",
     "uploadPending": "Upload Pending"
   },
+  "ocrFailed": "OCR scan failed. Please enter details manually.",
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",
     "offline": "You are offline. Data will sync when connection resumes.",
