@@ -21,9 +21,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **PRV-01**: User sees a realistic LTR bank check SVG that updates live as they type
 - [ ] **PRV-02**: Check SVG shows bank name (top left), holder name (top right), date + amount + currency (center), MICR strip `#check# #branch#extra# #account#` (bottom)
-- [ ] **PRV-03**: Amount is displayed both as digits and written-out words (English)
+- [x] **PRV-03**: Amount is displayed both as digits and written-out words (English)
 - [ ] **PRV-04**: Check SVG renders correctly when app language is Arabic (no RTL mirroring)
-- [ ] **PRV-05**: Check SVG input updates are performant on mid-range Android (no input lag)
+- [x] **PRV-05**: Check SVG input updates are performant on mid-range Android (no input lag)
 
 ### Check Lifecycle
 
@@ -91,9 +91,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHK-07 | Phase 6 | Complete |
 | PRV-01 | Phase 7 | Pending |
 | PRV-02 | Phase 7 | Pending |
-| PRV-03 | Phase 7 | Pending |
+| PRV-03 | Phase 7 | Complete |
 | PRV-04 | Phase 7 | Pending |
-| PRV-05 | Phase 7 | Pending |
+| PRV-05 | Phase 7 | Complete |
 | LCY-01 | Phase 8 | Pending |
 | LCY-02 | Phase 8 | Pending |
 | LCY-03 | Phase 8 | Pending |
