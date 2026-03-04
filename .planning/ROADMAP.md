@@ -78,7 +78,7 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 6. Check Data Foundation | v1.1 | 0/2 | Planning complete | - |
+| 6. Check Data Foundation | 1/2 | In Progress|  | - |
 | 7. SVG Check Preview | v1.1 | 0/? | Not started | - |
 | 8. Check Lifecycle Management | v1.1 | 0/? | Not started | - |
 | 9. Image Capture and OCR | v1.1 | 0/? | Not started | - |
