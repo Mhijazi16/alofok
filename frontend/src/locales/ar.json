@@ -389,7 +389,14 @@
     "undeliver": "التراجع عن التسليم",
     "undeliverMessage": "إرجاع هذا الطلب إلى حالة غير مسلّم؟ سيصبح قابلاً للتعديل مرة أخرى.",
     "items": "المنتجات",
-    "notes": "ملاحظات"
+    "notes": "ملاحظات",
+    "selectedCount": "{{count}} محدد",
+    "bulkDelete": "حذف المحدد",
+    "bulkDeliver": "تحديد كمسلّم",
+    "bulkUndeliver": "التراجع عن التسليم",
+    "bulkDeleteMessage": "حذف {{count}} طلبات؟ سيتم عكس أرصدة العملاء.",
+    "bulkDeliverMessage": "تحديد {{count}} طلبات كمسلّمة؟",
+    "bulkUndeliverMessage": "إرجاع {{count}} طلبات إلى غير مسلّمة؟"
   },
   "filter": {
     "all": "الكل"

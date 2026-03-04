@@ -389,7 +389,14 @@
     "undeliver": "Undo Delivery",
     "undeliverMessage": "Revert this order to undelivered? It will become editable again.",
     "items": "Items",
-    "notes": "Notes"
+    "notes": "Notes",
+    "selectedCount": "{{count}} selected",
+    "bulkDelete": "Delete Selected",
+    "bulkDeliver": "Mark Delivered",
+    "bulkUndeliver": "Undo Delivery",
+    "bulkDeleteMessage": "Delete {{count}} orders? Customer balances will be reversed.",
+    "bulkDeliverMessage": "Mark {{count}} orders as delivered?",
+    "bulkUndeliverMessage": "Revert {{count}} orders to undelivered?"
   },
   "filter": {
     "all": "All"

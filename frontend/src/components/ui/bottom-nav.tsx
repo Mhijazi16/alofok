@@ -2,6 +2,25 @@ import * as React from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+function useScrollDirection() {
+  const [hidden, setHidden] = React.useState(false);
+  const lastY = React.useRef(0);
+
+  React.useEffect(() => {
+    const threshold = 10;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - lastY.current) < threshold) return;
+      setHidden(y > lastY.current && y > 60);
+      lastY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return hidden;
+}
+
 interface BottomNavItem {
   icon: LucideIcon;
   label: string;
@@ -19,12 +38,14 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
   ({ items, activeValue, onValueChange, className, ...props }, ref) => {
     // Enforce max 5 items
     const visibleItems = items.slice(0, 5);
+    const hidden = useScrollDirection();
 
     return (
       <nav
         ref={ref}
         className={cn(
-          "fixed z-40 bottom-6 inset-x-3 mx-auto max-w-lg rounded-2xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/20 pb-safe",
+          "fixed z-40 bottom-6 inset-x-3 mx-auto max-w-lg rounded-2xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/20 pb-safe transition-transform duration-300",
+          hidden && "translate-y-[calc(100%+2rem)]",
           className
         )}
         {...props}

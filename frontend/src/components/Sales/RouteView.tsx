@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -12,6 +12,10 @@ import {
   Receipt,
   Check,
   Undo2,
+  Trash2,
+  X,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import { salesApi, type Customer, type OrderWithCustomer } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
@@ -75,6 +79,38 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
   const [confirmDeliverOrder, setConfirmDeliverOrder] = useState<OrderWithCustomer | null>(null);
   const [confirmUndeliverOrder, setConfirmUndeliverOrder] = useState<OrderWithCustomer | null>(null);
 
+  // ── Multi-select state ──
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+  const selectionMode = selectedOrderIds.size > 0;
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [bulkAction, setBulkAction] = useState<"delete" | "deliver" | "undeliver" | null>(null);
+
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedOrderIds(new Set());
+  }, []);
+
+  const startLongPress = useCallback((id: string) => {
+    longPressTimer.current = setTimeout(() => {
+      setSelectedOrderIds((prev) => new Set(prev).add(id));
+    }, 500);
+  }, []);
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
   // Compute actual calendar date for the selected day tab (current week)
   const selectedDate = useMemo(() => {
     const today = new Date();
@@ -132,6 +168,58 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
       toast({ title: t("toast.error"), variant: "error" });
     },
   });
+
+  // Bulk mutations
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map((id) => salesApi.deleteOrder(id))),
+    onSuccess: () => {
+      clearSelection();
+      setBulkAction(null);
+      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      toast({ title: t("toast.success"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const bulkDeliverMutation = useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map((id) => salesApi.confirmOrderDelivery(id))),
+    onSuccess: () => {
+      clearSelection();
+      setBulkAction(null);
+      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      toast({ title: t("toast.success"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const bulkUndeliverMutation = useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map((id) => salesApi.undeliverOrder(id))),
+    onSuccess: () => {
+      clearSelection();
+      setBulkAction(null);
+      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      toast({ title: t("toast.success"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const handleBulkConfirm = () => {
+    const ids = Array.from(selectedOrderIds);
+    if (bulkAction === "delete") bulkDeleteMutation.mutate(ids);
+    else if (bulkAction === "deliver") bulkDeliverMutation.mutate(ids);
+    else if (bulkAction === "undeliver") bulkUndeliverMutation.mutate(ids);
+  };
+
+  const isBulkPending = bulkDeleteMutation.isPending || bulkDeliverMutation.isPending || bulkUndeliverMutation.isPending;
 
   const handleConfirmDelivery = (order: OrderWithCustomer) => {
     setConfirmDeliverOrder(order);
@@ -344,12 +432,13 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                       : 0;
 
                     const isDelivered = !!(order as any).delivered_date;
+                    const isSelected = selectedOrderIds.has(order.id);
 
                     return (
                       <Card
                         key={order.id}
                         variant="glass"
-                        className="animate-slide-up overflow-hidden p-0"
+                        className={`animate-slide-up overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
                         {/* Accent stripe */}
@@ -357,12 +446,29 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                           <div className="w-1 shrink-0 bg-primary/60 rounded-s-xl" />
                           <div className="flex-1 p-3">
                             <div
-                              className="flex items-center justify-between gap-3 cursor-pointer"
+                              className="flex items-center justify-between gap-3 cursor-pointer select-none"
+                              onPointerDown={() => startLongPress(order.id)}
+                              onPointerUp={cancelLongPress}
+                              onPointerCancel={cancelLongPress}
+                              onPointerLeave={cancelLongPress}
                               onClick={() => {
-                                setSelectedOrder(order);
-                                setOrderModalOpen(true);
+                                if (selectionMode) {
+                                  toggleSelection(order.id);
+                                } else {
+                                  setSelectedOrder(order);
+                                  setOrderModalOpen(true);
+                                }
                               }}
                             >
+                              {selectionMode && (
+                                <div className="shrink-0 animate-fade-in">
+                                  {isSelected ? (
+                                    <CheckSquare className="h-5 w-5 text-primary" />
+                                  ) : (
+                                    <Square className="h-5 w-5 text-muted-foreground" />
+                                  )}
+                                </div>
+                              )}
                               <div className="min-w-0 flex-1">
                                 <p className="text-body-sm font-semibold text-foreground truncate">
                                   {order.customer_name}
@@ -394,33 +500,35 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                                 )}
                               </div>
                             </div>
-                            {!isDelivered ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full mt-3"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleConfirmDelivery(order);
-                                }}
-                                isLoading={deliveryMutation.isPending}
-                              >
-                                {t("order.confirmDelivery")}
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full mt-3"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleUndeliver(order);
-                                }}
-                                isLoading={undeliverMutation.isPending}
-                              >
-                                <Undo2 className="h-3.5 w-3.5" />
-                                {t("order.undeliver")}
-                              </Button>
+                            {!selectionMode && (
+                              !isDelivered ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full mt-3"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleConfirmDelivery(order);
+                                  }}
+                                  isLoading={deliveryMutation.isPending}
+                                >
+                                  {t("order.confirmDelivery")}
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full mt-3"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUndeliver(order);
+                                  }}
+                                  isLoading={undeliverMutation.isPending}
+                                >
+                                  <Undo2 className="h-3.5 w-3.5" />
+                                  {t("order.undeliver")}
+                                </Button>
+                              )
                             )}
                           </div>
                         </div>
@@ -464,12 +572,13 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                         : 0;
 
                       const isDelivered = !!(order as any).delivered_date;
+                      const isSelected = selectedOrderIds.has(order.id);
 
                       return (
                         <Card
                           key={order.id}
                           variant="glass"
-                          className="animate-slide-up overflow-hidden p-0"
+                          className={`animate-slide-up overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
                           style={{ animationDelay: `${idx * 50}ms` }}
                         >
                           {/* Accent stripe */}
@@ -477,12 +586,29 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                             <div className="w-1 shrink-0 bg-amber-500/60 rounded-s-xl" />
                             <div className="flex-1 p-3">
                               <div
-                                className="flex items-center justify-between gap-3 cursor-pointer"
+                                className="flex items-center justify-between gap-3 cursor-pointer select-none"
+                                onPointerDown={() => startLongPress(order.id)}
+                                onPointerUp={cancelLongPress}
+                                onPointerCancel={cancelLongPress}
+                                onPointerLeave={cancelLongPress}
                                 onClick={() => {
-                                  setSelectedOrder(order);
-                                  setOrderModalOpen(true);
+                                  if (selectionMode) {
+                                    toggleSelection(order.id);
+                                  } else {
+                                    setSelectedOrder(order);
+                                    setOrderModalOpen(true);
+                                  }
                                 }}
                               >
+                                {selectionMode && (
+                                  <div className="shrink-0 animate-fade-in">
+                                    {isSelected ? (
+                                      <CheckSquare className="h-5 w-5 text-primary" />
+                                    ) : (
+                                      <Square className="h-5 w-5 text-muted-foreground" />
+                                    )}
+                                  </div>
+                                )}
                                 <div className="min-w-0 flex-1">
                                   <p className="text-body-sm font-semibold text-foreground truncate">
                                     {order.customer_name}
@@ -514,33 +640,35 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                                   )}
                                 </div>
                               </div>
-                              {!isDelivered ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="w-full mt-3"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleConfirmDelivery(order);
-                                  }}
-                                  isLoading={deliveryMutation.isPending}
-                                >
-                                  {t("order.confirmDelivery")}
-                                </Button>
-                              ) : (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="w-full mt-3"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleUndeliver(order);
-                                  }}
-                                  isLoading={undeliverMutation.isPending}
-                                >
-                                  <Undo2 className="h-3.5 w-3.5" />
-                                  {t("order.undeliver")}
-                                </Button>
+                              {!selectionMode && (
+                                !isDelivered ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full mt-3"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleConfirmDelivery(order);
+                                    }}
+                                    isLoading={deliveryMutation.isPending}
+                                  >
+                                    {t("order.confirmDelivery")}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full mt-3"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUndeliver(order);
+                                    }}
+                                    isLoading={undeliverMutation.isPending}
+                                  >
+                                    <Undo2 className="h-3.5 w-3.5" />
+                                    {t("order.undeliver")}
+                                  </Button>
+                                )
                               )}
                             </div>
                           </div>
@@ -552,6 +680,47 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
               </>
             )}
           </>
+
+        {/* ── Bulk Action Bar ── */}
+        {selectionMode && (
+          <div className="fixed bottom-6 inset-x-0 z-50 animate-slide-up">
+            <div className="mx-4 flex items-center gap-2 rounded-xl border border-border/50 bg-card/95 p-3 shadow-lg backdrop-blur-md">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSelection}
+                className="shrink-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <span className="text-body-sm font-medium text-foreground whitespace-nowrap">
+                {t("order.selectedCount", { count: selectedOrderIds.size })}
+              </span>
+              <div className="flex-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBulkAction("undeliver")}
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBulkAction("deliver")}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setBulkAction("delete")}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Order Modal */}
@@ -583,6 +752,27 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
         cancelLabel={t("actions.cancel")}
         onConfirm={() => confirmUndeliverOrder && undeliverMutation.mutate(confirmUndeliverOrder.id)}
         isLoading={undeliverMutation.isPending}
+      />
+
+      {/* Bulk Action Confirmation Dialog */}
+      <ConfirmationDialog
+        open={!!bulkAction}
+        onOpenChange={(open) => { if (!open) setBulkAction(null); }}
+        title={
+          bulkAction === "delete" ? t("order.bulkDelete")
+          : bulkAction === "deliver" ? t("order.bulkDeliver")
+          : t("order.bulkUndeliver")
+        }
+        description={
+          bulkAction === "delete" ? t("order.bulkDeleteMessage", { count: selectedOrderIds.size })
+          : bulkAction === "deliver" ? t("order.bulkDeliverMessage", { count: selectedOrderIds.size })
+          : t("order.bulkUndeliverMessage", { count: selectedOrderIds.size })
+        }
+        confirmLabel={t("actions.confirm")}
+        cancelLabel={t("actions.cancel")}
+        variant={bulkAction === "delete" ? "destructive" : "default"}
+        onConfirm={handleBulkConfirm}
+        isLoading={isBulkPending}
       />
     </div>
   );

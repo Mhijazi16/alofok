@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
-import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -193,76 +192,109 @@ export function CustomerDashboard({
       />
 
       <div className="space-y-5 p-4">
-        {/* Insight Stats 2x2 */}
+        {/* Insight Stats — horizontal cards */}
         {insightsLoading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} variant="card" className="h-28" />
+              <Skeleton key={i} variant="card" className="h-16" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard
-              variant="glass"
-              value={formatCurrency(insights?.total_debt ?? customer.balance)}
-              label={t("customer.totalDebt")}
-              icon={DollarSign}
-              className="animate-slide-up"
+          <div className="space-y-3">
+            {/* Total Debt */}
+            <div
+              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden animate-slide-up transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
               style={{ animationDelay: "0ms" }}
-            />
-            <StatCard
-              variant="glass"
-              value={
-                insights?.last_payment_amount
-                  ? formatCurrency(insights.last_payment_amount)
-                  : "-"
-              }
-              label={t("customer.lastCollection")}
-              icon={Calendar}
-              footer={
-                insights?.last_payment_date ? (
-                  <span className="text-caption text-muted-foreground">
-                    {formatDate(insights.last_payment_date)}
-                  </span>
-                ) : undefined
-              }
-              className="animate-slide-up"
+            >
+              <div className="absolute inset-y-0 start-0 w-1 rounded-s-2xl bg-primary" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform group-hover:scale-110">
+                <DollarSign className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption text-muted-foreground">{t("customer.totalDebt")}</p>
+                <p className="text-lg font-bold text-foreground tabular-nums">
+                  {formatCurrency(insights?.total_debt ?? customer.balance)}
+                </p>
+              </div>
+              <Badge variant={(insights?.total_debt ?? customer.balance) > 0 ? "danger" : "success"} size="sm">
+                {(insights?.total_debt ?? customer.balance) > 0 ? t("customer.riskHigh") : t("customer.riskLow")}
+              </Badge>
+            </div>
+
+            {/* Last Collection */}
+            <div
+              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden animate-slide-up transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
               style={{ animationDelay: "60ms" }}
-            />
-            <StatCard
-              variant="glass"
-              value={
-                insights?.avg_payment_interval_days
-                  ? `${insights.avg_payment_interval_days}`
-                  : "-"
-              }
-              label={t("customer.collectionFrequency")}
-              icon={Clock}
-              footer={
-                insights?.avg_payment_interval_days ? (
-                  <span className="text-caption text-muted-foreground">
-                    {t("customer.daysAverage")}
-                  </span>
-                ) : undefined
-              }
-              className="animate-slide-up"
+            >
+              <div className="absolute inset-y-0 start-0 w-1 rounded-s-2xl bg-primary/60" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform group-hover:scale-110">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption text-muted-foreground">{t("customer.lastCollection")}</p>
+                <p className="text-lg font-bold text-foreground tabular-nums">
+                  {insights?.last_payment_amount ? formatCurrency(insights.last_payment_amount) : "-"}
+                </p>
+              </div>
+              {insights?.last_payment_date && (
+                <span className="text-caption text-muted-foreground shrink-0">
+                  {formatDate(insights.last_payment_date)}
+                </span>
+              )}
+            </div>
+
+            {/* Collection Frequency */}
+            <div
+              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden animate-slide-up transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
               style={{ animationDelay: "120ms" }}
-            />
-            <StatCard
-              variant="glass"
-              value={riskLabel(insights?.risk_score)}
-              label={t("customer.riskScore")}
-              icon={Shield}
-              footer={
-                <StatusIndicator
-                  variant={riskStatusVariant(insights?.risk_score)}
-                  label={riskLabel(insights?.risk_score)}
-                  size="sm"
-                />
-              }
-              className="animate-slide-up"
+            >
+              <div className="absolute inset-y-0 start-0 w-1 rounded-s-2xl bg-primary/40" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform group-hover:scale-110">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption text-muted-foreground">{t("customer.collectionFrequency")}</p>
+                <p className="text-lg font-bold text-foreground tabular-nums">
+                  {insights?.avg_payment_interval_days ? `${insights.avg_payment_interval_days}` : "-"}
+                </p>
+              </div>
+              {insights?.avg_payment_interval_days && (
+                <span className="text-caption text-muted-foreground shrink-0">
+                  {t("customer.daysAverage")}
+                </span>
+              )}
+            </div>
+
+            {/* Risk Score */}
+            <div
+              className={cn(
+                "group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden animate-slide-up transition-all hover:shadow-lg",
+                insights?.risk_score === "red" ? "hover:border-destructive/40 hover:shadow-destructive/5" : insights?.risk_score === "yellow" ? "hover:border-warning/40 hover:shadow-warning/5" : "hover:border-success/40 hover:shadow-success/5"
+              )}
               style={{ animationDelay: "180ms" }}
-            />
+            >
+              <div className={cn(
+                "absolute inset-y-0 start-0 w-1 rounded-s-2xl",
+                insights?.risk_score === "red" ? "bg-destructive" : insights?.risk_score === "yellow" ? "bg-warning" : "bg-success"
+              )} />
+              <div className={cn(
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
+                insights?.risk_score === "red" ? "bg-destructive/15 text-destructive" : insights?.risk_score === "yellow" ? "bg-warning/15 text-warning" : "bg-success/15 text-success"
+              )}>
+                <Shield className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption text-muted-foreground">{t("customer.riskScore")}</p>
+                <p className="text-lg font-bold text-foreground">
+                  {riskLabel(insights?.risk_score)}
+                </p>
+              </div>
+              <StatusIndicator
+                variant={riskStatusVariant(insights?.risk_score)}
+                label={riskLabel(insights?.risk_score)}
+                size="sm"
+              />
+            </div>
           </div>
         )}
 
