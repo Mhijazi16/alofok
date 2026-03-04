@@ -41,6 +41,7 @@
         "react-router-dom": "^7.1.1",
         "recharts": "^2.15.0",
         "tailwind-merge": "^2.5.5",
+        "to-words": "^5.2.0",
       },
       "devDependencies": {
         "@types/node": "^22.10.0",
@@ -856,6 +857,8 @@
     "tinyglobby": ["tinyglobby@0.2.15", "", { "dependencies": { "fdir": "^6.5.0", "picomatch": "^4.0.3" } }, "sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ=="],
 
     "to-regex-range": ["to-regex-range@5.0.1", "", { "dependencies": { "is-number": "^7.0.0" } }, "sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ=="],
+
+    "to-words": ["to-words@5.2.0", "", { "bin": { "to-words": "dist/cjs/cli.js" } }, "sha512-Igc/aP1qLfnViHgiwSgr1v7lr/9PPmVYK3uxKplvBToB/n1HZMq8cX4kWa1il51iHcfwvBp9U/wWCxQP46gxAw=="],
 
     "ts-api-utils": ["ts-api-utils@2.4.0", "", { "peerDependencies": { "typescript": ">=4.8.4" } }, "sha512-3TaVTaAv2gTiMB35i3FiGJaRfwb3Pyn/j3m/bfAvGe8FB7CF6u+LMYqYlDh7reQf7UNvoTvdfAqHGmPGOSsPmA=="],
 
