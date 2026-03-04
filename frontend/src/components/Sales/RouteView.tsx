@@ -129,25 +129,28 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     queryFn: () => salesApi.getRouteByDay(selectedDay, selectedDate),
   });
 
-  // Fetch delivery orders for the selected date
-  const { data: orders, isLoading: ordersLoading } = useQuery({
-    queryKey: ["route-orders", selectedDate],
-    queryFn: () => salesApi.getRouteOrders(selectedDate),
+  // Fetch all delivery orders for the selected date (single query)
+  const { data: allOrders, isLoading: ordersLoading } = useQuery({
+    queryKey: ["delivery-orders", selectedDate, selectedDay],
+    queryFn: () => salesApi.getDeliveryOrders(selectedDate, selectedDay),
   });
 
-  // Fetch unassigned orders for the selected date
-  const { data: unassignedOrders, isLoading: unassignedLoading } = useQuery({
-    queryKey: ["unassigned-orders", selectedDate, selectedDay],
-    queryFn: () => salesApi.getUnassignedOrders(selectedDate, selectedDay),
-  });
+  // Split into route vs unassigned client-side
+  const orders = useMemo(
+    () => allOrders?.filter((o) => o.is_route !== false) ?? [],
+    [allOrders]
+  );
+  const unassignedOrders = useMemo(
+    () => allOrders?.filter((o) => o.is_route === false) ?? [],
+    [allOrders]
+  );
 
   // Delivery confirmation mutation
   const deliveryMutation = useMutation({
     mutationFn: (orderId: string) => salesApi.confirmOrderDelivery(orderId),
     onSuccess: () => {
       setConfirmDeliverOrder(null);
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
     },
     onError: () => {
@@ -160,8 +163,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     mutationFn: (orderId: string) => salesApi.undeliverOrder(orderId),
     onSuccess: () => {
       setConfirmUndeliverOrder(null);
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
     },
     onError: () => {
@@ -175,8 +177,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     onSuccess: () => {
       clearSelection();
       setBulkAction(null);
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
     },
     onError: () => {
@@ -189,8 +190,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     onSuccess: () => {
       clearSelection();
       setBulkAction(null);
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
     },
     onError: () => {
@@ -203,8 +203,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     onSuccess: () => {
       clearSelection();
       setBulkAction(null);
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
     },
     onError: () => {
@@ -558,7 +557,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                   <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />
                 </div>
 
-                {unassignedLoading ? (
+                {ordersLoading ? (
                   <div className="space-y-3">
                     {Array.from({ length: 2 }).map((_, i) => (
                       <Skeleton key={i} variant="card" className="h-16" />

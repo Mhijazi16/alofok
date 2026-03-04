@@ -67,8 +67,7 @@ export function OrderModal({
     mutationFn: (payload: any) =>
       salesApi.updateOrder(order!.id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
       onOpenChange(false);
     },
@@ -84,8 +83,7 @@ export function OrderModal({
     mutationFn: () => salesApi.deleteOrder(order!.id),
     onSuccess: () => {
       setConfirmDeleteOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
       onOpenChange(false);
     },
@@ -100,8 +98,7 @@ export function OrderModal({
     mutationFn: () => salesApi.undeliverOrder(order!.id),
     onSuccess: () => {
       setConfirmUndeliverOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["route-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["unassigned-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
       toast({ title: t("toast.success"), variant: "success" });
       onOpenChange(false);
     },

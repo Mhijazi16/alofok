@@ -28,6 +28,7 @@ class TransactionOut(BaseModel):
 class OrderWithCustomerOut(TransactionOut):
     """Order with inline customer name for list views."""
     customer_name: str
+    is_route: bool = True
 
 
 class StatementEntryOut(BaseModel):

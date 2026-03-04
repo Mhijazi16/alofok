@@ -107,39 +107,20 @@ class CustomerService:
             )
         return results
 
-    async def get_orders_by_delivery_date(
-        self, user_id: uuid.UUID, delivery: date
-    ) -> list[OrderWithCustomerOut]:
-        orders = await self._transactions.get_orders_by_delivery_date(
-            user_id, delivery
-        )
-        results = []
-        for o in orders:
-            customer = await self._customers.get_by_id(o.customer_id)
-            results.append(
-                OrderWithCustomerOut(
-                    **TransactionOut.model_validate(o).model_dump(),
-                    customer_name=customer.name if customer else "—",
-                )
-            )
-        return results
-
-    async def get_unassigned_orders_by_delivery_date(
+    async def get_delivery_orders(
         self, user_id: uuid.UUID, delivery: date, assigned_day: str
     ) -> list[OrderWithCustomerOut]:
-        orders = await self._transactions.get_unassigned_orders_by_delivery_date(
+        rows = await self._transactions.get_delivery_orders(
             user_id, delivery, assigned_day
         )
-        results = []
-        for o in orders:
-            customer = await self._customers.get_by_id(o.customer_id)
-            results.append(
-                OrderWithCustomerOut(
-                    **TransactionOut.model_validate(o).model_dump(),
-                    customer_name=customer.name if customer else "—",
-                )
+        return [
+            OrderWithCustomerOut(
+                **TransactionOut.model_validate(txn).model_dump(),
+                customer_name=name,
+                is_route=is_route,
             )
-        return results
+            for txn, name, is_route in rows
+        ]
 
     async def get_route(self, user_id: str) -> list[CustomerOut]:
         cache_key = f"route:{user_id}"

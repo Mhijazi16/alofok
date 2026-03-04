@@ -95,32 +95,17 @@ async def my_orders_today(
 
 
 @router.get(
-    "/route-orders",
+    "/delivery-orders",
     response_model=list[OrderWithCustomerOut],
     dependencies=[require_sales],
 )
-async def route_orders(
-    current_user: CurrentUser,
-    service: CustomerSvc,
-    delivery_date: date = Query(...),
-) -> list[OrderWithCustomerOut]:
-    return await service.get_orders_by_delivery_date(
-        UUID(current_user["sub"]), delivery_date
-    )
-
-
-@router.get(
-    "/unassigned-orders",
-    response_model=list[OrderWithCustomerOut],
-    dependencies=[require_sales],
-)
-async def unassigned_orders(
+async def delivery_orders(
     current_user: CurrentUser,
     service: CustomerSvc,
     delivery_date: date = Query(...),
     assigned_day: str = Query(...),
 ) -> list[OrderWithCustomerOut]:
-    return await service.get_unassigned_orders_by_delivery_date(
+    return await service.get_delivery_orders(
         UUID(current_user["sub"]), delivery_date, assigned_day
     )
 

@@ -132,6 +132,7 @@ export interface CartItem {
 export interface OrderWithCustomer extends Transaction {
   customer_name: string;
   customer_id: string;
+  is_route?: boolean;
 }
 
 export interface OrderCreate {
@@ -182,11 +183,8 @@ export const salesApi = {
   getMyOrdersToday: () =>
     api.get<OrderWithCustomer[]>("/customers/my-orders-today").then((r) => r.data),
 
-  getRouteOrders: (date: string) =>
-    api.get<OrderWithCustomer[]>("/customers/route-orders", { params: { delivery_date: date } }).then((r) => r.data),
-
-  getUnassignedOrders: (date: string, assignedDay: string) =>
-    api.get<OrderWithCustomer[]>("/customers/unassigned-orders", { params: { delivery_date: date, assigned_day: assignedDay } }).then((r) => r.data),
+  getDeliveryOrders: (date: string, assignedDay: string) =>
+    api.get<OrderWithCustomer[]>("/customers/delivery-orders", { params: { delivery_date: date, assigned_day: assignedDay } }).then((r) => r.data),
 
   getInsights: (customerId: string) =>
     api

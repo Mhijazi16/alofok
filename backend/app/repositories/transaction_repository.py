@@ -80,42 +80,29 @@ class TransactionRepository:
         result = await self._db.execute(query)
         return list(result.scalars().all())
 
-    async def get_orders_by_delivery_date(
-        self, rep_id: uuid.UUID, delivery: date
-    ) -> list[Transaction]:
-        result = await self._db.execute(
-            select(Transaction)
-            .where(
-                Transaction.created_by == rep_id,
-                Transaction.type == TransactionType.Order,
-                Transaction.delivery_date == delivery,
-                Transaction.is_deleted.is_(False),
-                Transaction.is_draft.is_(False),
-            )
-            .order_by(Transaction.created_at.desc())
-        )
-        return list(result.scalars().all())
-
-    async def get_unassigned_orders_by_delivery_date(
+    async def get_delivery_orders(
         self, rep_id: uuid.UUID, delivery: date, assigned_day: str
-    ) -> list[Transaction]:
-        """Get orders with delivery_date = delivery from customers NOT assigned to assigned_day"""
+    ) -> list[tuple[Transaction, str, bool]]:
+        """Return (transaction, customer_name, is_route) for all orders on a delivery date."""
         from app.models.customer import Customer
 
         result = await self._db.execute(
-            select(Transaction)
+            select(
+                Transaction,
+                Customer.name,
+                Customer.assigned_day == assigned_day,
+            )
             .join(Customer, Transaction.customer_id == Customer.id)
             .where(
                 Transaction.created_by == rep_id,
                 Transaction.type == TransactionType.Order,
                 Transaction.delivery_date == delivery,
-                Customer.assigned_day != assigned_day,
                 Transaction.is_deleted.is_(False),
                 Transaction.is_draft.is_(False),
             )
             .order_by(Transaction.created_at.desc())
         )
-        return list(result.scalars().all())
+        return list(result.all())
 
     async def create(self, txn: Transaction) -> Transaction:
         self._db.add(txn)

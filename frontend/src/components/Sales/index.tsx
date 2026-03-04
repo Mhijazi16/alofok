@@ -397,7 +397,7 @@ export default function SalesRoot() {
     onSuccess: () => {
       if (selectedCustomer) {
         queryClient.invalidateQueries({ queryKey: ["my-route"] });
-        queryClient.invalidateQueries({ queryKey: ["route-orders"] });
+        queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
         queryClient.invalidateQueries({ queryKey: ["insights", selectedCustomer.id] });
         queryClient.invalidateQueries({ queryKey: ["statement", selectedCustomer.id] });
       }
