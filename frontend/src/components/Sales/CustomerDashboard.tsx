@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
-import type { CheckOut } from "@/services/adminApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
