@@ -431,6 +431,20 @@
       "Returned": "Returned"
     }
   },
+  "checkDetail": {
+    "title": "Check Details",
+    "bank": "Bank",
+    "branch": "Branch",
+    "account": "Account",
+    "holder": "Holder",
+    "dueDate": "Due Date",
+    "amount": "Amount",
+    "currency": "Currency",
+    "returnedWarning": "This customer has {{count}} returned check(s)",
+    "returnedWarningShort": "{{count}} returned",
+    "viewCheck": "View Check",
+    "of": "of"
+  },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",
     "offline": "You are offline. Data will sync when connection resumes.",
