@@ -51,6 +51,8 @@ interface BankAutocompleteProps {
   onChange: (value: string) => void;
   userId: string;
   placeholder?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 export function BankAutocomplete({
@@ -58,6 +60,8 @@ export function BankAutocomplete({
   onChange,
   userId,
   placeholder,
+  onFocus,
+  onBlur,
 }: BankAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -95,6 +99,8 @@ export function BankAutocomplete({
           type="button"
           role="combobox"
           aria-expanded={open}
+          onFocus={onFocus}
+          onBlur={onBlur}
           className={cn(
             "flex h-10 w-full items-center justify-between rounded-lg border border-border",
             "bg-input px-3 py-2 text-sm transition-colors",
