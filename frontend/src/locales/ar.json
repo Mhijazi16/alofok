@@ -59,7 +59,7 @@
     "allCustomers": "جميع العملاء",
     "todayOrders": "طلبات اليوم",
     "noOrdersToday": "لا يوجد طلبات اليوم",
-    "unassignedOrders": "طلبات العملاء غير المعينين",
+    "bonusOrders": "طلبات إضافية",
     "ordersCount": "{{count}} طلبات",
     "orderFor": "طلب لـ",
     "assignedRep": "مندوب المبيعات",

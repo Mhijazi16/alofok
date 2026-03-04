@@ -59,7 +59,7 @@
     "allCustomers": "All Customers",
     "todayOrders": "Today's Orders",
     "noOrdersToday": "No orders yet today",
-    "unassignedOrders": "Unassigned Customers Orders",
+    "bonusOrders": "Bonus Orders",
     "ordersCount": "{{count}} orders",
     "orderFor": "Order for",
     "assignedRep": "Sales Rep",

@@ -135,12 +135,12 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     queryFn: () => salesApi.getDeliveryOrders(selectedDate, selectedDay),
   });
 
-  // Split into route vs unassigned client-side
+  // Split into route vs bonus (off-route) orders client-side
   const orders = useMemo(
     () => allOrders?.filter((o) => o.is_route !== false) ?? [],
     [allOrders]
   );
-  const unassignedOrders = useMemo(
+  const bonusOrders = useMemo(
     () => allOrders?.filter((o) => o.is_route === false) ?? [],
     [allOrders]
   );
@@ -442,7 +442,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                       >
                         {/* Accent stripe */}
                         <div className="flex">
-                          <div className="w-1 shrink-0 bg-primary/60 rounded-s-xl" />
+                          <div className={`w-1 shrink-0 rounded-s-xl ${isDelivered ? "bg-emerald-500" : "bg-primary/60"}`} />
                           <div className="flex-1 p-3">
                             <div
                               className="flex items-center justify-between gap-3 cursor-pointer select-none"
@@ -538,19 +538,19 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
               )}
             </div>
 
-            {/* ── Unassigned Customers Orders Section ── */}
-            {(unassignedOrders?.length ?? 0) > 0 && (
+            {/* ── Bonus Orders Section ── */}
+            {(bonusOrders?.length ?? 0) > 0 && (
               <>
                 <div className="relative flex items-center gap-3 py-2">
                   <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />
                   <div className="flex items-center gap-2 rounded-full border border-border/50 bg-card/80 px-4 py-1.5 shadow-sm backdrop-blur-sm">
                     <ShoppingBag className="h-3.5 w-3.5 text-primary" />
                     <span className="text-caption font-medium text-muted-foreground whitespace-nowrap">
-                      {t("customer.unassignedOrders")}
+                      {t("customer.bonusOrders")}
                     </span>
-                    {unassignedOrders && unassignedOrders.length > 0 && (
+                    {bonusOrders && bonusOrders.length > 0 && (
                       <Badge variant="default" size="sm">
-                        {unassignedOrders.length}
+                        {bonusOrders.length}
                       </Badge>
                     )}
                   </div>
@@ -565,7 +565,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {unassignedOrders && unassignedOrders.map((order, idx) => {
+                    {bonusOrders && bonusOrders.map((order, idx) => {
                       const itemCount = order.data?.items
                         ? (order.data.items as unknown[]).length
                         : 0;
@@ -582,7 +582,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                         >
                           {/* Accent stripe */}
                           <div className="flex">
-                            <div className="w-1 shrink-0 bg-amber-500/60 rounded-s-xl" />
+                            <div className={`w-1 shrink-0 rounded-s-xl ${isDelivered ? "bg-emerald-500" : "bg-amber-500/60"}`} />
                             <div className="flex-1 p-3">
                               <div
                                 className="flex items-center justify-between gap-3 cursor-pointer select-none"
