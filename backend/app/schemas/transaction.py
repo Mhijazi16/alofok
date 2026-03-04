@@ -25,7 +25,7 @@ class TransactionOut(BaseModel):
     amount: Decimal
     status: TransactionStatus | None
     notes: str | None
-    data: CheckData | None
+    data: dict | None
     created_at: datetime
     related_transaction_id: uuid.UUID | None
     is_draft: bool = False
