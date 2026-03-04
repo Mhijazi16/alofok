@@ -9,6 +9,7 @@ from app.models.transaction import (
 )
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
+from app.schemas.admin import CheckOut
 from app.schemas.transaction import PaymentCreate, TransactionOut
 
 _PAYMENT_TYPES = {TransactionType.Payment_Cash, TransactionType.Payment_Check}
@@ -106,3 +107,24 @@ class PaymentService:
         await self._transactions.create_many([return_txn])
 
         return TransactionOut.model_validate(return_txn)
+
+    async def get_customer_returned_checks(
+        self, customer_id: uuid.UUID
+    ) -> list[CheckOut]:
+        rows = await self._transactions.get_returned_checks_for_customer(customer_id)
+        return [
+            CheckOut(
+                id=row.Transaction.id,
+                customer_id=row.Transaction.customer_id,
+                customer_name=row.customer_name,
+                type=row.Transaction.type,
+                currency=row.Transaction.currency,
+                amount=row.Transaction.amount,
+                status=row.Transaction.status,
+                notes=row.Transaction.notes,
+                data=row.Transaction.data,
+                created_at=row.Transaction.created_at,
+                related_transaction_id=row.Transaction.related_transaction_id,
+            )
+            for row in rows
+        ]

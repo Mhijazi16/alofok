@@ -4,7 +4,7 @@ from datetime import date, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.transaction import Transaction, TransactionType
+from app.models.transaction import Transaction, TransactionStatus, TransactionType
 
 
 class TransactionRepository:
@@ -99,6 +99,25 @@ class TransactionRepository:
                 Transaction.delivery_date == delivery,
                 Transaction.is_deleted.is_(False),
                 Transaction.is_draft.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        return list(result.all())
+
+    async def get_returned_checks_for_customer(
+        self, customer_id: uuid.UUID
+    ) -> list[tuple]:
+        """Return (Transaction, customer_name) for returned checks of a customer."""
+        from app.models.customer import Customer
+
+        result = await self._db.execute(
+            select(Transaction, Customer.name.label("customer_name"))
+            .join(Customer, Transaction.customer_id == Customer.id)
+            .where(
+                Transaction.customer_id == customer_id,
+                Transaction.type == TransactionType.Payment_Check,
+                Transaction.status == TransactionStatus.Returned,
+                Transaction.is_deleted.is_(False),
             )
             .order_by(Transaction.created_at.desc())
         )

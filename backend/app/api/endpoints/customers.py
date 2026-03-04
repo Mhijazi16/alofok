@@ -6,7 +6,7 @@ from uuid import UUID
 import aiofiles
 from fastapi import APIRouter, Query, UploadFile
 
-from app.api.deps import CurrentUser, CustomerSvc, require_sales
+from app.api.deps import CurrentUser, CustomerSvc, PaymentSvc, require_sales
 from app.schemas.customer import (
     CustomerCreate,
     CustomerInsightsOut,
@@ -14,6 +14,7 @@ from app.schemas.customer import (
     CustomerUpdate,
 )
 from app.models.customer import AssignedDay
+from app.schemas.admin import CheckOut
 from app.schemas.transaction import OrderWithCustomerOut, StatementOut, TransactionOut
 
 router = APIRouter()
@@ -128,6 +129,17 @@ async def customer_statement(
     return await service.get_statement(
         customer_id, start_date, end_date, since_zero_balance
     )
+
+
+@router.get(
+    "/{customer_id}/returned-checks",
+    response_model=list[CheckOut],
+    dependencies=[require_sales],
+)
+async def customer_returned_checks(
+    customer_id: uuid.UUID, service: PaymentSvc
+) -> list[CheckOut]:
+    return await service.get_customer_returned_checks(customer_id)
 
 
 @router.get(
