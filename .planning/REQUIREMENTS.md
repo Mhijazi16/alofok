@@ -43,12 +43,12 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### OCR
 
-- [ ] **OCR-01**: User can trigger OCR scan from a captured check photo
-- [ ] **OCR-02**: OCR pre-fills form fields (bank number, branch number, account number, amount, holder name)
-- [ ] **OCR-03**: OCR results show confidence indicators (high/medium/low per field)
-- [ ] **OCR-04**: OCR never auto-submits — user must review and confirm
-- [ ] **OCR-05**: OCR works offline (client-side Tesseract.js, language packs cached after first load)
-- [ ] **OCR-06**: OCR gracefully handles failure (shows error state, form remains usable)
+- [x] **OCR-01**: User can trigger OCR scan from a captured check photo
+- [x] **OCR-02**: OCR pre-fills form fields (bank number, branch number, account number, amount, holder name)
+- [x] **OCR-03**: OCR results show confidence indicators (high/medium/low per field)
+- [x] **OCR-04**: OCR never auto-submits — user must review and confirm
+- [x] **OCR-05**: OCR works offline (client-side Tesseract.js, language packs cached after first load)
+- [x] **OCR-06**: OCR gracefully handles failure (shows error state, form remains usable)
 
 ## Future Requirements
 
@@ -104,12 +104,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | IMG-03 | Phase 9 | Complete (09-01) |
 | IMG-04 | Phase 9 | Pending |
 | IMG-05 | Phase 9 | Complete (09-01) |
-| OCR-01 | Phase 9 | Pending |
-| OCR-02 | Phase 9 | Pending |
-| OCR-03 | Phase 9 | Pending |
-| OCR-04 | Phase 9 | Pending |
-| OCR-05 | Phase 9 | Pending |
-| OCR-06 | Phase 9 | Pending |
+| OCR-01 | Phase 9 | Complete |
+| OCR-02 | Phase 9 | Complete |
+| OCR-03 | Phase 9 | Complete |
+| OCR-04 | Phase 9 | Complete |
+| OCR-05 | Phase 9 | Complete |
+| OCR-06 | Phase 9 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 28 total

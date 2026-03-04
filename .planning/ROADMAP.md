@@ -90,4 +90,4 @@ Plans:
 | 6. Check Data Foundation | 2/2 | Complete   | 2026-03-04 | - |
 | 7. SVG Check Preview | 2/2 | Complete   | 2026-03-04 | - |
 | 8. Check Lifecycle Management | 2/2 | Complete   | 2026-03-04 | - |
-| 9. Image Capture and OCR | v1.1 | 1/4 | In progress | - |
+| 9. Image Capture and OCR | 3/4 | In Progress|  | - |

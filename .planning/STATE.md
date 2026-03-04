@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Check Enhancement
-status: in_progress
-stopped_at: "Phase 9 Plan 1 complete — image upload infrastructure"
-last_updated: "2026-03-04T16:00:00.000Z"
-last_activity: "2026-03-04 — 09-01 complete (check image upload endpoint, imageCompression.ts, checkImageQueue.ts, syncQueue VERSION 2)"
+status: completed
+stopped_at: Completed 09-03-PLAN.md — OCR integration with Tesseract.js
+last_updated: "2026-03-04T15:59:47.968Z"
+last_activity: 2026-03-04 — 09-01 complete (check image upload endpoint, imageCompression.ts, checkImageQueue.ts, syncQueue VERSION 2)
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 10
+  completed_plans: 9
   percent: 70
 ---
 
@@ -49,6 +49,7 @@ Progress: [███████░░░] 70%
 | 09 | 1/? | 120s | 120s |
 
 *Updated after each plan completion*
+| Phase 09 P03 | 269 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase 09-01]: checkImageQueue duplicates openDB() rather than importing from syncQueue to avoid circular dependencies
 - [Phase 09-01]: compressImage always outputs JPEG regardless of input format for consistent OCR pipeline
 - [Phase 09-01]: onblocked handler added to both openDB implementations for cross-tab upgrade warning
+- [Phase 09]: Lazy Tesseract worker: createWorker called on first scan, not on hook mount — avoids loading 20MB WebAssembly until user requests scan
+- [Phase 09]: onScanCheck only passed to CheckCapture when imageBlob is present — avoids confusing UI state with no photo
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T16:00:00.000Z
-Stopped at: Completed 09-01-PLAN.md — image upload infrastructure
+Last session: 2026-03-04T15:59:47.966Z
+Stopped at: Completed 09-03-PLAN.md — OCR integration with Tesseract.js
 Resume with: /gsd:execute-phase 09 (Phase 9: Image Capture + OCR — continue next plan)
