@@ -1,28 +1,35 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
-import { Package, PlusCircle, MoreVertical, Pencil } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Package, PlusCircle, Copy, Trash2 } from "lucide-react";
 
 import { designerApi, type Product } from "@/services/designerApi";
-import { getImageUrl } from "@/lib/image";
+import { useToast } from "@/hooks/useToast";
+import { getCoverImage } from "@/lib/image";
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { StatCard } from "@/components/ui/stat-card";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs";
+import { ProductDetail } from "@/components/ui/product-detail";
+import { ProductForm } from "./ProductForm";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,7 +45,6 @@ function formatPrice(price: number): string {
 // ── Props ────────────────────────────────────────────────────────────────────
 
 interface ProductListProps {
-  onEdit: (product: Product) => void;
   onAdd: () => void;
 }
 
@@ -63,11 +69,16 @@ function ProductGridSkeleton() {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function ProductList({ onEdit, onAdd }: ProductListProps) {
+export function ProductList({ onAdd }: ProductListProps) {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const isAr = i18n.language === "ar";
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [dialogProduct, setDialogProduct] = useState<Product | null>(null);
+  const [dialogTab, setDialogTab] = useState<"details" | "edit">("details");
 
   const {
     data: products,
@@ -77,7 +88,29 @@ export function ProductList({ onEdit, onAdd }: ProductListProps) {
   } = useQuery({
     queryKey: ["products"],
     queryFn: designerApi.getProducts,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => designerApi.deleteProduct(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: t("product.deletedSuccess"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: (id: string) => designerApi.duplicateProduct(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: t("product.duplicatedSuccess"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
   });
 
   // Filtered products based on search
@@ -157,19 +190,22 @@ export function ProductList({ onEdit, onAdd }: ProductListProps) {
 
         {/* Product grid */}
         {!isLoading && !isError && filtered.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3">
             {filtered.map((product) => (
               <Card
                 key={product.id}
                 variant="interactive"
                 className="group relative cursor-pointer overflow-hidden"
-                onClick={() => onEdit(product)}
+                onClick={() => {
+                  setDialogProduct(product);
+                  setDialogTab("details");
+                }}
               >
                 {/* Image */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                  {product.image_url ? (
+                  {getCoverImage(product) ? (
                     <img
-                      src={getImageUrl(product.image_url)!}
+                      src={getCoverImage(product)!}
                       alt={productName(product)}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
@@ -196,27 +232,28 @@ export function ProductList({ onEdit, onAdd }: ProductListProps) {
                     )}
                   </div>
 
-                  {/* Context menu */}
-                  <div className="absolute end-2 top-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="flex h-7 w-7 items-center justify-center rounded-lg bg-background/70 backdrop-blur-sm text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => onEdit(product)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                          {t("actions.edit")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  {/* Per-card action buttons */}
+                  <div className="absolute end-2 top-2 flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 text-white hover:bg-black/80 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        duplicateMutation.mutate(product.id);
+                      }}
+                      title={t("actions.duplicate")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 text-destructive hover:bg-black/80 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(product);
+                      }}
+                      title={t("actions.delete")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
 
@@ -237,6 +274,75 @@ export function ProductList({ onEdit, onAdd }: ProductListProps) {
           </div>
         )}
       </PageContainer>
+
+      {/* Single-product Delete Confirmation */}
+      <ConfirmationDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title={t("product.delete")}
+        description={t("product.confirmDelete")}
+        confirmLabel={t("actions.delete")}
+        cancelLabel={t("actions.cancel")}
+        variant="destructive"
+        isLoading={deleteMutation.isPending}
+        onConfirm={() => {
+          if (deleteTarget) {
+            deleteMutation.mutate(deleteTarget.id);
+            setDeleteTarget(null);
+          }
+        }}
+      />
+
+      {/* Product Dialog (Details + Edit tabs) */}
+      <Dialog
+        open={dialogProduct !== null}
+        onOpenChange={(open) => {
+          if (!open) setDialogProduct(null);
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          {dialogProduct && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {isAr ? dialogProduct.name_ar : dialogProduct.name_en}
+                </DialogTitle>
+              </DialogHeader>
+
+              <Tabs
+                value={dialogTab}
+                onValueChange={(v) => setDialogTab(v as "details" | "edit")}
+              >
+                <TabsList variant="segment" className="w-full">
+                  <TabsTrigger value="details">
+                    {t("product.detailsTab")}
+                  </TabsTrigger>
+                  <TabsTrigger value="edit">
+                    {t("product.editTab")}
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="details">
+                  <ProductDetail product={dialogProduct} embedded />
+                </TabsContent>
+
+                <TabsContent value="edit">
+                  <ProductForm
+                    product={dialogProduct}
+                    embedded
+                    onBack={() => setDialogProduct(null)}
+                    onDone={() => {
+                      setDialogProduct(null);
+                    }}
+                  />
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

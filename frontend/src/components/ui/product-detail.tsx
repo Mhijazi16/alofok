@@ -5,11 +5,11 @@ import {
   Tag,
   Weight,
   Layers,
-  Palette,
   Box,
+  Settings2,
 } from "lucide-react";
 import type { Product } from "@/services/salesApi";
-import { getImageUrl } from "@/lib/image";
+import { getCoverImage } from "@/lib/image";
 import { TopBar } from "@/components/ui/top-bar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -23,18 +23,28 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
-interface ProductDetailProps {
-  product: Product;
-  onBack: () => void;
-  /** Renders at the bottom — "Edit" for Designer, "Add to Cart" for Sales */
-  actions?: React.ReactNode;
+function discountBadgeLabel(product: Product): string | null {
+  if (!product.is_discounted || !product.discount_value) return null;
+  if (product.discount_type === "percent") return `${product.discount_value}%`;
+  if (product.discount_type === "fixed") return formatPrice(product.discount_value);
+  return null;
 }
 
-export function ProductDetail({ product, onBack, actions }: ProductDetailProps) {
+interface ProductDetailProps {
+  product: Product;
+  onBack?: () => void;
+  /** Renders at the bottom — "Edit" for Designer, "Add to Cart" for Sales */
+  actions?: React.ReactNode;
+  /** When true, skip TopBar and use a smaller hero image */
+  embedded?: boolean;
+}
+
+export function ProductDetail({ product, onBack, actions, embedded }: ProductDetailProps) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
   const name = isAr ? product.name_ar : product.name_en;
   const description = isAr ? product.description_ar : product.description_en;
+  const coverUrl = getCoverImage(product);
 
   const stockColor =
     (product.stock_qty ?? 0) > 10
@@ -45,16 +55,18 @@ export function ProductDetail({ product, onBack, actions }: ProductDetailProps) 
 
   return (
     <div className="animate-fade-in">
-      <TopBar
-        title={name}
-        backButton={{ onBack }}
-      />
+      {!embedded && onBack && (
+        <TopBar
+          title={name}
+          backButton={{ onBack }}
+        />
+      )}
 
       {/* Hero image */}
-      <div className="relative aspect-square w-full overflow-hidden bg-muted">
-        {product.image_url ? (
+      <div className={cn("relative w-full overflow-hidden bg-muted", embedded ? "aspect-video" : "aspect-square")}>
+        {coverUrl ? (
           <img
-            src={getImageUrl(product.image_url)!}
+            src={coverUrl}
             alt={name}
             className="h-full w-full object-cover"
           />
@@ -75,9 +87,7 @@ export function ProductDetail({ product, onBack, actions }: ProductDetailProps) 
           {product.is_discounted && (
             <Badge variant="success">
               <Tag className="h-3 w-3 me-1" />
-              {product.discount_percentage
-                ? `${product.discount_percentage}%`
-                : t("catalog.discounted")}
+              {discountBadgeLabel(product) ?? t("catalog.discounted")}
             </Badge>
           )}
         </div>
@@ -175,37 +185,45 @@ export function ProductDetail({ product, onBack, actions }: ProductDetailProps) 
           )}
         </div>
 
-        {/* Brand */}
-        {product.brand && (
+        {/* Trademark */}
+        {product.trademark && (
           <div className="rounded-xl border border-border bg-card p-3">
             <p className="text-caption text-muted-foreground">
-              {t("product.brand")}
+              {t("product.trademark")}
             </p>
             <p className="mt-1 text-body font-bold text-foreground">
-              {product.brand}
+              {product.trademark}
             </p>
           </div>
         )}
 
-        {/* Colors */}
-        {product.color_options && product.color_options.length > 0 && (
+        {/* Options */}
+        {product.options && product.options.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2 text-muted-foreground">
-              <Palette className="h-4 w-4" />
-              <span className="text-caption">{t("product.colorOptions")}</span>
+              <Settings2 className="h-4 w-4" />
+              <span className="text-caption">{t("product.options")}</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {product.color_options.map((color) => (
-                <span
-                  key={color}
-                  className="inline-flex h-8 w-8 rounded-full border border-border"
-                  style={{
-                    backgroundColor: CSS.supports("color", color)
-                      ? color
-                      : undefined,
-                  }}
-                  title={color}
-                />
+            <div className="space-y-3">
+              {product.options.map((opt) => (
+                <div key={opt.id ?? opt.name} className="rounded-xl border border-border bg-card p-3">
+                  <p className="text-body-sm font-semibold text-foreground mb-1.5">
+                    {opt.name}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {opt.values.map((v) => (
+                      <Badge key={v.label} variant="outline" size="sm">
+                        {v.label}
+                        {v.price_modifier !== 0 && (
+                          <span className="ms-1 text-primary">
+                            {v.price_modifier > 0 ? "+" : ""}
+                            {formatPrice(v.price_modifier)}
+                          </span>
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>

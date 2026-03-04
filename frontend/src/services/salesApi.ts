@@ -2,6 +2,18 @@ import api from "./api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export interface ProductOptionValue {
+  label: string;
+  price_modifier: number;
+}
+
+export interface ProductOption {
+  id?: string;
+  name: string;
+  values: ProductOptionValue[];
+  sort_order: number;
+}
+
 export interface Product {
   id: string;
   name_ar: string;
@@ -10,17 +22,19 @@ export interface Product {
   description_en?: string | null;
   sku: string;
   price: number;
-  discount_percentage?: number | null;
+  discount_type?: "percent" | "fixed" | null;
+  discount_value?: number | null;
   discounted_price?: number | null;
-  image_url: string | null;
+  image_urls?: string[] | null;
   is_discounted: boolean;
   is_bestseller: boolean;
   category?: string | null;
-  brand?: string | null;
+  trademark?: string | null;
+  purchase_price?: number | null;
   stock_qty?: number | null;
   unit?: string;
   weight?: number | null;
-  color_options?: string[] | null;
+  options?: ProductOption[] | null;
 }
 
 export interface Customer {
@@ -95,10 +109,23 @@ export interface Statement {
   closing_balance: number;
 }
 
+export interface SelectedOption {
+  name: string;
+  value: string;
+  price_modifier: number;
+}
+
 export interface OrderItem {
   product_id: string;
   quantity: number;
   unit_price: number;
+  selected_options?: SelectedOption[] | null;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  selectedOptions?: SelectedOption[];
 }
 
 export interface OrderWithCustomer extends Transaction {
@@ -143,8 +170,10 @@ export const salesApi = {
   getMyRoute: () =>
     api.get<Customer[]>("/customers/my-route").then((r) => r.data),
 
-  getRouteByDay: (day: string) =>
-    api.get<Customer[]>(`/customers/by-day/${day}`).then((r) => r.data),
+  getRouteByDay: (day: string, deliveryDate?: string) =>
+    api.get<Customer[]>(`/customers/by-day/${day}`, {
+      params: deliveryDate ? { delivery_date: deliveryDate } : undefined,
+    }).then((r) => r.data),
 
   getMyCustomers: () =>
     api.get<Customer[]>("/customers/my-customers").then((r) => r.data),

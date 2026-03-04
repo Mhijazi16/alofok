@@ -8,7 +8,7 @@ from app.models.customer import AssignedDay
 from app.repositories.customer_auth_repository import CustomerAuthRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
-from app.schemas.customer import CustomerInsightsOut, CustomerOut
+from app.schemas.customer import AdminCustomerCreate, CustomerInsightsOut, CustomerOut
 from app.schemas.transaction import (
     OrderWithCustomerOut,
     StatementEntryOut,
@@ -80,9 +80,9 @@ class CustomerService:
         return updated
 
     async def get_route_by_day(
-        self, user_id: uuid.UUID, day: AssignedDay
+        self, user_id: uuid.UUID, day: AssignedDay, delivery_date: date | None = None
     ) -> list[CustomerOut]:
-        customers = await self._customers.get_by_day_and_rep(day, user_id)
+        customers = await self._customers.get_by_day_and_rep(day, user_id, delivery_date)
         return [CustomerOut.model_validate(c) for c in customers]
 
     async def get_all_customers(self, user_id: uuid.UUID) -> list[CustomerOut]:
@@ -247,6 +247,16 @@ class CustomerService:
         return StatementOut(
             customer_id=customer_id, entries=entries, closing_balance=running
         )
+
+    async def get_all_customers_admin(self) -> list[CustomerOut]:
+        customers = await self._customers.get_all()
+        return [CustomerOut.model_validate(c) for c in customers]
+
+    async def create_customer_for_rep(self, data: AdminCustomerCreate) -> CustomerOut:
+        payload = data.model_dump()
+        customer = await self._customers.create(payload)
+        await self._cache.invalidate_prefix("route:")
+        return CustomerOut.model_validate(customer)
 
 
 # ---------------------------------------------------------------------------

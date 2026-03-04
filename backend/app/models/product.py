@@ -16,30 +16,46 @@ class Product(BaseMixin, Base):
     name_en: Mapped[str] = mapped_column(String, nullable=False)
     sku: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
     is_discounted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_bestseller: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    # --- new fields ---
+    # --- text fields ---
     description_ar: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     description_en: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    discount_percentage: Mapped[Optional[Decimal]] = mapped_column(
-        Numeric(5, 2), nullable=True
-    )
-    discounted_price: Mapped[Optional[Decimal]] = mapped_column(
+
+    # --- pricing ---
+    purchase_price: Mapped[Optional[Decimal]] = mapped_column(
         Numeric(12, 2), nullable=True
     )
+    discount_type: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True
+    )  # "percent" or "fixed"
+    discount_value: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(12, 2), nullable=True
+    )
+
+    # --- attributes ---
     category: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    brand: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    trademark: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     stock_qty: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     unit: Mapped[str] = mapped_column(String, default="piece")
     weight: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 2), nullable=True)
-    color_options: Mapped[Optional[list]] = mapped_column(JSONB, nullable=True)
 
+    # --- media ---
+    image_urls: Mapped[Optional[list]] = mapped_column(JSONB, nullable=True)
+
+    # --- ownership ---
     created_by: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
 
+    # --- relationships ---
     creator: Mapped["User"] = relationship(  # type: ignore[name-defined]
         "User", foreign_keys=[created_by]
+    )
+    options: Mapped[list["ProductOption"]] = relationship(  # type: ignore[name-defined]
+        "ProductOption",
+        back_populates="product",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )

@@ -14,9 +14,13 @@ import {
 import {
   type Customer,
   type Product,
+  type CartItem,
+  type SelectedOption,
 } from "@/services/salesApi";
-import { getImageUrl } from "@/lib/image";
+import { getCoverImage } from "@/lib/image";
+import { cartKey } from "@/lib/cart";
 import { salesApi } from "@/services/salesApi";
+import { OptionPickerDialog } from "@/components/ui/option-picker-dialog";
 import { TopBar } from "@/components/ui/top-bar";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,19 +30,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Separator } from "@/components/ui/separator";
 
-export interface CartItem {
-  product: Product;
-  quantity: number;
-}
-
 interface OrderFlowProps {
   customer: Customer;
   onBack: () => void;
   onDone: () => void;
   cart: Map<string, CartItem>;
-  addToCart: (product: Product, qty?: number) => void;
-  updateCartQty: (productId: string, qty: number) => void;
-  removeFromCart: (productId: string) => void;
+  addToCart: (product: Product, qty?: number, selectedOptions?: SelectedOption[]) => void;
+  updateCartQty: (key: string, qty: number) => void;
+  removeFromCart: (key: string) => void;
   onViewCart?: () => void;
   onViewProduct?: (product: Product) => void;
 }
@@ -47,6 +46,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
   const { t, i18n } = useTranslation();
 
   const [search, setSearch] = useState("");
+  const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">(
     () => (localStorage.getItem("catalog-view") as "grid" | "list") || "grid"
   );
@@ -87,12 +87,31 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
   const allProducts = filtered;
 
   // Helper to apply delta-based quantity updates using the prop
-  const applyQtyDelta = useCallback((productId: string, delta: number) => {
-    const existing = cart.get(productId);
+  const applyQtyDelta = useCallback((key: string, delta: number) => {
+    const existing = cart.get(key);
     if (!existing) return;
     const newQty = existing.quantity + delta;
-    updateCartQty(productId, newQty);
+    updateCartQty(key, newQty);
   }, [cart, updateCartQty]);
+
+  // Sum all cart entries for a given product (across option combos)
+  const productCartQty = useCallback((productId: string) => {
+    let total = 0;
+    for (const [, item] of cart) {
+      if (item.product.id === productId) total += item.quantity;
+    }
+    return total;
+  }, [cart]);
+
+  const hasOptions = (p: Product) => !!p.options?.length;
+
+  const handleAddClick = useCallback((product: Product) => {
+    if (hasOptions(product)) {
+      setPickerProduct(product);
+    } else {
+      addToCart(product);
+    }
+  }, [addToCart]);
 
   const formatCurrency = (val: number) =>
     val.toLocaleString("en-US", {
@@ -104,7 +123,10 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
     i18n.language === "ar" ? p.name_ar : p.name_en;
 
   const renderProductCard = (product: Product, idx: number) => {
-    const inCart = cart.get(product.id);
+    const key = cartKey(product.id);
+    const inCart = cart.get(key);
+    const totalQty = productCartQty(product.id);
+    const withOptions = hasOptions(product);
 
     return (
       <Card
@@ -117,9 +139,9 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
           <div className="flex items-center gap-3">
             {/* Product image or placeholder */}
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-muted">
-              {product.image_url ? (
+              {getCoverImage(product) ? (
                 <img
-                  src={getImageUrl(product.image_url)!}
+                  src={getCoverImage(product)!}
                   alt={productName(product)}
                   className="h-full w-full rounded-xl object-cover"
                 />
@@ -157,7 +179,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
 
             {/* Add/Qty controls */}
             <div className="shrink-0">
-              {inCart ? (
+              {!withOptions && inCart ? (
                 <div className="flex items-center gap-1.5">
                   <Button
                     size="icon"
@@ -165,7 +187,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
                     className="h-7 w-7"
                     onClick={(e) => {
                       e.stopPropagation();
-                      applyQtyDelta(product.id, -1);
+                      applyQtyDelta(key, -1);
                     }}
                   >
                     <Minus className="h-3 w-3" />
@@ -179,24 +201,31 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
                     className="h-7 w-7"
                     onClick={(e) => {
                       e.stopPropagation();
-                      applyQtyDelta(product.id, 1);
+                      applyQtyDelta(key, 1);
                     }}
                   >
                     <Plus className="h-3 w-3" />
                   </Button>
                 </div>
               ) : (
-                <Button
-                  size="icon"
-                  variant="glass"
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCart(product);
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <div className="relative">
+                  <Button
+                    size="icon"
+                    variant="glass"
+                    className="h-8 w-8"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddClick(product);
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  {withOptions && totalQty > 0 && (
+                    <span className="absolute -end-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[0.625rem] font-bold text-primary-foreground">
+                      {totalQty}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -207,7 +236,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
 
   const renderGridCard = (product: Product) => {
     const name = i18n.language === "ar" ? product.name_ar : product.name_en;
-    const cartQty = cart.get(product.id)?.quantity ?? 0;
+    const totalQty = productCartQty(product.id);
 
     return (
       <div
@@ -216,9 +245,9 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
         onClick={() => onViewProduct?.(product)}
       >
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-          {product.image_url ? (
+          {getCoverImage(product) ? (
             <img
-              src={getImageUrl(product.image_url)!}
+              src={getCoverImage(product)!}
               alt={name}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
@@ -237,15 +266,15 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
             {product.is_discounted && (
               <Badge variant="success" className="text-[0.6rem]">
                 <Tag className="h-3 w-3 me-0.5" />{" "}
-                {product.discount_percentage
-                  ? `${product.discount_percentage}%`
+                {product.discount_type === "percent" && product.discount_value
+                  ? `${product.discount_value}%`
                   : t("catalog.discounted")}
               </Badge>
             )}
           </div>
-          {cartQty > 0 && (
+          {totalQty > 0 && (
             <div className="absolute top-2 end-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-              {cartQty}
+              {totalQty}
             </div>
           )}
         </div>
@@ -361,6 +390,14 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
         )}
       </div>
 
+      <OptionPickerDialog
+        product={pickerProduct}
+        onOpenChange={(open) => { if (!open) setPickerProduct(null); }}
+        onAdd={(product, qty, options) => {
+          addToCart(product, qty, options);
+          setPickerProduct(null);
+        }}
+      />
     </div>
   );
 }

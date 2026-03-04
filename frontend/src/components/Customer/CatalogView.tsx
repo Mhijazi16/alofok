@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -12,8 +12,10 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { customerApi } from "@/services/customerApi";
-import type { Product } from "@/services/salesApi";
-import { getImageUrl } from "@/lib/image";
+import type { Product, SelectedOption } from "@/services/salesApi";
+import { getCoverImage } from "@/lib/image";
+import { cartKey } from "@/lib/cart";
+import { OptionPickerDialog } from "@/components/ui/option-picker-dialog";
 import { TopBar } from "@/components/ui/top-bar";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,11 +27,11 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 interface CatalogViewProps {
-  addToCart: (product: Product, qty?: number) => void;
+  addToCart: (product: Product, qty?: number, selectedOptions?: SelectedOption[]) => void;
   cartSize: number;
   onViewCart: () => void;
-  cart: Map<string, { product: Product; quantity: number }>;
-  updateCartQty: (productId: string, qty: number) => void;
+  cart: Map<string, { product: Product; quantity: number; selectedOptions?: SelectedOption[] }>;
+  updateCartQty: (key: string, qty: number) => void;
 }
 
 export function CatalogView({
@@ -41,6 +43,7 @@ export function CatalogView({
 }: CatalogViewProps) {
   const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
+  const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">(
     () => (localStorage.getItem("portal-catalog-view") as "grid" | "list") || "grid"
   );
@@ -79,14 +82,36 @@ export function CatalogView({
   const bestSellers = useMemo(() => filtered.filter((p) => p.is_bestseller), [filtered]);
   const discounted = useMemo(() => filtered.filter((p) => p.is_discounted), [filtered]);
 
-  const handleQtyDelta = (productId: string, delta: number) => {
-    const existing = cart.get(productId);
+  const productCartQty = useCallback((productId: string) => {
+    let total = 0;
+    for (const [, item] of cart) {
+      if (item.product.id === productId) total += item.quantity;
+    }
+    return total;
+  }, [cart]);
+
+  const hasOptions = (p: Product) => !!p.options?.length;
+
+  const handleAddClick = useCallback((product: Product) => {
+    if (hasOptions(product)) {
+      setPickerProduct(product);
+    } else {
+      addToCart(product);
+    }
+  }, [addToCart]);
+
+  const handleQtyDelta = (key: string, delta: number) => {
+    const existing = cart.get(key);
     if (!existing) return;
-    updateCartQty(productId, existing.quantity + delta);
+    updateCartQty(key, existing.quantity + delta);
   };
 
   const renderListCard = (product: Product, idx: number) => {
-    const inCart = cart.get(product.id);
+    const key = cartKey(product.id);
+    const inCart = cart.get(key);
+    const totalQty = productCartQty(product.id);
+    const withOptions = hasOptions(product);
+
     return (
       <Card
         key={product.id}
@@ -97,9 +122,9 @@ export function CatalogView({
         <CardContent className="p-3">
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden">
-              {product.image_url ? (
+              {getCoverImage(product) ? (
                 <img
-                  src={getImageUrl(product.image_url)!}
+                  src={getCoverImage(product)!}
                   alt={productName(product)}
                   className="h-full w-full rounded-xl object-cover"
                   loading="lazy"
@@ -126,8 +151,8 @@ export function CatalogView({
                 {product.is_discounted && (
                   <Badge variant="success" size="sm">
                     <Tag className="h-2.5 w-2.5 me-0.5" />
-                    {product.discount_percentage
-                      ? `-${product.discount_percentage}%`
+                    {product.discount_type === "percent" && product.discount_value
+                      ? `-${product.discount_value}%`
                       : t("catalog.discounted")}
                   </Badge>
                 )}
@@ -151,7 +176,7 @@ export function CatalogView({
             </div>
 
             <div className="shrink-0">
-              {inCart ? (
+              {!withOptions && inCart ? (
                 <div className="flex items-center gap-1.5">
                   <Button
                     size="icon"
@@ -159,7 +184,7 @@ export function CatalogView({
                     className="h-7 w-7"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleQtyDelta(product.id, -1);
+                      handleQtyDelta(key, -1);
                     }}
                   >
                     <Minus className="h-3 w-3" />
@@ -173,24 +198,31 @@ export function CatalogView({
                     className="h-7 w-7"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleQtyDelta(product.id, 1);
+                      handleQtyDelta(key, 1);
                     }}
                   >
                     <Plus className="h-3 w-3" />
                   </Button>
                 </div>
               ) : (
-                <Button
-                  size="icon"
-                  variant="glass"
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCart(product);
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <div className="relative">
+                  <Button
+                    size="icon"
+                    variant="glass"
+                    className="h-8 w-8"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddClick(product);
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  {withOptions && totalQty > 0 && (
+                    <span className="absolute -end-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[0.625rem] font-bold text-primary-foreground">
+                      {totalQty}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -201,7 +233,7 @@ export function CatalogView({
 
   const renderGridCard = (product: Product) => {
     const name = productName(product);
-    const cartQty = cart.get(product.id)?.quantity ?? 0;
+    const totalQty = productCartQty(product.id);
 
     return (
       <div
@@ -209,9 +241,9 @@ export function CatalogView({
         className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:bg-card-hover active:scale-[0.98]"
       >
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-          {product.image_url ? (
+          {getCoverImage(product) ? (
             <img
-              src={getImageUrl(product.image_url)!}
+              src={getCoverImage(product)!}
               alt={name}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
@@ -230,15 +262,15 @@ export function CatalogView({
             {product.is_discounted && (
               <Badge variant="success" className="text-[0.6rem]">
                 <Tag className="h-3 w-3 me-0.5" />
-                {product.discount_percentage
-                  ? `-${product.discount_percentage}%`
+                {product.discount_type === "percent" && product.discount_value
+                  ? `-${product.discount_value}%`
                   : t("catalog.discounted")}
               </Badge>
             )}
           </div>
-          {cartQty > 0 && (
+          {totalQty > 0 && (
             <div className="absolute top-2 end-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-              {cartQty}
+              {totalQty}
             </div>
           )}
         </div>
@@ -261,14 +293,14 @@ export function CatalogView({
             )}
           </div>
           <Button
-            variant={cartQty > 0 ? "outline" : "gradient"}
+            variant={totalQty > 0 ? "outline" : "gradient"}
             size="sm"
             className="w-full mt-2"
-            onClick={() => addToCart(product)}
+            onClick={() => handleAddClick(product)}
           >
             <Plus className="h-3.5 w-3.5 me-1" />
-            {cartQty > 0
-              ? t("portal.addMore", { count: cartQty })
+            {totalQty > 0
+              ? t("portal.addMore", { count: totalQty })
               : t("portal.addToCart")}
           </Button>
         </div>
@@ -364,6 +396,15 @@ export function CatalogView({
           </span>
         </button>
       )}
+
+      <OptionPickerDialog
+        product={pickerProduct}
+        onOpenChange={(open) => { if (!open) setPickerProduct(null); }}
+        onAdd={(product, qty, options) => {
+          addToCart(product, qty, options);
+          setPickerProduct(null);
+        }}
+      />
     </div>
   );
 }

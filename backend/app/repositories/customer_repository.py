@@ -1,9 +1,11 @@
+import datetime
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, union
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import AssignedDay, Customer
+from app.models.transaction import Transaction, TransactionType
 
 
 class CustomerRepository:
@@ -27,13 +29,44 @@ class CustomerRepository:
         return list(result.scalars().all())
 
     async def get_by_day_and_rep(
-        self, day: AssignedDay, rep_id: uuid.UUID
+        self, day: AssignedDay, rep_id: uuid.UUID,
+        delivery_date: datetime.date | None = None,
     ) -> list[Customer]:
-        result = await self._db.execute(
-            select(Customer)
+        # Customers assigned to this day
+        assigned_ids = (
+            select(Customer.id)
             .where(
                 Customer.assigned_day == day,
                 Customer.assigned_to == rep_id,
+                Customer.is_deleted.is_(False),
+            )
+        )
+
+        if delivery_date is None:
+            result = await self._db.execute(
+                select(Customer)
+                .where(Customer.id.in_(assigned_ids))
+                .order_by(Customer.name)
+            )
+            return list(result.scalars().all())
+
+        # Customers who have orders on this delivery date (for this rep)
+        order_customer_ids = (
+            select(Transaction.customer_id)
+            .where(
+                Transaction.delivery_date == delivery_date,
+                Transaction.type == TransactionType.Order,
+                Transaction.created_by == rep_id,
+                Transaction.is_deleted.is_(False),
+            )
+        )
+
+        combined = union(assigned_ids, order_customer_ids).subquery()
+
+        result = await self._db.execute(
+            select(Customer)
+            .where(
+                Customer.id.in_(select(combined.c.id)),
                 Customer.is_deleted.is_(False),
             )
             .order_by(Customer.name)
@@ -48,6 +81,12 @@ class CustomerRepository:
                 Customer.is_deleted.is_(False),
             )
             .order_by(Customer.name)
+        )
+        return list(result.scalars().all())
+
+    async def get_all(self) -> list[Customer]:
+        result = await self._db.execute(
+            select(Customer).where(Customer.is_deleted.is_(False)).order_by(Customer.name)
         )
         return list(result.scalars().all())
 

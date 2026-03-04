@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { salesApi, type Customer } from "@/services/salesApi";
+import type { SalesRep, AdminCustomerCreate } from "@/services/adminApi";
 import { useToast } from "@/hooks/useToast";
 import { TopBar } from "@/components/ui/top-bar";
 import { FormField } from "@/components/ui/form-field";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Avatar } from "@/components/ui/avatar";
 
 const PALESTINIAN_CITIES = [
   { ar: "الخليل", en: "Hebron" },
@@ -71,9 +73,11 @@ interface CustomerFormProps {
   customer?: Customer;
   onDone: () => void;
   onBack: () => void;
+  salesReps?: SalesRep[];
+  createFn?: (body: AdminCustomerCreate) => Promise<Customer>;
 }
 
-export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
+export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: CustomerFormProps) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -98,6 +102,7 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
   const [assignedDay, setAssignedDay] = useState(customer?.assigned_day ?? "");
   const [portalEnabled, setPortalEnabled] = useState(false);
   const [portalPassword, setPortalPassword] = useState("");
+  const [selectedRepId, setSelectedRepId] = useState<string>("");
 
   const createMutation = useMutation({
     mutationFn: salesApi.createCustomer,
@@ -128,7 +133,7 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
     createMutation.isPending ||
     updateMutation.isPending;
 
-  const isValid = name.trim().length > 0 && (isEdit || assignedDay.length > 0);
+  const isValid = name.trim().length > 0 && (isEdit || assignedDay.length > 0) && (!salesReps || selectedRepId !== "");
 
   const handleSubmit = async () => {
     if (!isValid || isPending) return;
@@ -147,7 +152,19 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
       avatar_url: `dicebear:${finalAvatarSeed}`,
     };
 
-    if (isEdit) {
+    if (createFn && salesReps) {
+      try {
+        await createFn({
+          ...payload,
+          assigned_day: assignedDay,
+          assigned_to: selectedRepId,
+        });
+        toast({ title: t("customer.savedSuccess"), variant: "success" });
+        onDone();
+      } catch {
+        toast({ title: t("toast.error"), variant: "error" });
+      }
+    } else if (isEdit) {
       updateMutation.mutate({ ...payload, ...(assignedDay ? { assigned_day: assignedDay } : {}) });
     } else {
       createMutation.mutate({
@@ -170,6 +187,30 @@ export function CustomerForm({ customer, onDone, onBack }: CustomerFormProps) {
         <div className="flex justify-center">
           <AvatarPicker currentSeed={avatarSeed} onSelect={setAvatarSeed} />
         </div>
+
+        {/* Sales Rep Picker (admin only) */}
+        {salesReps && salesReps.length > 0 && (
+          <FormField label={t("customer.assignedRep") || "Assigned Rep"}>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+              {salesReps.map((rep) => (
+                <button
+                  key={rep.id}
+                  onClick={() => setSelectedRepId(rep.id)}
+                  className={`flex flex-col items-center gap-2 flex-shrink-0 p-2 rounded-lg transition-all ${
+                    selectedRepId === rep.id
+                      ? "border-2 border-primary ring-2 ring-primary/30 bg-primary/5"
+                      : "border border-border/50 hover:border-border"
+                  }`}
+                >
+                  <Avatar name={rep.username} size="sm" />
+                  <span className="text-caption text-foreground font-medium text-center max-w-12 truncate">
+                    {rep.username}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </FormField>
+        )}
 
         {/* Name */}
         <FormField label={t("customer.customerDetails")} required>

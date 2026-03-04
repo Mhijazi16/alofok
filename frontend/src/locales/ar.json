@@ -62,6 +62,7 @@
     "unassignedOrders": "طلبات العملاء غير المعينين",
     "ordersCount": "{{count}} طلبات",
     "orderFor": "طلب لـ",
+    "assignedRep": "مندوب المبيعات",
     "days": {
       "Sun": "الأحد",
       "Mon": "الاثنين",
@@ -92,7 +93,8 @@
     "search": "بحث",
     "filter": "تصفية",
     "export": "تصدير",
-    "import": "استيراد"
+    "import": "استيراد",
+    "duplicate": "تكرار"
   },
   "catalog": {
     "bestSellers": "الأكثر مبيعاً",
@@ -204,7 +206,36 @@
     "basicInfo": "المعلومات الأساسية",
     "pricing": "التسعير",
     "inventory": "المخزون",
-    "attributes": "الخصائص"
+    "attributes": "الخصائص",
+    "media": "الوسائط",
+    "flags": "العلامات",
+    "trademark": "العلامة التجارية",
+    "purchasePrice": "سعر الشراء",
+    "discountType": "نوع الخصم",
+    "discountFixed": "مبلغ ثابت",
+    "discountPercent": "نسبة مئوية",
+    "discountValue": "قيمة الخصم",
+    "finalPrice": "السعر النهائي",
+    "options": "الخيارات",
+    "addOptionGroup": "إضافة مجموعة خيارات",
+    "optionName": "اسم الخيار",
+    "optionValue": "قيمة الخيار",
+    "priceModifier": "تعديل السعر",
+    "addValue": "إضافة قيمة",
+    "removeGroup": "حذف المجموعة",
+    "selectOptions": "اختر الخيارات",
+    "addToCart": "أضف إلى السلة",
+    "totalPrice": "السعر الإجمالي",
+    "requiredOptions": "يرجى اختيار جميع الخيارات",
+    "coverImage": "الغلاف",
+    "addImage": "إضافة صورة",
+    "maxImages": "الحد الأقصى 5 صور",
+    "confirmDelete": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بيانات المنتج بشكل دائم.",
+    "deletedSuccess": "تم حذف المنتج بنجاح",
+    "duplicatedSuccess": "تم تكرار المنتج بنجاح",
+    "delete": "حذف المنتج",
+    "detailsTab": "التفاصيل",
+    "editTab": "تعديل"
   },
   "admin": {
     "title": "لوحة الإدارة",
@@ -234,6 +265,7 @@
     "orderCount": "عدد الطلبات",
     "collectionCount": "عدد التحصيلات",
     "daysOverdue": "يوم تأخير",
+    "importCsv": "استيراد CSV",
     "period": {
       "week": "هذا الأسبوع",
       "month": "هذا الشهر",
@@ -354,6 +386,9 @@
     "deliveredLocked": "تم تسليم هذا الطلب ولا يمكن تعديله",
     "items": "المنتجات",
     "notes": "ملاحظات"
+  },
+  "filter": {
+    "all": "الكل"
   },
   "errors": {
     "generic": "حدث خطأ غير متوقع. يرجى المحاولة مجدداً.",

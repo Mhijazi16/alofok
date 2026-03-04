@@ -39,7 +39,6 @@ const DialogContent = React.forwardRef<
         "fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2",
         "max-h-[85vh] overflow-y-auto",
         "gap-4 rounded-2xl border border-border bg-card p-6 shadow-lg",
-        "animate-scale-in",
         "data-[state=closed]:animate-fade-out",
         className
       )}

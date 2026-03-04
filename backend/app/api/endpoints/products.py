@@ -2,19 +2,33 @@ import os
 import uuid
 
 import aiofiles
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, Query, UploadFile, File
 
 from app.api.deps import CatalogSvc, CurrentUser, require_designer
+from app.core.errors import HorizonException
 from app.schemas.product import ProductCreate, ProductOut, ProductUpdate
 
 router = APIRouter()
 
 UPLOAD_DIR = "static/products"
 
+_ALLOWED_DISTINCT_FIELDS = {"category", "trademark"}
+
 
 @router.get("", response_model=list[ProductOut])
 async def list_products(service: CatalogSvc) -> list[ProductOut]:
     return await service.list_products()
+
+
+@router.get("/distinct-values", response_model=list[str])
+async def get_distinct_values(
+    service: CatalogSvc, field: str = Query(...)
+) -> list[str]:
+    if field not in _ALLOWED_DISTINCT_FIELDS:
+        raise HorizonException(
+            400, f"field must be one of: {', '.join(_ALLOWED_DISTINCT_FIELDS)}"
+        )
+    return await service.get_distinct_values(field)
 
 
 @router.post(
@@ -48,3 +62,20 @@ async def update_product(
     product_id: uuid.UUID, body: ProductUpdate, service: CatalogSvc
 ) -> ProductOut:
     return await service.update_product(product_id, body)
+
+
+@router.delete("/{product_id}", status_code=204, dependencies=[require_designer])
+async def delete_product(product_id: uuid.UUID, service: CatalogSvc) -> None:
+    await service.delete_product(product_id)
+
+
+@router.post(
+    "/{product_id}/duplicate",
+    response_model=ProductOut,
+    status_code=201,
+    dependencies=[require_designer],
+)
+async def duplicate_product(
+    product_id: uuid.UUID, service: CatalogSvc
+) -> ProductOut:
+    return await service.duplicate_product(product_id)

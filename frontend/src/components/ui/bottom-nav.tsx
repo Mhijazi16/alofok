@@ -24,7 +24,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
       <nav
         ref={ref}
         className={cn(
-          "fixed z-40 bottom-2 inset-x-3 mx-auto max-w-lg rounded-2xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/20 pb-safe",
+          "fixed z-40 bottom-6 inset-x-3 mx-auto max-w-lg rounded-2xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/20 pb-safe",
           className
         )}
         {...props}
@@ -40,7 +40,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
                 type="button"
                 onClick={() => onValueChange(item.value)}
                 className={cn(
-                  "relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-colors",
+                  "relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 pb-1 transition-colors",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"

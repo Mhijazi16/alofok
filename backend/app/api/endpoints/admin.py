@@ -1,9 +1,11 @@
 from datetime import date
+import uuid
 
 from fastapi import APIRouter, File, UploadFile
 
-from app.api.deps import AdminSvc, require_admin
+from app.api.deps import AdminSvc, CustomerSvc, UserRepo, require_admin
 from app.schemas.admin import DebtStatsOut, ImportResult, SalesStatsOut
+from app.schemas.customer import AdminCustomerCreate, CustomerOut, SalesRepOut
 
 router = APIRouter()
 
@@ -41,3 +43,19 @@ async def eod_report(
     report_date: date | None = None,
 ) -> dict:
     return await service.trigger_eod_report(report_date)
+
+
+@router.get("/customers", response_model=list[CustomerOut], dependencies=[require_admin])
+async def list_all_customers(service: CustomerSvc) -> list[CustomerOut]:
+    return await service.get_all_customers_admin()
+
+
+@router.post("/customers", response_model=CustomerOut, status_code=201, dependencies=[require_admin])
+async def create_customer_for_rep(body: AdminCustomerCreate, service: CustomerSvc) -> CustomerOut:
+    return await service.create_customer_for_rep(body)
+
+
+@router.get("/users/sales-reps", response_model=list[SalesRepOut], dependencies=[require_admin])
+async def list_sales_reps(repo: UserRepo) -> list[SalesRepOut]:
+    reps = await repo.get_sales_reps()
+    return [SalesRepOut.model_validate(r) for r in reps]

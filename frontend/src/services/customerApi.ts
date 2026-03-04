@@ -42,6 +42,7 @@ export interface DraftOrderItem {
   product_id: string;
   quantity: number;
   unit_price: number;
+  selected_options?: { name: string; value: string; price_modifier: number }[] | null;
 }
 
 export interface DraftOrderCreate {

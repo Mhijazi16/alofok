@@ -87,8 +87,8 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
 
   // Fetch customers for selected day
   const { data: customers, isLoading: customersLoading } = useQuery({
-    queryKey: ["route-day", selectedDay],
-    queryFn: () => salesApi.getRouteByDay(selectedDay),
+    queryKey: ["route-day", selectedDay, selectedDate],
+    queryFn: () => salesApi.getRouteByDay(selectedDay, selectedDate),
   });
 
   // Fetch delivery orders for the selected date
@@ -140,14 +140,14 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
 
   const totalCustomers = customers?.length ?? 0;
   const totalDebt = useMemo(
-    () => customers?.reduce((sum, c) => sum + c.balance, 0) ?? 0,
+    () => customers?.reduce((sum, c) => sum + Number(c.balance), 0) ?? 0,
     [customers]
   );
   const estimatedCollections = useMemo(
     () =>
       customers
-        ?.filter((c) => c.balance > 0)
-        .reduce((sum, c) => sum + Math.min(c.balance * 0.3, c.balance), 0) ?? 0,
+        ?.filter((c) => Number(c.balance) > 0)
+        .reduce((sum, c) => sum + Math.min(Number(c.balance) * 0.3, Number(c.balance)), 0) ?? 0,
     [customers]
   );
 
@@ -247,10 +247,11 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
           ) : (
             <div className="space-y-2">
               {filtered.map((customer, idx) => {
+                const balanceNum = Number(customer.balance);
                 const balanceVariant: "success" | "warning" | "danger" =
-                  customer.balance <= 0
+                  balanceNum <= 0
                     ? "success"
-                    : customer.balance < 5000
+                    : balanceNum < 5000
                       ? "warning"
                       : "danger";
 
@@ -274,7 +275,7 @@ export function RouteView({ onSelectCustomer, onAddCustomer }: RouteViewProps) {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <Badge variant={balanceVariant} dot>
-                          {formatCurrency(customer.balance)}
+                          {formatCurrency(balanceNum)}
                         </Badge>
                         <ChevronIcon className="h-4 w-4 text-muted-foreground" />
                       </div>

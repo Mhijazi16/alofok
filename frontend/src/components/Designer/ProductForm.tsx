@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Package } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Trash2, X, GripVertical } from "lucide-react";
 
 import {
   designerApi,
   type Product,
   type ProductCreate,
   type ProductUpdate,
+  type ProductOptionInput,
 } from "@/services/designerApi";
 import { getImageUrl } from "@/lib/image";
 import { useToast } from "@/hooks/useToast";
@@ -27,12 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -47,6 +43,70 @@ function formatPrice(price: number): string {
 }
 
 const UNIT_OPTIONS = ["piece", "box", "carton", "kg", "liter"] as const;
+const MAX_IMAGES = 5;
+
+// ── Combobox sub-component ───────────────────────────────────────────────────
+
+function Combobox({
+  value,
+  onChange,
+  suggestions,
+  placeholder,
+  id,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  suggestions: string[];
+  placeholder: string;
+  id?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const filtered = suggestions.filter(
+    (s) => s.toLowerCase().includes(value.toLowerCase()) && s !== value
+  );
+
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {open && filtered.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg max-h-40 overflow-y-auto">
+          {filtered.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className="w-full px-3 py-2 text-start text-body-sm hover:bg-accent transition-colors"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                onChange(s);
+                setOpen(false);
+              }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Option value type ────────────────────────────────────────────────────────
+
+interface OptionGroup {
+  name: string;
+  values: { label: string; price_modifier: number }[];
+}
 
 // ── Props ────────────────────────────────────────────────────────────────────
 
@@ -54,24 +114,39 @@ interface ProductFormProps {
   product?: Product;
   onBack: () => void;
   onDone: () => void;
+  embedded?: boolean;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
-  const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+export function ProductForm({
+  product,
+  onBack,
+  onDone,
+  embedded,
+}: ProductFormProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
   const isEdit = Boolean(product);
 
-  // ── Form state ─────────────────────────────────────────────────────────────
+  // ── Autocomplete data ────────────────────────────────────────────────────
+  const { data: categories = [] } = useQuery({
+    queryKey: ["distinct-categories"],
+    queryFn: () => designerApi.getDistinctValues("category"),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: trademarks = [] } = useQuery({
+    queryKey: ["distinct-trademarks"],
+    queryFn: () => designerApi.getDistinctValues("trademark"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // ── Form state ───────────────────────────────────────────────────────────
 
   // Section 1: Basic Info
   const [nameAr, setNameAr] = useState(product?.name_ar ?? "");
   const [nameEn, setNameEn] = useState(product?.name_en ?? "");
-  const [sku, setSku] = useState(product?.sku ?? "");
   const [descriptionAr, setDescriptionAr] = useState(
     product?.description_ar ?? ""
   );
@@ -83,13 +158,17 @@ export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
   const [price, setPrice] = useState<string>(
     product?.price != null ? String(product.price) : ""
   );
-  const [discountPercentage, setDiscountPercentage] = useState<string>(
-    product?.discount_percentage != null
-      ? String(product.discount_percentage)
-      : ""
+  const [purchasePrice, setPurchasePrice] = useState<string>(
+    product?.purchase_price != null ? String(product.purchase_price) : ""
   );
   const [isDiscounted, setIsDiscounted] = useState(
     product?.is_discounted ?? false
+  );
+  const [discountType, setDiscountType] = useState<"percent" | "fixed">(
+    (product?.discount_type as "percent" | "fixed") ?? "percent"
+  );
+  const [discountValue, setDiscountValue] = useState<string>(
+    product?.discount_value != null ? String(product.discount_value) : ""
   );
 
   // Section 3: Inventory
@@ -103,155 +182,198 @@ export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
 
   // Section 4: Attributes
   const [category, setCategory] = useState(product?.category ?? "");
-  const [brand, setBrand] = useState(product?.brand ?? "");
-  const [colorOptionsStr, setColorOptionsStr] = useState(
-    product?.color_options?.join(", ") ?? ""
-  );
+  const [trademark, setTrademark] = useState(product?.trademark ?? "");
 
-  // Section 5: Media
-  const [imageUrl, setImageUrl] = useState<string | null>(
-    product?.image_url ?? null
+  // Section 5: Options
+  const [optionGroups, setOptionGroups] = useState<OptionGroup[]>(() => {
+    if (product?.options && product.options.length > 0) {
+      return product.options.map((o) => ({
+        name: o.name,
+        values: o.values.map((v) => ({
+          label: v.label,
+          price_modifier: v.price_modifier,
+        })),
+      }));
+    }
+    return [];
+  });
+
+  // Section 6: Media
+  const [imageUrls, setImageUrls] = useState<string[]>(
+    product?.image_urls ?? []
   );
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Section 6: Flags
+  // Section 7: Flags
   const [isBestseller, setIsBestseller] = useState(
     product?.is_bestseller ?? false
   );
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
-  // ── Computed discount price ────────────────────────────────────────────────
+  // ── Computed discount price ──────────────────────────────────────────────
 
   const parsedPrice = parseFloat(price);
-  const parsedDiscount = parseFloat(discountPercentage);
+  const parsedDiscountValue = parseFloat(discountValue);
 
-  const computedDiscountedPrice = useMemo(() => {
+  const computedFinalPrice = useMemo(() => {
+    if (isNaN(parsedPrice) || parsedPrice <= 0) return undefined;
     if (
-      !isNaN(parsedPrice) &&
-      parsedPrice > 0 &&
-      !isNaN(parsedDiscount) &&
-      parsedDiscount > 0 &&
-      parsedDiscount <= 100
-    ) {
-      return +(parsedPrice * (1 - parsedDiscount / 100)).toFixed(2);
+      !isDiscounted ||
+      isNaN(parsedDiscountValue) ||
+      parsedDiscountValue <= 0
+    )
+      return undefined;
+    if (discountType === "percent") {
+      return +(parsedPrice * (1 - parsedDiscountValue / 100)).toFixed(2);
     }
-    return undefined;
-  }, [parsedPrice, parsedDiscount]);
+    return +(parsedPrice - parsedDiscountValue).toFixed(2);
+  }, [parsedPrice, parsedDiscountValue, discountType, isDiscounted]);
 
-  // ── Track dirty state ──────────────────────────────────────────────────────
+  // ── Track dirty state ────────────────────────────────────────────────────
 
-  const initialSnapshot = useRef({
-    nameAr: product?.name_ar ?? "",
-    nameEn: product?.name_en ?? "",
-    sku: product?.sku ?? "",
-    descriptionAr: product?.description_ar ?? "",
-    descriptionEn: product?.description_en ?? "",
-    price: product?.price != null ? String(product.price) : "",
-    discountPercentage:
-      product?.discount_percentage != null
-        ? String(product.discount_percentage)
-        : "",
-    isDiscounted: product?.is_discounted ?? false,
-    stockQty: product?.stock_qty != null ? String(product.stock_qty) : "",
-    unit: product?.unit ?? "piece",
-    weight: product?.weight != null ? String(product.weight) : "",
-    category: product?.category ?? "",
-    brand: product?.brand ?? "",
-    colorOptionsStr: product?.color_options?.join(", ") ?? "",
-    isBestseller: product?.is_bestseller ?? false,
-    imageUrl: product?.image_url ?? null,
-  });
-
-  const isDirty = useCallback(() => {
-    const s = initialSnapshot.current;
-    return (
-      nameAr !== s.nameAr ||
-      nameEn !== s.nameEn ||
-      sku !== s.sku ||
-      descriptionAr !== s.descriptionAr ||
-      descriptionEn !== s.descriptionEn ||
-      price !== s.price ||
-      discountPercentage !== s.discountPercentage ||
-      isDiscounted !== s.isDiscounted ||
-      stockQty !== s.stockQty ||
-      unit !== s.unit ||
-      weight !== s.weight ||
-      category !== s.category ||
-      brand !== s.brand ||
-      colorOptionsStr !== s.colorOptionsStr ||
-      isBestseller !== s.isBestseller ||
-      imageUrl !== s.imageUrl ||
-      imageFile !== null
-    );
-  }, [
-    nameAr,
-    nameEn,
-    sku,
-    descriptionAr,
-    descriptionEn,
-    price,
-    discountPercentage,
-    isDiscounted,
-    stockQty,
-    unit,
-    weight,
-    category,
-    brand,
-    colorOptionsStr,
-    isBestseller,
-    imageUrl,
-    imageFile,
-  ]);
-
-  // Reset form when product prop changes (e.g. switching from create to edit)
-  useEffect(() => {
-    setNameAr(product?.name_ar ?? "");
-    setNameEn(product?.name_en ?? "");
-    setSku(product?.sku ?? "");
-    setDescriptionAr(product?.description_ar ?? "");
-    setDescriptionEn(product?.description_en ?? "");
-    setPrice(product?.price != null ? String(product.price) : "");
-    setDiscountPercentage(
-      product?.discount_percentage != null
-        ? String(product.discount_percentage)
-        : ""
-    );
-    setIsDiscounted(product?.is_discounted ?? false);
-    setStockQty(product?.stock_qty != null ? String(product.stock_qty) : "");
-    setUnit(product?.unit ?? "piece");
-    setWeight(product?.weight != null ? String(product.weight) : "");
-    setCategory(product?.category ?? "");
-    setBrand(product?.brand ?? "");
-    setColorOptionsStr(product?.color_options?.join(", ") ?? "");
-    setIsBestseller(product?.is_bestseller ?? false);
-    setImageUrl(product?.image_url ?? null);
-    setImageFile(null);
-    initialSnapshot.current = {
+  const initialSnapshot = useRef(
+    JSON.stringify({
       nameAr: product?.name_ar ?? "",
       nameEn: product?.name_en ?? "",
-      sku: product?.sku ?? "",
       descriptionAr: product?.description_ar ?? "",
       descriptionEn: product?.description_en ?? "",
       price: product?.price != null ? String(product.price) : "",
-      discountPercentage:
-        product?.discount_percentage != null
-          ? String(product.discount_percentage)
+      purchasePrice:
+        product?.purchase_price != null
+          ? String(product.purchase_price)
           : "",
       isDiscounted: product?.is_discounted ?? false,
+      discountType: product?.discount_type ?? "percent",
+      discountValue:
+        product?.discount_value != null
+          ? String(product.discount_value)
+          : "",
       stockQty: product?.stock_qty != null ? String(product.stock_qty) : "",
       unit: product?.unit ?? "piece",
       weight: product?.weight != null ? String(product.weight) : "",
       category: product?.category ?? "",
-      brand: product?.brand ?? "",
-      colorOptionsStr: product?.color_options?.join(", ") ?? "",
+      trademark: product?.trademark ?? "",
       isBestseller: product?.is_bestseller ?? false,
-      imageUrl: product?.image_url ?? null,
-    };
+      imageUrls: product?.image_urls ?? [],
+      optionGroups: product?.options?.map((o) => ({
+        name: o.name,
+        values: o.values.map((v) => ({
+          label: v.label,
+          price_modifier: v.price_modifier,
+        })),
+      })) ?? [],
+    })
+  );
+
+  const isDirty = useCallback(() => {
+    const current = JSON.stringify({
+      nameAr,
+      nameEn,
+      descriptionAr,
+      descriptionEn,
+      price,
+      purchasePrice,
+      isDiscounted,
+      discountType,
+      discountValue,
+      stockQty,
+      unit,
+      weight,
+      category,
+      trademark,
+      isBestseller,
+      imageUrls,
+      optionGroups,
+    });
+    return current !== initialSnapshot.current;
+  }, [
+    nameAr,
+    nameEn,
+    descriptionAr,
+    descriptionEn,
+    price,
+    purchasePrice,
+    isDiscounted,
+    discountType,
+    discountValue,
+    stockQty,
+    unit,
+    weight,
+    category,
+    trademark,
+    isBestseller,
+    imageUrls,
+    optionGroups,
+  ]);
+
+  // Reset form when product changes
+  useEffect(() => {
+    setNameAr(product?.name_ar ?? "");
+    setNameEn(product?.name_en ?? "");
+    setDescriptionAr(product?.description_ar ?? "");
+    setDescriptionEn(product?.description_en ?? "");
+    setPrice(product?.price != null ? String(product.price) : "");
+    setPurchasePrice(
+      product?.purchase_price != null ? String(product.purchase_price) : ""
+    );
+    setIsDiscounted(product?.is_discounted ?? false);
+    setDiscountType(
+      (product?.discount_type as "percent" | "fixed") ?? "percent"
+    );
+    setDiscountValue(
+      product?.discount_value != null ? String(product.discount_value) : ""
+    );
+    setStockQty(product?.stock_qty != null ? String(product.stock_qty) : "");
+    setUnit(product?.unit ?? "piece");
+    setWeight(product?.weight != null ? String(product.weight) : "");
+    setCategory(product?.category ?? "");
+    setTrademark(product?.trademark ?? "");
+    setIsBestseller(product?.is_bestseller ?? false);
+    setImageUrls(product?.image_urls ?? []);
+    setOptionGroups(
+      product?.options?.map((o) => ({
+        name: o.name,
+        values: o.values.map((v) => ({
+          label: v.label,
+          price_modifier: v.price_modifier,
+        })),
+      })) ?? []
+    );
+    initialSnapshot.current = JSON.stringify({
+      nameAr: product?.name_ar ?? "",
+      nameEn: product?.name_en ?? "",
+      descriptionAr: product?.description_ar ?? "",
+      descriptionEn: product?.description_en ?? "",
+      price: product?.price != null ? String(product.price) : "",
+      purchasePrice:
+        product?.purchase_price != null
+          ? String(product.purchase_price)
+          : "",
+      isDiscounted: product?.is_discounted ?? false,
+      discountType: product?.discount_type ?? "percent",
+      discountValue:
+        product?.discount_value != null
+          ? String(product.discount_value)
+          : "",
+      stockQty: product?.stock_qty != null ? String(product.stock_qty) : "",
+      unit: product?.unit ?? "piece",
+      weight: product?.weight != null ? String(product.weight) : "",
+      category: product?.category ?? "",
+      trademark: product?.trademark ?? "",
+      isBestseller: product?.is_bestseller ?? false,
+      imageUrls: product?.image_urls ?? [],
+      optionGroups: product?.options?.map((o) => ({
+        name: o.name,
+        values: o.values.map((v) => ({
+          label: v.label,
+          price_modifier: v.price_modifier,
+        })),
+      })) ?? [],
+    });
   }, [product]);
 
-  // ── Back handler with dirty check ──────────────────────────────────────────
+  // ── Back handler ─────────────────────────────────────────────────────────
 
   const handleBack = () => {
     if (isDirty()) {
@@ -261,16 +383,91 @@ export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
     }
   };
 
-  // ── Image handling ─────────────────────────────────────────────────────────
+  // ── Image upload ─────────────────────────────────────────────────────────
 
-  const handleImageSelect = (file: File) => {
-    setImageFile(file);
-    // Show local preview immediately
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
+  const handleImageSelect = async (file: File) => {
+    if (imageUrls.length >= MAX_IMAGES) return;
+    try {
+      setIsUploading(true);
+      const url = await designerApi.uploadImage(file);
+      setImageUrls((prev) => [...prev, url]);
+    } catch {
+      toast({ title: t("toast.error"), variant: "error" });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
+  const removeImage = (idx: number) => {
+    setImageUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  // ── Options helpers ──────────────────────────────────────────────────────
+
+  const addOptionGroup = () => {
+    setOptionGroups((prev) => [
+      ...prev,
+      { name: "", values: [{ label: "", price_modifier: 0 }] },
+    ]);
+  };
+
+  const removeOptionGroup = (idx: number) => {
+    setOptionGroups((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const updateOptionGroupName = (idx: number, name: string) => {
+    setOptionGroups((prev) =>
+      prev.map((g, i) => (i === idx ? { ...g, name } : g))
+    );
+  };
+
+  const addOptionValue = (groupIdx: number) => {
+    setOptionGroups((prev) =>
+      prev.map((g, i) =>
+        i === groupIdx
+          ? { ...g, values: [...g.values, { label: "", price_modifier: 0 }] }
+          : g
+      )
+    );
+  };
+
+  const removeOptionValue = (groupIdx: number, valueIdx: number) => {
+    setOptionGroups((prev) =>
+      prev.map((g, i) =>
+        i === groupIdx
+          ? { ...g, values: g.values.filter((_, j) => j !== valueIdx) }
+          : g
+      )
+    );
+  };
+
+  const updateOptionValue = (
+    groupIdx: number,
+    valueIdx: number,
+    field: "label" | "price_modifier",
+    val: string
+  ) => {
+    setOptionGroups((prev) =>
+      prev.map((g, i) =>
+        i === groupIdx
+          ? {
+              ...g,
+              values: g.values.map((v, j) =>
+                j === valueIdx
+                  ? {
+                      ...v,
+                      [field]:
+                        field === "price_modifier" ? parseFloat(val) || 0 : val,
+                    }
+                  : v
+              ),
+            }
+          : g
+      )
+    );
+  };
+
+  // ── Mutations ────────────────────────────────────────────────────────────
 
   const createMutation = useMutation({
     mutationFn: (body: ProductCreate) => designerApi.createProduct(body),
@@ -299,52 +496,41 @@ export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
+  // ── Submit ───────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (isNaN(parsedPrice) || parsedPrice < 0) return;
 
-    let finalImageUrl = imageUrl;
-
-    // Upload image if a new file was selected
-    if (imageFile) {
-      try {
-        setIsUploading(true);
-        finalImageUrl = await designerApi.uploadImage(imageFile);
-      } catch {
-        toast({ title: t("toast.error"), variant: "error" });
-        setIsUploading(false);
-        return;
-      } finally {
-        setIsUploading(false);
-      }
-    }
-
-    // Parse color options from comma-separated string
-    const colorOptions = colorOptionsStr
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const options: ProductOptionInput[] = optionGroups
+      .filter((g) => g.name.trim())
+      .map((g, i) => ({
+        name: g.name,
+        values: g.values.filter((v) => v.label.trim()),
+        sort_order: i,
+      }));
 
     const payload = {
       name_ar: nameAr,
       name_en: nameEn,
       description_ar: descriptionAr || null,
       description_en: descriptionEn || null,
-      sku,
       price: parsedPrice,
-      discount_percentage:
-        !isNaN(parsedDiscount) && parsedDiscount > 0
-          ? parsedDiscount
+      purchase_price:
+        purchasePrice !== "" && !isNaN(parseFloat(purchasePrice))
+          ? parseFloat(purchasePrice)
           : null,
-      discounted_price: computedDiscountedPrice ?? null,
-      image_url: finalImageUrl,
       is_discounted: isDiscounted,
+      discount_type: isDiscounted ? discountType : null,
+      discount_value:
+        isDiscounted &&
+        !isNaN(parsedDiscountValue) &&
+        parsedDiscountValue > 0
+          ? parsedDiscountValue
+          : null,
       is_bestseller: isBestseller,
       category: category || null,
-      brand: brand || null,
+      trademark: trademark || null,
       stock_qty:
         stockQty !== "" && !isNaN(parseInt(stockQty))
           ? parseInt(stockQty)
@@ -354,7 +540,8 @@ export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
         weight !== "" && !isNaN(parseFloat(weight))
           ? parseFloat(weight)
           : null,
-      color_options: colorOptions.length > 0 ? colorOptions : null,
+      image_urls: imageUrls.length > 0 ? imageUrls : null,
+      options: options.length > 0 ? options : null,
     };
 
     if (isEdit && product) {
@@ -364,25 +551,447 @@ export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
     }
   };
 
-  // ── Computed preview values ────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────────────────
 
-  const previewName = isAr
-    ? nameAr || t("product.nameAr")
-    : nameEn || t("product.nameEn");
+  const formContent = (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* ── Section 1: Basic Info ──────────────────────────────── */}
+      <Card variant="glass">
+        <CardContent className="space-y-4 p-5">
+          <h3 className="text-heading-sm text-foreground">
+            {t("product.basicInfo")}
+          </h3>
+          <FormField label={t("product.nameAr")} required htmlFor="name_ar">
+            <Input
+              id="name_ar"
+              value={nameAr}
+              onChange={(e) => setNameAr(e.target.value)}
+              placeholder={t("product.nameAr")}
+              dir="rtl"
+              required
+            />
+          </FormField>
+          <FormField label={t("product.nameEn")} required htmlFor="name_en">
+            <Input
+              id="name_en"
+              value={nameEn}
+              onChange={(e) => setNameEn(e.target.value)}
+              placeholder={t("product.nameEn")}
+              dir="ltr"
+              required
+            />
+          </FormField>
+          <FormField
+            label={t("product.descriptionAr")}
+            htmlFor="description_ar"
+          >
+            <Textarea
+              id="description_ar"
+              value={descriptionAr}
+              onChange={(e) => setDescriptionAr(e.target.value)}
+              placeholder={t("product.descriptionAr")}
+              dir="rtl"
+              autoResize
+            />
+          </FormField>
+          <FormField
+            label={t("product.descriptionEn")}
+            htmlFor="description_en"
+          >
+            <Textarea
+              id="description_en"
+              value={descriptionEn}
+              onChange={(e) => setDescriptionEn(e.target.value)}
+              placeholder={t("product.descriptionEn")}
+              dir="ltr"
+              autoResize
+            />
+          </FormField>
+        </CardContent>
+      </Card>
 
-  const previewDescription = isAr
-    ? descriptionAr
-    : descriptionEn;
+      {/* ── Section 2: Pricing ─────────────────────────────────── */}
+      <Card variant="glass">
+        <CardContent className="space-y-4 p-5">
+          <h3 className="text-heading-sm text-foreground">
+            {t("product.pricing")}
+          </h3>
+          <FormField label={t("product.price")} required htmlFor="price">
+            <Input
+              id="price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="0.00"
+              dir="ltr"
+              required
+            />
+          </FormField>
+          <FormField
+            label={t("product.purchasePrice")}
+            htmlFor="purchase_price"
+          >
+            <Input
+              id="purchase_price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={purchasePrice}
+              onChange={(e) => setPurchasePrice(e.target.value)}
+              placeholder="0.00"
+              dir="ltr"
+            />
+          </FormField>
 
-  const previewColors = colorOptionsStr
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+          {/* Discount toggle */}
+          <div className="flex items-center justify-between">
+            <span className="text-body-sm font-medium text-foreground">
+              {t("product.isDiscounted")}
+            </span>
+            <Switch
+              checked={isDiscounted}
+              onCheckedChange={setIsDiscounted}
+            />
+          </div>
 
-  const parsedStockQty =
-    stockQty !== "" && !isNaN(parseInt(stockQty)) ? parseInt(stockQty) : null;
+          {isDiscounted && (
+            <>
+              <FormField
+                label={t("product.discountType")}
+                htmlFor="discount_type"
+              >
+                <Select
+                  value={discountType}
+                  onValueChange={(v) =>
+                    setDiscountType(v as "percent" | "fixed")
+                  }
+                >
+                  <SelectTrigger id="discount_type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percent">
+                      {t("product.discountPercent")}
+                    </SelectItem>
+                    <SelectItem value="fixed">
+                      {t("product.discountFixed")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+              <FormField
+                label={t("product.discountValue")}
+                htmlFor="discount_value"
+              >
+                <Input
+                  id="discount_value"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={discountValue}
+                  onChange={(e) => setDiscountValue(e.target.value)}
+                  placeholder="0"
+                  dir="ltr"
+                />
+              </FormField>
+              {computedFinalPrice != null && (
+                <div className="flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2">
+                  <span className="text-body-sm text-muted-foreground">
+                    {t("product.finalPrice")}:
+                  </span>
+                  <span className="text-body-sm font-bold text-success">
+                    {formatPrice(computedFinalPrice)}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+      {/* ── Section 3: Inventory ───────────────────────────────── */}
+      <Card variant="glass">
+        <CardContent className="space-y-4 p-5">
+          <h3 className="text-heading-sm text-foreground">
+            {t("product.inventory")}
+          </h3>
+          <FormField label={t("product.stockQty")} htmlFor="stock_qty">
+            <Input
+              id="stock_qty"
+              type="number"
+              min="0"
+              value={stockQty}
+              onChange={(e) => setStockQty(e.target.value)}
+              placeholder="0"
+              dir="ltr"
+            />
+          </FormField>
+          <FormField label={t("product.unit")} htmlFor="unit">
+            <Select value={unit} onValueChange={setUnit}>
+              <SelectTrigger id="unit">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {UNIT_OPTIONS.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {t(`product.unitOptions.${opt}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+          <FormField label={t("product.weight")} htmlFor="weight">
+            <Input
+              id="weight"
+              type="number"
+              min="0"
+              step="0.01"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              placeholder="0.00"
+              dir="ltr"
+            />
+          </FormField>
+        </CardContent>
+      </Card>
+
+      {/* ── Section 4: Attributes ──────────────────────────────── */}
+      <Card variant="glass">
+        <CardContent className="space-y-4 p-5">
+          <h3 className="text-heading-sm text-foreground">
+            {t("product.attributes")}
+          </h3>
+          <FormField label={t("product.category")} htmlFor="category">
+            <Combobox
+              id="category"
+              value={category}
+              onChange={setCategory}
+              suggestions={categories}
+              placeholder={t("product.category")}
+            />
+          </FormField>
+          <FormField label={t("product.trademark")} htmlFor="trademark">
+            <Combobox
+              id="trademark"
+              value={trademark}
+              onChange={setTrademark}
+              suggestions={trademarks}
+              placeholder={t("product.trademark")}
+            />
+          </FormField>
+        </CardContent>
+      </Card>
+
+      {/* ── Section 5: Options ─────────────────────────────────── */}
+      <Card variant="glass">
+        <CardContent className="space-y-4 p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-heading-sm text-foreground">
+              {t("product.options")}
+            </h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addOptionGroup}
+            >
+              <Plus className="h-3.5 w-3.5 me-1" />
+              {t("product.addOptionGroup")}
+            </Button>
+          </div>
+
+          {optionGroups.map((group, gIdx) => (
+            <div
+              key={gIdx}
+              className="rounded-xl border border-border bg-card/50 p-4 space-y-3"
+            >
+              <div className="flex items-center gap-2">
+                <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Input
+                  value={group.name}
+                  onChange={(e) =>
+                    updateOptionGroupName(gIdx, e.target.value)
+                  }
+                  placeholder={t("product.optionName")}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive shrink-0"
+                  onClick={() => removeOptionGroup(gIdx)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Values */}
+              <div className="space-y-2 ps-6">
+                {group.values.map((val, vIdx) => (
+                  <div key={vIdx} className="flex items-center gap-2">
+                    <Input
+                      value={val.label}
+                      onChange={(e) =>
+                        updateOptionValue(gIdx, vIdx, "label", e.target.value)
+                      }
+                      placeholder={t("product.optionValue")}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={val.price_modifier || ""}
+                      onChange={(e) =>
+                        updateOptionValue(
+                          gIdx,
+                          vIdx,
+                          "price_modifier",
+                          e.target.value
+                        )
+                      }
+                      placeholder={t("product.priceModifier")}
+                      className="w-28"
+                      dir="ltr"
+                    />
+                    {group.values.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground shrink-0"
+                        onClick={() => removeOptionValue(gIdx, vIdx)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addOptionValue(gIdx)}
+                >
+                  <Plus className="h-3 w-3 me-1" />
+                  {t("product.addValue")}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* ── Section 6: Media ───────────────────────────────────── */}
+      <Card variant="glass">
+        <CardContent className="space-y-4 p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-heading-sm text-foreground">
+              {t("product.media")}
+            </h3>
+            <span className="text-caption text-muted-foreground">
+              {imageUrls.length}/{MAX_IMAGES} · {t("product.maxImages")}
+            </span>
+          </div>
+
+          {/* Image grid */}
+          <div className="grid grid-cols-3 gap-3">
+            {imageUrls.map((url, idx) => (
+              <div
+                key={idx}
+                className="relative aspect-square overflow-hidden rounded-xl border border-border bg-muted"
+              >
+                <img
+                  src={getImageUrl(url) ?? ""}
+                  alt={`${idx + 1}`}
+                  className="h-full w-full object-cover"
+                />
+                {idx === 0 && (
+                  <Badge
+                    variant="default"
+                    size="sm"
+                    className="absolute start-1.5 top-1.5"
+                  >
+                    {t("product.coverImage")}
+                  </Badge>
+                )}
+                <button
+                  type="button"
+                  className="absolute end-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                  onClick={() => removeImage(idx)}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+
+            {imageUrls.length < MAX_IMAGES && (
+              <div className="aspect-square">
+                <FileUpload
+                  accept="image/*"
+                  maxSize={5 * 1024 * 1024}
+                  onUpload={handleImageSelect}
+                  isUploading={isUploading}
+                />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Section 7: Flags ───────────────────────────────────── */}
+      <Card variant="glass">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-body-sm font-medium text-foreground">
+              {t("product.isBestseller")}
+            </span>
+            <Switch
+              checked={isBestseller}
+              onCheckedChange={setIsBestseller}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Submit */}
+      <Button
+        type="submit"
+        variant="gradient"
+        size="xl"
+        className="w-full"
+        isLoading={isSaving || isUploading}
+      >
+        {t("actions.save")}
+      </Button>
+    </form>
+  );
+
+  const discardDialog = (
+    <ConfirmationDialog
+      open={showDiscardDialog}
+      onOpenChange={setShowDiscardDialog}
+      title={t("product.discardChanges")}
+      confirmLabel={t("actions.confirm")}
+      cancelLabel={t("actions.cancel")}
+      variant="destructive"
+      onConfirm={() => {
+        setShowDiscardDialog(false);
+        onBack();
+      }}
+    />
+  );
+
+  if (embedded) {
+    return (
+      <>
+        {formContent}
+        {discardDialog}
+      </>
+    );
+  }
 
   return (
     <>
@@ -390,513 +999,8 @@ export function ProductForm({ product, onBack, onDone }: ProductFormProps) {
         title={isEdit ? t("product.edit") : t("product.addNew")}
         backButton={{ onBack: handleBack }}
       />
-
-      <PageContainer>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-6 lg:grid-cols-5">
-            {/* ── Left: Form fields ──────────────────────────────────────── */}
-            <div className="space-y-5 lg:col-span-3">
-              {/* ── Section 1: Basic Info ──────────────────────────────── */}
-              <Card variant="glass">
-                <CardContent className="space-y-4 p-5">
-                  <h3 className="text-heading-sm text-foreground mb-3">
-                    {t("product.basicInfo")}
-                  </h3>
-
-                  {/* Name AR */}
-                  <FormField
-                    label={t("product.nameAr")}
-                    required
-                    htmlFor="name_ar"
-                  >
-                    <Input
-                      id="name_ar"
-                      value={nameAr}
-                      onChange={(e) => setNameAr(e.target.value)}
-                      placeholder={t("product.nameAr")}
-                      dir="rtl"
-                      required
-                    />
-                  </FormField>
-
-                  {/* Name EN */}
-                  <FormField
-                    label={t("product.nameEn")}
-                    required
-                    htmlFor="name_en"
-                  >
-                    <Input
-                      id="name_en"
-                      value={nameEn}
-                      onChange={(e) => setNameEn(e.target.value)}
-                      placeholder={t("product.nameEn")}
-                      dir="ltr"
-                      required
-                    />
-                  </FormField>
-
-                  {/* SKU */}
-                  <FormField label={t("product.sku")} required htmlFor="sku">
-                    <Input
-                      id="sku"
-                      value={sku}
-                      onChange={(e) => setSku(e.target.value)}
-                      placeholder={t("product.sku")}
-                      dir="ltr"
-                      required
-                    />
-                  </FormField>
-
-                  {/* Description AR */}
-                  <FormField
-                    label={t("product.descriptionAr")}
-                    htmlFor="description_ar"
-                  >
-                    <Textarea
-                      id="description_ar"
-                      value={descriptionAr}
-                      onChange={(e) => setDescriptionAr(e.target.value)}
-                      placeholder={t("product.descriptionAr")}
-                      dir="rtl"
-                      autoResize
-                    />
-                  </FormField>
-
-                  {/* Description EN */}
-                  <FormField
-                    label={t("product.descriptionEn")}
-                    htmlFor="description_en"
-                  >
-                    <Textarea
-                      id="description_en"
-                      value={descriptionEn}
-                      onChange={(e) => setDescriptionEn(e.target.value)}
-                      placeholder={t("product.descriptionEn")}
-                      dir="ltr"
-                      autoResize
-                    />
-                  </FormField>
-                </CardContent>
-              </Card>
-
-              {/* ── Section 2: Pricing ─────────────────────────────────── */}
-              <Card variant="glass">
-                <CardContent className="space-y-4 p-5">
-                  <h3 className="text-heading-sm text-foreground mb-3 mt-6">
-                    {t("product.pricing")}
-                  </h3>
-
-                  {/* Price */}
-                  <FormField
-                    label={t("product.price")}
-                    required
-                    htmlFor="price"
-                  >
-                    <Input
-                      id="price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      placeholder="0.00"
-                      dir="ltr"
-                      required
-                    />
-                  </FormField>
-
-                  {/* Discount percentage */}
-                  <FormField
-                    label={t("product.discountPercentage")}
-                    htmlFor="discount_percentage"
-                  >
-                    <Input
-                      id="discount_percentage"
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={discountPercentage}
-                      onChange={(e) => setDiscountPercentage(e.target.value)}
-                      placeholder="0"
-                      dir="ltr"
-                    />
-                  </FormField>
-
-                  {/* Discounted price (computed, read-only) */}
-                  <FormField
-                    label={t("product.discountedPrice")}
-                    htmlFor="discounted_price"
-                  >
-                    <Input
-                      id="discounted_price"
-                      type="number"
-                      value={
-                        computedDiscountedPrice != null
-                          ? String(computedDiscountedPrice)
-                          : ""
-                      }
-                      readOnly
-                      dir="ltr"
-                      className="opacity-70 cursor-not-allowed"
-                      placeholder="--"
-                    />
-                  </FormField>
-
-                  {/* Is discounted toggle */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-body-sm font-medium text-foreground">
-                      {t("product.isDiscounted")}
-                    </span>
-                    <Switch
-                      checked={isDiscounted}
-                      onCheckedChange={setIsDiscounted}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* ── Section 3: Inventory ───────────────────────────────── */}
-              <Card variant="glass">
-                <CardContent className="space-y-4 p-5">
-                  <h3 className="text-heading-sm text-foreground mb-3 mt-6">
-                    {t("product.inventory")}
-                  </h3>
-
-                  {/* Stock quantity */}
-                  <FormField
-                    label={t("product.stockQty")}
-                    htmlFor="stock_qty"
-                  >
-                    <Input
-                      id="stock_qty"
-                      type="number"
-                      min="0"
-                      value={stockQty}
-                      onChange={(e) => setStockQty(e.target.value)}
-                      placeholder="0"
-                      dir="ltr"
-                    />
-                  </FormField>
-
-                  {/* Unit */}
-                  <FormField label={t("product.unit")} htmlFor="unit">
-                    <Select value={unit} onValueChange={setUnit}>
-                      <SelectTrigger id="unit">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {UNIT_OPTIONS.map((opt) => (
-                          <SelectItem key={opt} value={opt}>
-                            {t(`product.unitOptions.${opt}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormField>
-
-                  {/* Weight */}
-                  <FormField label={t("product.weight")} htmlFor="weight">
-                    <Input
-                      id="weight"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={weight}
-                      onChange={(e) => setWeight(e.target.value)}
-                      placeholder="0.00"
-                      dir="ltr"
-                    />
-                  </FormField>
-                </CardContent>
-              </Card>
-
-              {/* ── Section 4: Attributes ──────────────────────────────── */}
-              <Card variant="glass">
-                <CardContent className="space-y-4 p-5">
-                  <h3 className="text-heading-sm text-foreground mb-3 mt-6">
-                    {t("product.attributes")}
-                  </h3>
-
-                  {/* Category */}
-                  <FormField
-                    label={t("product.category")}
-                    htmlFor="category"
-                  >
-                    <Input
-                      id="category"
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      placeholder={t("product.category")}
-                    />
-                  </FormField>
-
-                  {/* Brand */}
-                  <FormField label={t("product.brand")} htmlFor="brand">
-                    <Input
-                      id="brand"
-                      value={brand}
-                      onChange={(e) => setBrand(e.target.value)}
-                      placeholder={t("product.brand")}
-                    />
-                  </FormField>
-
-                  {/* Color options */}
-                  <FormField
-                    label={t("product.colorOptions")}
-                    htmlFor="color_options"
-                    description={isAr ? "افصل الألوان بفاصلة" : "Separate colors with commas"}
-                  >
-                    <Input
-                      id="color_options"
-                      value={colorOptionsStr}
-                      onChange={(e) => setColorOptionsStr(e.target.value)}
-                      placeholder={isAr ? "أحمر, أزرق, أخضر" : "Red, Blue, Green"}
-                    />
-                  </FormField>
-                </CardContent>
-              </Card>
-
-              {/* ── Section 5: Media ───────────────────────────────────── */}
-              <Card variant="glass">
-                <CardContent className="p-5">
-                  <h3 className="text-heading-sm text-foreground mb-3 mt-6">
-                    {t("product.image")}
-                  </h3>
-                  <FormField label={t("product.uploadImage")}>
-                    <FileUpload
-                      accept="image/*"
-                      maxSize={5 * 1024 * 1024}
-                      onUpload={handleImageSelect}
-                      isUploading={isUploading}
-                    />
-                  </FormField>
-                </CardContent>
-              </Card>
-
-              {/* ── Section 6: Flags ───────────────────────────────────── */}
-              <Card variant="glass">
-                <CardContent className="space-y-4 p-5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-body-sm font-medium text-foreground">
-                      {t("product.isBestseller")}
-                    </span>
-                    <Switch
-                      checked={isBestseller}
-                      onCheckedChange={setIsBestseller}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Submit */}
-              <Button
-                type="submit"
-                variant="gradient"
-                size="xl"
-                className="w-full"
-                isLoading={isSaving || isUploading}
-              >
-                {t("actions.save")}
-              </Button>
-            </div>
-
-            {/* ── Right: Live preview ────────────────────────────────── */}
-            <div className="lg:col-span-2">
-              <div className="sticky top-20">
-                <Card variant="glass">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-body-sm text-muted-foreground">
-                      {t("product.preview")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pb-5">
-                    {/* Preview card mimics how it looks in the catalog */}
-                    <Card variant="default" className="overflow-hidden">
-                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                        {imageUrl ? (
-                          <img
-                            src={getImageUrl(imageUrl)!}
-                            alt={previewName}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted-foreground/10">
-                              <Package className="h-7 w-7 text-muted-foreground" />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Badges */}
-                        <div className="absolute start-2 top-2 flex flex-col gap-1">
-                          {isBestseller && (
-                            <Badge variant="warning" size="sm">
-                              {t("catalog.bestSellers")}
-                            </Badge>
-                          )}
-                          {isDiscounted && (
-                            <Badge variant="success" size="sm">
-                              {t("catalog.discounted")}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Unit badge */}
-                        {unit && (
-                          <div className="absolute end-2 top-2">
-                            <Badge variant="default" size="sm">
-                              {t(`product.unitOptions.${unit}`)}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-
-                      <CardContent className="p-3 pt-3">
-                        <p className="truncate text-body-sm font-semibold text-foreground">
-                          {previewName}
-                        </p>
-                        <p className="mt-0.5 truncate text-caption text-muted-foreground">
-                          {sku || t("product.sku")}
-                        </p>
-
-                        {/* Description (truncated) */}
-                        {previewDescription && (
-                          <p className="mt-1 line-clamp-2 text-caption text-muted-foreground">
-                            {previewDescription}
-                          </p>
-                        )}
-
-                        {/* Price display with discount */}
-                        <div className="mt-1.5 flex items-center gap-2">
-                          {computedDiscountedPrice != null &&
-                          isDiscounted ? (
-                            <>
-                              <span className="text-body-sm font-bold text-primary">
-                                {formatPrice(computedDiscountedPrice)}
-                              </span>
-                              <span className="text-caption text-muted-foreground line-through">
-                                {!isNaN(parsedPrice) && parsedPrice >= 0
-                                  ? formatPrice(parsedPrice)
-                                  : formatPrice(0)}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-body-sm font-bold text-primary">
-                              {!isNaN(parsedPrice) && parsedPrice >= 0
-                                ? formatPrice(parsedPrice)
-                                : formatPrice(0)}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Color dots */}
-                        {previewColors.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {previewColors.map((color, i) => (
-                              <span
-                                key={i}
-                                className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-[8px] font-medium text-muted-foreground"
-                                style={{
-                                  backgroundColor: isValidCssColor(color)
-                                    ? color.toLowerCase()
-                                    : undefined,
-                                }}
-                                title={color}
-                              >
-                                {!isValidCssColor(color)
-                                  ? color.charAt(0).toUpperCase()
-                                  : ""}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Stock indicator */}
-                        {parsedStockQty != null && (
-                          <div className="mt-2">
-                            <span
-                              className={`text-caption font-medium ${
-                                parsedStockQty > 10
-                                  ? "text-green-500"
-                                  : parsedStockQty > 0
-                                    ? "text-yellow-500"
-                                    : "text-destructive"
-                              }`}
-                            >
-                              {parsedStockQty > 0
-                                ? `${parsedStockQty} ${t(`product.unitOptions.${unit}`)}`
-                                : isAr
-                                  ? "غير متوفر"
-                                  : "Out of stock"}
-                            </span>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </form>
-      </PageContainer>
-
-      {/* Discard changes dialog */}
-      <ConfirmationDialog
-        open={showDiscardDialog}
-        onOpenChange={setShowDiscardDialog}
-        title={t("product.discardChanges")}
-        confirmLabel={t("actions.confirm")}
-        cancelLabel={t("actions.cancel")}
-        variant="destructive"
-        onConfirm={() => {
-          setShowDiscardDialog(false);
-          onBack();
-        }}
-      />
+      <PageContainer>{formContent}</PageContainer>
+      {discardDialog}
     </>
   );
-}
-
-// ── Utility: check if a string is a valid CSS color name or hex ──────────────
-
-const CSS_COLOR_NAMES = new Set([
-  "red",
-  "blue",
-  "green",
-  "yellow",
-  "orange",
-  "purple",
-  "pink",
-  "black",
-  "white",
-  "gray",
-  "grey",
-  "brown",
-  "cyan",
-  "magenta",
-  "lime",
-  "maroon",
-  "navy",
-  "olive",
-  "teal",
-  "aqua",
-  "silver",
-  "gold",
-  "coral",
-  "salmon",
-  "khaki",
-  "ivory",
-  "beige",
-  "turquoise",
-  "indigo",
-  "violet",
-]);
-
-function isValidCssColor(value: string): boolean {
-  const lower = value.toLowerCase().trim();
-  if (CSS_COLOR_NAMES.has(lower)) return true;
-  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(lower)) return true;
-  return false;
 }

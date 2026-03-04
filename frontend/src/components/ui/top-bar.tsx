@@ -22,7 +22,7 @@ const TopBar = React.forwardRef<HTMLElement, TopBarProps>(
       <header
         ref={ref}
         className={cn(
-          "sticky top-0 z-40 pt-safe",
+          "sticky top-0 z-40",
           // Full-bleed: break out of any parent container
           "left-0 right-0 w-screen -mx-[calc((100vw-100%)/2)]",
           "border-b border-border/50 bg-background/80 backdrop-blur-md",
@@ -30,7 +30,7 @@ const TopBar = React.forwardRef<HTMLElement, TopBarProps>(
         )}
         {...props}
       >
-        <div className="flex h-12 items-center gap-3 px-4">
+        <div className="flex h-12 items-center gap-3 px-4 pt-safe">
           {/* Back button */}
           {backButton && (
             <button

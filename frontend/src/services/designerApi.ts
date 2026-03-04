@@ -1,26 +1,32 @@
 import api from "./api";
-import type { Product } from "./salesApi";
+import type { Product, ProductOption } from "./salesApi";
 
-export type { Product };
+export type { Product, ProductOption };
+
+export interface ProductOptionInput {
+  name: string;
+  values: { label: string; price_modifier: number }[];
+  sort_order: number;
+}
 
 export interface ProductCreate {
   name_ar: string;
   name_en: string;
   description_ar?: string | null;
   description_en?: string | null;
-  sku: string;
   price: number;
-  discount_percentage?: number | null;
-  discounted_price?: number | null;
-  image_url?: string | null;
+  purchase_price?: number | null;
   is_discounted: boolean;
   is_bestseller: boolean;
+  discount_type?: "percent" | "fixed" | null;
+  discount_value?: number | null;
   category?: string | null;
-  brand?: string | null;
+  trademark?: string | null;
   stock_qty?: number | null;
   unit?: string;
   weight?: number | null;
-  color_options?: string[] | null;
+  image_urls?: string[] | null;
+  options?: ProductOptionInput[] | null;
 }
 
 export interface ProductUpdate {
@@ -28,19 +34,19 @@ export interface ProductUpdate {
   name_en?: string;
   description_ar?: string | null;
   description_en?: string | null;
-  sku?: string;
   price?: number;
-  discount_percentage?: number | null;
-  discounted_price?: number | null;
-  image_url?: string | null;
+  purchase_price?: number | null;
   is_discounted?: boolean;
   is_bestseller?: boolean;
+  discount_type?: "percent" | "fixed" | null;
+  discount_value?: number | null;
   category?: string | null;
-  brand?: string | null;
+  trademark?: string | null;
   stock_qty?: number | null;
   unit?: string;
   weight?: number | null;
-  color_options?: string[] | null;
+  image_urls?: string[] | null;
+  options?: ProductOptionInput[] | null;
 }
 
 export const designerApi = {
@@ -61,4 +67,15 @@ export const designerApi = {
       })
       .then((r) => r.data.url);
   },
+
+  deleteProduct: (id: string) =>
+    api.delete(`/products/${id}`).then((r) => r.data),
+
+  duplicateProduct: (id: string) =>
+    api.post<Product>(`/products/${id}/duplicate`).then((r) => r.data),
+
+  getDistinctValues: (field: string) =>
+    api
+      .get<string[]>("/products/distinct-values", { params: { field } })
+      .then((r) => r.data),
 };

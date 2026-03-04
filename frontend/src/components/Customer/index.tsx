@@ -15,6 +15,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { TopBar } from "@/components/ui/top-bar";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -23,8 +24,9 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useToast } from "@/hooks/useToast";
 import { customerApi } from "@/services/customerApi";
 import type { DraftOrderItem } from "@/services/customerApi";
-import type { Product } from "@/services/salesApi";
-import { getImageUrl } from "@/lib/image";
+import type { Product, CartItem, SelectedOption } from "@/services/salesApi";
+import { cartKey, optionsPrice } from "@/lib/cart";
+import { getCoverImage } from "@/lib/image";
 
 import { Dashboard } from "./Dashboard";
 import { CatalogView } from "./CatalogView";
@@ -33,11 +35,6 @@ import { CustomerStatementView } from "./StatementView";
 import { ProfileView } from "./ProfileView";
 
 type View = "dashboard" | "catalog" | "cart" | "orders" | "profile" | "statement";
-
-export interface CartItem {
-  product: Product;
-  quantity: number;
-}
 
 /* ------------------------------------------------------------------ */
 /*  CartView — inline sub-component                                    */
@@ -62,7 +59,7 @@ function CartView({
   onBrowse,
 }: CartViewProps) {
   const { t, i18n } = useTranslation();
-  const cartItems = useMemo(() => Array.from(cart.values()), [cart]);
+  const cartEntries = useMemo(() => Array.from(cart.entries()), [cart]);
 
   const formatCurrency = (val: number) =>
     val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -70,7 +67,7 @@ function CartView({
   const productName = (p: Product) =>
     i18n.language === "ar" ? p.name_ar : p.name_en;
 
-  if (cartItems.length === 0) {
+  if (cartEntries.length === 0) {
     return (
       <div className="animate-fade-in">
         <TopBar title={t("cart.title")} />
@@ -105,87 +102,89 @@ function CartView({
       <div className="space-y-3 p-4">
         {/* Cart items */}
         <div className="space-y-2">
-          {cartItems.map((ci, idx) => (
-            <Card
-              key={ci.product.id}
-              variant="glass"
-              className="animate-slide-up overflow-hidden"
-              style={{ animationDelay: `${idx * 40}ms` }}
-            >
-              <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  {/* Product image */}
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-muted overflow-hidden">
-                    {ci.product.image_url ? (
-                      <img
-                        src={getImageUrl(ci.product.image_url)!}
-                        alt={productName(ci.product)}
-                        className="h-full w-full rounded-lg object-cover"
-                      />
-                    ) : (
-                      <Package className="h-6 w-6 text-muted-foreground" />
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-body-sm font-semibold text-foreground truncate">
-                      {productName(ci.product)}
-                    </p>
-                    <p className="text-caption text-muted-foreground mt-0.5">
-                      {formatCurrency(
-                        ci.product.discounted_price ?? ci.product.price
-                      )}{" "}
-                      × {ci.quantity}
-                    </p>
-                    <p className="text-body-sm font-bold text-primary mt-0.5">
-                      {formatCurrency(
-                        (ci.product.discounted_price ?? ci.product.price) *
-                          ci.quantity
+          {cartEntries.map(([key, ci], idx) => {
+            const unitPrice = (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions);
+            return (
+              <Card
+                key={key}
+                variant="glass"
+                className="animate-slide-up overflow-hidden"
+                style={{ animationDelay: `${idx * 40}ms` }}
+              >
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    {/* Product image */}
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-muted overflow-hidden">
+                      {getCoverImage(ci.product) ? (
+                        <img
+                          src={getCoverImage(ci.product)!}
+                          alt={productName(ci.product)}
+                          className="h-full w-full rounded-lg object-cover"
+                        />
+                      ) : (
+                        <Package className="h-6 w-6 text-muted-foreground" />
                       )}
-                    </p>
-                  </div>
+                    </div>
 
-                  {/* Controls */}
-                  <div className="flex flex-col items-end gap-2 shrink-0">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-destructive"
-                      onClick={() => removeFromCart(ci.product.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                    <div className="flex items-center gap-1.5">
+                    {/* Info */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-body-sm font-semibold text-foreground truncate">
+                        {productName(ci.product)}
+                      </p>
+                      {ci.selectedOptions?.length ? (
+                        <div className="mt-0.5 flex flex-wrap gap-1">
+                          {ci.selectedOptions.map((opt) => (
+                            <Badge key={`${opt.name}:${opt.value}`} variant="outline" size="sm" className="text-[0.6rem]">
+                              {opt.value}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : null}
+                      <p className="text-caption text-muted-foreground mt-0.5">
+                        {formatCurrency(unitPrice)} × {ci.quantity}
+                      </p>
+                      <p className="text-body-sm font-bold text-primary mt-0.5">
+                        {formatCurrency(unitPrice * ci.quantity)}
+                      </p>
+                    </div>
+
+                    {/* Controls */}
+                    <div className="flex flex-col items-end gap-2 shrink-0">
                       <Button
                         size="icon"
-                        variant="outline"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          updateCartQty(ci.product.id, ci.quantity - 1)
-                        }
+                        variant="ghost"
+                        className="h-7 w-7 text-destructive"
+                        onClick={() => removeFromCart(key)}
                       >
-                        <Minus className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
-                      <span className="min-w-[2rem] text-center text-body-sm font-bold text-foreground">
-                        {ci.quantity}
-                      </span>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          updateCartQty(ci.product.id, ci.quantity + 1)
-                        }
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8"
+                          onClick={() => updateCartQty(key, ci.quantity - 1)}
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </Button>
+                        <span className="min-w-[2rem] text-center text-body-sm font-bold text-foreground">
+                          {ci.quantity}
+                        </span>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8"
+                          onClick={() => updateCartQty(key, ci.quantity + 1)}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         <Separator />
@@ -258,14 +257,15 @@ export default function CustomerRoot() {
   }, [cart]);
 
   /* ---- Cart helpers ---- */
-  const addToCart = useCallback((product: Product, qty: number = 1) => {
+  const addToCart = useCallback((product: Product, qty: number = 1, selectedOptions?: SelectedOption[]) => {
     setCart((prev) => {
       const next = new Map(prev);
-      const existing = next.get(product.id);
+      const key = cartKey(product.id, selectedOptions);
+      const existing = next.get(key);
       if (existing) {
-        next.set(product.id, { ...existing, quantity: existing.quantity + qty });
+        next.set(key, { ...existing, quantity: existing.quantity + qty });
       } else {
-        next.set(product.id, { product, quantity: qty });
+        next.set(key, { product, quantity: qty, selectedOptions });
       }
       return next;
     });
@@ -299,7 +299,7 @@ export default function CustomerRoot() {
       Array.from(cart.values()).reduce(
         (sum, item) =>
           sum +
-          (item.product.discounted_price ?? item.product.price) * item.quantity,
+          ((item.product.discounted_price ?? item.product.price) + optionsPrice(item.selectedOptions)) * item.quantity,
         0
       ),
     [cart]
@@ -327,7 +327,8 @@ export default function CustomerRoot() {
     const items: DraftOrderItem[] = Array.from(cart.values()).map((ci) => ({
       product_id: ci.product.id,
       quantity: ci.quantity,
-      unit_price: ci.product.discounted_price ?? ci.product.price,
+      unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),
+      selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
     }));
     draftMutation.mutate({ items });
     setConfirmOpen(false);

@@ -1,4 +1,5 @@
 import api from "./api";
+import type { Customer, CustomerCreate } from "./salesApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,15 @@ export interface DebtStatsOut {
   overdue_checks: OverdueCheck[];
 }
 
+export interface SalesRep {
+  id: string;
+  username: string;
+}
+
+export interface AdminCustomerCreate extends CustomerCreate {
+  assigned_to: string;
+}
+
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
 export const adminApi = {
@@ -71,4 +81,13 @@ export const adminApi = {
       )
       .then((r) => r.data);
   },
+
+  getAllCustomers: () =>
+    api.get<Customer[]>("/admin/customers").then((r) => r.data),
+
+  createCustomer: (body: AdminCustomerCreate) =>
+    api.post<Customer>("/admin/customers", body).then((r) => r.data),
+
+  getSalesReps: () =>
+    api.get<SalesRep[]>("/admin/users/sales-reps").then((r) => r.data),
 };

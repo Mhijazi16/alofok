@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin,
   Package,
@@ -13,8 +13,6 @@ import {
   Plus,
   Minus,
   Trash2,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { TopBar } from "@/components/ui/top-bar";
@@ -31,25 +29,24 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { SearchInput } from "@/components/ui/search-input";
-import { Avatar } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { logout } from "@/store/authSlice";
-import { salesApi, type Customer, type Product, type OrderItem } from "@/services/salesApi";
+import { salesApi, type Customer, type Product, type OrderItem, type CartItem, type SelectedOption } from "@/services/salesApi";
+import { cartKey, optionsPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
-import { getImageUrl } from "@/lib/image";
+import { getCoverImage } from "@/lib/image";
+import { OptionPickerDialog } from "@/components/ui/option-picker-dialog";
 
 import { ProductDetail } from "@/components/ui/product-detail";
 import { RouteView } from "./RouteView";
 import { CustomerDashboard } from "./CustomerDashboard";
-import { OrderFlow, type CartItem } from "./OrderFlow";
+import { OrderFlow } from "./OrderFlow";
 import { PaymentFlow } from "./PaymentFlow";
 import { StatementView } from "./StatementView";
 import { CustomerForm } from "./CustomerForm";
+import { AllCustomersView } from "./AllCustomersView";
 
 type View =
   | "route"
@@ -63,196 +60,6 @@ type View =
   | "statement"
   | "customerForm"
   | "productDetail";
-
-/* ------------------------------------------------------------------ */
-/*  AllCustomersView — browse all rep's customers                      */
-/* ------------------------------------------------------------------ */
-const DAYS_LIST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"] as const;
-
-interface AllCustomersViewProps {
-  onSelectCustomer: (customer: Customer) => void;
-  onAddCustomer: () => void;
-}
-
-function AllCustomersView({ onSelectCustomer, onAddCustomer }: AllCustomersViewProps) {
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const [search, setSearch] = useState("");
-  const [dayFilter, setDayFilter] = useState("all");
-
-  const { data: customers, isLoading } = useQuery({
-    queryKey: ["my-customers"],
-    queryFn: salesApi.getMyCustomers,
-  });
-
-  const filtered = useMemo(() => {
-    if (!customers) return [];
-    let list = customers;
-    if (dayFilter !== "all") {
-      list = list.filter((c) => c.assigned_day === dayFilter);
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.city.toLowerCase().includes(q) ||
-          (c.phone && c.phone.includes(q))
-      );
-    }
-    return list;
-  }, [customers, search, dayFilter]);
-
-  // Group by assigned_day
-  const grouped = useMemo(() => {
-    if (dayFilter !== "all") return null;
-    const map = new Map<string, Customer[]>();
-    for (const c of filtered) {
-      const existing = map.get(c.assigned_day) ?? [];
-      existing.push(c);
-      map.set(c.assigned_day, existing);
-    }
-    return map;
-  }, [filtered, dayFilter]);
-
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
-
-  const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
-
-  const renderCustomerCard = (customer: Customer, idx: number) => {
-    const balanceVariant: "success" | "warning" | "danger" =
-      customer.balance <= 0
-        ? "success"
-        : customer.balance < 5000
-          ? "warning"
-          : "danger";
-
-    return (
-      <Card
-        key={customer.id}
-        variant="interactive"
-        className="animate-slide-up p-4"
-        style={{ animationDelay: `${idx * 40}ms` }}
-        onClick={() => onSelectCustomer(customer)}
-      >
-        <div className="flex items-center gap-3">
-          <Avatar name={customer.name} size="md" />
-          <div className="min-w-0 flex-1">
-            <p className="text-body-sm font-semibold text-foreground truncate">
-              {customer.name}
-            </p>
-            <p className="text-caption text-muted-foreground truncate">
-              {customer.city}
-              {customer.phone && ` · ${customer.phone}`}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Badge variant={balanceVariant} dot size="sm">
-              {formatCurrency(customer.balance)}
-            </Badge>
-            <ChevronIcon className="h-4 w-4 text-muted-foreground" />
-          </div>
-        </div>
-      </Card>
-    );
-  };
-
-  return (
-    <div className="animate-fade-in">
-      <TopBar
-        title={t("customer.allCustomers")}
-        subtitle={!isLoading ? `${customers?.length ?? 0} ${t("customer.totalCustomers").toLowerCase()}` : undefined}
-      />
-
-      <div className="space-y-4 p-4">
-        {/* Day filter pills */}
-        <div className="overflow-x-auto -mx-4 px-4 scrollbar-none">
-          <Tabs value={dayFilter} onValueChange={setDayFilter}>
-            <TabsList variant="segment" className="w-full">
-              <TabsTrigger value="all" className="flex-1 min-w-0">
-                {t("actions.viewAll")}
-              </TabsTrigger>
-              {DAYS_LIST.map((day) => (
-                <TabsTrigger
-                  key={day}
-                  value={day}
-                  className="flex-1 min-w-0"
-                >
-                  {t(`customer.days.${day}`)}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Search */}
-        <SearchInput
-          placeholder={t("customer.searchCustomers")}
-          onSearch={setSearch}
-        />
-
-        {/* Customer List */}
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} variant="card" className="h-20" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          search.trim() ? (
-            <EmptyState preset="no-results" />
-          ) : (
-            <EmptyState
-              icon={Users}
-              title={t("customer.noCustomers")}
-              action={{ label: t("customer.addNew"), onClick: onAddCustomer }}
-            />
-          )
-        ) : grouped ? (
-          // Grouped by day
-          <div className="space-y-5">
-            {DAYS_LIST.filter((d) => grouped.has(d)).map((day) => {
-              const dayCustomers = grouped.get(day)!;
-              return (
-                <div key={day}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-caption font-semibold text-primary uppercase tracking-wider">
-                      {t(`customer.days.${day}`)}
-                    </span>
-                    <div className="h-px flex-1 bg-border" />
-                    <Badge variant="outline" size="sm">
-                      {dayCustomers.length}
-                    </Badge>
-                  </div>
-                  <div className="space-y-2">
-                    {dayCustomers.map((c, idx) => renderCustomerCard(c, idx))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          // Flat list (filtered by specific day)
-          <div className="space-y-2">
-            {filtered.map((c, idx) => renderCustomerCard(c, idx))}
-          </div>
-        )}
-      </div>
-
-      {/* FAB — Add Customer */}
-      <button
-        onClick={onAddCustomer}
-        className="fixed bottom-20 end-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 active:scale-95 transition-transform"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
-    </div>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /*  CartView — full-page cart                                          */
@@ -280,7 +87,7 @@ function CartView({
 }: CartViewProps) {
   const { t, i18n } = useTranslation();
 
-  const cartItems = useMemo(() => Array.from(cart.values()), [cart]);
+  const cartEntries = useMemo(() => Array.from(cart.entries()), [cart]);
 
   const formatCurrency = (val: number) =>
     val.toLocaleString("en-US", {
@@ -291,7 +98,7 @@ function CartView({
   const productName = (p: Product) =>
     i18n.language === "ar" ? p.name_ar : p.name_en;
 
-  if (cartItems.length === 0) {
+  if (cartEntries.length === 0) {
     return (
       <div className="animate-fade-in">
         <TopBar title={t("cart.title")} />
@@ -329,77 +136,89 @@ function CartView({
 
         {/* Cart items */}
         <div className="space-y-2">
-          {cartItems.map((ci, idx) => (
-            <Card
-              key={ci.product.id}
-              variant="glass"
-              className="animate-slide-up overflow-hidden"
-              style={{ animationDelay: `${idx * 40}ms` }}
-            >
-              <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  {/* Product image */}
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-muted overflow-hidden">
-                    {ci.product.image_url ? (
-                      <img
-                        src={getImageUrl(ci.product.image_url)!}
-                        alt={productName(ci.product)}
-                        className="h-full w-full rounded-lg object-cover"
-                      />
-                    ) : (
-                      <Package className="h-6 w-6 text-muted-foreground" />
-                    )}
-                  </div>
+          {cartEntries.map(([key, ci], idx) => {
+            const unitPrice = (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions);
+            return (
+              <Card
+                key={key}
+                variant="glass"
+                className="animate-slide-up overflow-hidden"
+                style={{ animationDelay: `${idx * 40}ms` }}
+              >
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    {/* Product image */}
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-muted overflow-hidden">
+                      {getCoverImage(ci.product) ? (
+                        <img
+                          src={getCoverImage(ci.product)!}
+                          alt={productName(ci.product)}
+                          className="h-full w-full rounded-lg object-cover"
+                        />
+                      ) : (
+                        <Package className="h-6 w-6 text-muted-foreground" />
+                      )}
+                    </div>
 
-                  {/* Info */}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-body-sm font-semibold text-foreground truncate">
-                      {productName(ci.product)}
-                    </p>
-                    <p className="text-caption text-muted-foreground mt-0.5">
-                      {formatCurrency(ci.product.discounted_price ?? ci.product.price)} x {ci.quantity}
-                    </p>
-                    <p className="text-body-sm font-bold text-primary mt-0.5">
-                      {formatCurrency((ci.product.discounted_price ?? ci.product.price) * ci.quantity)}
-                    </p>
-                  </div>
+                    {/* Info */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-body-sm font-semibold text-foreground truncate">
+                        {productName(ci.product)}
+                      </p>
+                      {ci.selectedOptions?.length ? (
+                        <div className="mt-0.5 flex flex-wrap gap-1">
+                          {ci.selectedOptions.map((opt) => (
+                            <Badge key={`${opt.name}:${opt.value}`} variant="outline" size="sm" className="text-[0.6rem]">
+                              {opt.value}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : null}
+                      <p className="text-caption text-muted-foreground mt-0.5">
+                        {formatCurrency(unitPrice)} x {ci.quantity}
+                      </p>
+                      <p className="text-body-sm font-bold text-primary mt-0.5">
+                        {formatCurrency(unitPrice * ci.quantity)}
+                      </p>
+                    </div>
 
-                  {/* Quantity controls + remove */}
-                  <div className="flex flex-col items-end gap-2 shrink-0">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-destructive"
-                      onClick={() => removeFromCart(ci.product.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                    <div className="flex items-center gap-1.5">
+                    {/* Quantity controls + remove */}
+                    <div className="flex flex-col items-end gap-2 shrink-0">
                       <Button
                         size="icon"
-                        variant="outline"
-                        className="h-8 w-8"
-                        onClick={() => updateCartQty(ci.product.id, ci.quantity - 1)}
+                        variant="ghost"
+                        className="h-7 w-7 text-destructive"
+                        onClick={() => removeFromCart(key)}
                       >
-                        <Minus className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
-                      <span className="min-w-[2rem] text-center text-body-sm font-bold text-foreground">
-                        {ci.quantity}
-                      </span>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-8 w-8"
-                        onClick={() => updateCartQty(ci.product.id, ci.quantity + 1)}
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8"
+                          onClick={() => updateCartQty(key, ci.quantity - 1)}
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </Button>
+                        <span className="min-w-[2rem] text-center text-body-sm font-bold text-foreground">
+                          {ci.quantity}
+                        </span>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8"
+                          onClick={() => updateCartQty(key, ci.quantity + 1)}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         <Separator />
@@ -503,6 +322,7 @@ export default function SalesRoot() {
   }, [avatarSeed]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [prevViewBeforeProduct, setPrevViewBeforeProduct] = useState<View>("catalog");
+  const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
 
   /* ---- Cart state — lifted from OrderFlow for persistence ---- */
   const [cart, setCart] = useState<Map<string, CartItem>>(() => {
@@ -524,14 +344,15 @@ export default function SalesRoot() {
   }, [cart]);
 
   // Cart helper functions
-  const addToCart = useCallback((product: Product, qty: number = 1) => {
+  const addToCart = useCallback((product: Product, qty: number = 1, selectedOptions?: SelectedOption[]) => {
     setCart((prev) => {
       const next = new Map(prev);
-      const existing = next.get(product.id);
+      const key = cartKey(product.id, selectedOptions);
+      const existing = next.get(key);
       if (existing) {
-        next.set(product.id, { ...existing, quantity: existing.quantity + qty });
+        next.set(key, { ...existing, quantity: existing.quantity + qty });
       } else {
-        next.set(product.id, { product, quantity: qty });
+        next.set(key, { product, quantity: qty, selectedOptions });
       }
       return next;
     });
@@ -564,7 +385,7 @@ export default function SalesRoot() {
     () =>
       Array.from(cart.values()).reduce(
         (sum, item) =>
-          sum + (item.product.discounted_price ?? item.product.price) * item.quantity,
+          sum + ((item.product.discounted_price ?? item.product.price) + optionsPrice(item.selectedOptions)) * item.quantity,
         0
       ),
     [cart]
@@ -605,7 +426,8 @@ export default function SalesRoot() {
     const items: OrderItem[] = Array.from(cart.values()).map((ci) => ({
       product_id: ci.product.id,
       quantity: ci.quantity,
-      unit_price: ci.product.discounted_price ?? ci.product.price,
+      unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),
+      selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
     }));
 
     const payload = {
@@ -751,6 +573,8 @@ export default function SalesRoot() {
       case "customers":
         return (
           <AllCustomersView
+            queryKey={["my-customers"]}
+            queryFn={salesApi.getMyCustomers}
             onSelectCustomer={navigateToCustomer}
             onAddCustomer={navigateToAddCustomer}
           />
@@ -885,28 +709,44 @@ export default function SalesRoot() {
 
     if (view === "productDetail" && selectedProduct) {
       return (
-        <ProductDetail
-          product={selectedProduct}
-          onBack={() => {
-            setSelectedProduct(null);
-            setView(prevViewBeforeProduct);
-          }}
-          actions={
-            <Button
-              variant="gradient"
-              size="lg"
-              className="w-full"
-              onClick={() => {
-                addToCart(selectedProduct);
-                setSelectedProduct(null);
-                setView(prevViewBeforeProduct);
-              }}
-            >
-              <ShoppingCart className="h-4 w-4" />
-              {t("catalog.addToOrder")}
-            </Button>
-          }
-        />
+        <>
+          <ProductDetail
+            product={selectedProduct}
+            onBack={() => {
+              setSelectedProduct(null);
+              setView(prevViewBeforeProduct);
+            }}
+            actions={
+              <Button
+                variant="gradient"
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  if (selectedProduct.options?.length) {
+                    setPickerProduct(selectedProduct);
+                  } else {
+                    addToCart(selectedProduct);
+                    setSelectedProduct(null);
+                    setView(prevViewBeforeProduct);
+                  }
+                }}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {t("catalog.addToOrder")}
+              </Button>
+            }
+          />
+          <OptionPickerDialog
+            product={pickerProduct}
+            onOpenChange={(open) => { if (!open) setPickerProduct(null); }}
+            onAdd={(product, qty, options) => {
+              addToCart(product, qty, options);
+              setPickerProduct(null);
+              setSelectedProduct(null);
+              setView(prevViewBeforeProduct);
+            }}
+          />
+        </>
       );
     }
 

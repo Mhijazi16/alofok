@@ -64,9 +64,12 @@ async def my_route(
     dependencies=[require_sales],
 )
 async def customers_by_day(
-    day: AssignedDay, current_user: CurrentUser, service: CustomerSvc
+    day: AssignedDay,
+    current_user: CurrentUser,
+    service: CustomerSvc,
+    delivery_date: date | None = Query(None),
 ) -> list[CustomerOut]:
-    return await service.get_route_by_day(UUID(current_user["sub"]), day)
+    return await service.get_route_by_day(UUID(current_user["sub"]), day, delivery_date)
 
 
 @router.get(

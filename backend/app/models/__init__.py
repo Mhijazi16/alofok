@@ -38,6 +38,7 @@ class BaseMixin:
 # 2. Consumers can do: from app.models import User, Product, etc.
 from app.models.user import User, UserRole  # noqa: E402, F401
 from app.models.product import Product  # noqa: E402, F401
+from app.models.product_option import ProductOption  # noqa: E402, F401
 from app.models.customer import Customer, AssignedDay  # noqa: E402, F401
 from app.models.transaction import (  # noqa: E402, F401
     Transaction,

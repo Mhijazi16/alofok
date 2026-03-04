@@ -94,3 +94,14 @@ class CustomerInsightsOut(BaseModel):
     last_payment_amount: Decimal | None
     avg_payment_interval_days: float | None
     risk_score: str  # "green" | "yellow" | "red"
+
+
+class AdminCustomerCreate(CustomerCreate):
+    assigned_to: uuid.UUID
+
+
+class SalesRepOut(BaseModel):
+    id: uuid.UUID
+    username: str
+
+    model_config = {"from_attributes": True}

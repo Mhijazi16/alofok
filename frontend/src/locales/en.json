@@ -62,6 +62,7 @@
     "unassignedOrders": "Unassigned Customers Orders",
     "ordersCount": "{{count}} orders",
     "orderFor": "Order for",
+    "assignedRep": "Sales Rep",
     "days": {
       "Sun": "Sun",
       "Mon": "Mon",
@@ -92,7 +93,8 @@
     "search": "Search",
     "filter": "Filter",
     "export": "Export",
-    "import": "Import"
+    "import": "Import",
+    "duplicate": "Duplicate"
   },
   "catalog": {
     "bestSellers": "Best Sellers",
@@ -204,7 +206,36 @@
     "basicInfo": "Basic Information",
     "pricing": "Pricing",
     "inventory": "Inventory",
-    "attributes": "Attributes"
+    "attributes": "Attributes",
+    "media": "Media",
+    "flags": "Flags",
+    "trademark": "Trademark",
+    "purchasePrice": "Purchase Price",
+    "discountType": "Discount Type",
+    "discountFixed": "Fixed Amount",
+    "discountPercent": "Percentage",
+    "discountValue": "Discount Value",
+    "finalPrice": "Final Price",
+    "options": "Options",
+    "addOptionGroup": "Add Option Group",
+    "optionName": "Option Name",
+    "optionValue": "Option Value",
+    "priceModifier": "Price Modifier",
+    "addValue": "Add Value",
+    "removeGroup": "Remove Group",
+    "selectOptions": "Select Options",
+    "addToCart": "Add to Cart",
+    "totalPrice": "Total Price",
+    "requiredOptions": "Please select all options",
+    "coverImage": "Cover",
+    "addImage": "Add Image",
+    "maxImages": "Max 5 images",
+    "confirmDelete": "This action cannot be undone. All product data will be permanently removed.",
+    "deletedSuccess": "Product deleted successfully",
+    "duplicatedSuccess": "Product duplicated successfully",
+    "delete": "Delete Product",
+    "detailsTab": "Details",
+    "editTab": "Edit"
   },
   "admin": {
     "title": "Admin Dashboard",
@@ -234,6 +265,7 @@
     "orderCount": "Order Count",
     "collectionCount": "Collection Count",
     "daysOverdue": "days overdue",
+    "importCsv": "CSV Import",
     "period": {
       "week": "This Week",
       "month": "This Month",
@@ -354,6 +386,9 @@
     "deliveredLocked": "This order has been delivered and cannot be edited",
     "items": "Items",
     "notes": "Notes"
+  },
+  "filter": {
+    "all": "All"
   },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Package, PlusCircle, User, LogOut, Globe, Pencil } from "lucide-react";
+import { Package, User, LogOut, Globe } from "lucide-react";
 
 import { useAppSelector, useAppDispatch } from "@/store";
 import { logout } from "@/store/authSlice";
-import type { Product } from "@/services/designerApi";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageContainer } from "@/components/layout/page-container";
@@ -16,11 +15,10 @@ import { Separator } from "@/components/ui/separator";
 
 import { ProductList } from "./ProductList";
 import { ProductForm } from "./ProductForm";
-import { ProductDetail } from "@/components/ui/product-detail";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type View = "list" | "detail" | "create" | "edit" | "profile";
+type View = "list" | "create" | "profile";
 
 const APP_VERSION = "1.0.0";
 
@@ -32,9 +30,6 @@ export default function DesignerShell() {
   const { userId, role } = useAppSelector((s) => s.auth);
 
   const [view, setView] = useState<View>("list");
-  const [editingProduct, setEditingProduct] = useState<Product | undefined>(
-    undefined
-  );
   const [avatarSeed, setAvatarSeed] = useState(
     () => localStorage.getItem("alofok-avatar-seed") || userId || "designer"
   );
@@ -47,37 +42,19 @@ export default function DesignerShell() {
   const handleNav = (value: string) => {
     if (value === "list" || value === "create" || value === "profile") {
       setView(value as View);
-      setEditingProduct(undefined);
     }
   };
 
-  const handleViewProduct = (product: Product) => {
-    setEditingProduct(product);
-    setView("detail");
-  };
-
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
-    setView("edit");
-  };
-
   const handleAdd = () => {
-    setEditingProduct(undefined);
     setView("create");
   };
 
   const handleFormDone = () => {
-    setEditingProduct(undefined);
     setView("list");
   };
 
   const handleFormBack = () => {
-    if (editingProduct && view === "edit") {
-      setView("detail");
-    } else {
-      setEditingProduct(undefined);
-      setView("list");
-    }
+    setView("list");
   };
 
   const toggleLanguage = () => {
@@ -95,12 +72,10 @@ export default function DesignerShell() {
 
   const navItems = [
     { icon: Package, label: t("nav.products"), value: "list" },
-    { icon: PlusCircle, label: t("nav.addProduct"), value: "create" },
     { icon: User, label: t("nav.profile"), value: "profile" },
   ];
 
-  const activeNavValue =
-    view === "edit" || view === "detail" ? "list" : view === "create" ? "create" : view;
+  const activeNavValue = view === "create" ? "list" : view;
 
   // ── Profile view ───────────────────────────────────────────────────────────
 
@@ -183,42 +158,11 @@ export default function DesignerShell() {
 
   switch (view) {
     case "list":
-      content = <ProductList onEdit={handleViewProduct} onAdd={handleAdd} />;
-      break;
-    case "detail":
-      content = editingProduct ? (
-        <ProductDetail
-          product={editingProduct}
-          onBack={() => {
-            setEditingProduct(undefined);
-            setView("list");
-          }}
-          actions={
-            <Button
-              variant="gradient"
-              size="lg"
-              className="w-full"
-              onClick={() => handleEdit(editingProduct)}
-            >
-              <Pencil className="h-4 w-4" />
-              {t("actions.edit")}
-            </Button>
-          }
-        />
-      ) : null;
+      content = <ProductList onAdd={handleAdd} />;
       break;
     case "create":
       content = (
         <ProductForm onBack={handleFormBack} onDone={handleFormDone} />
-      );
-      break;
-    case "edit":
-      content = (
-        <ProductForm
-          product={editingProduct}
-          onBack={handleFormBack}
-          onDone={handleFormDone}
-        />
       );
       break;
     case "profile":
