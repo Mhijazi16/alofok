@@ -82,7 +82,9 @@ class CustomerService:
     async def get_route_by_day(
         self, user_id: uuid.UUID, day: AssignedDay, delivery_date: date | None = None
     ) -> list[CustomerOut]:
-        customers = await self._customers.get_by_day_and_rep(day, user_id, delivery_date)
+        customers = await self._customers.get_by_day_and_rep(
+            day, user_id, delivery_date
+        )
         return [CustomerOut.model_validate(c) for c in customers]
 
     async def get_all_customers(self, user_id: uuid.UUID) -> list[CustomerOut]:

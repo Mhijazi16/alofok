@@ -17,9 +17,7 @@ async def create_order(
     return await service.create_order(body, uuid.UUID(current_user["sub"]))
 
 
-@router.put(
-    "/{order_id}", response_model=TransactionOut, dependencies=[require_sales]
-)
+@router.put("/{order_id}", response_model=TransactionOut, dependencies=[require_sales])
 async def update_order(
     order_id: uuid.UUID,
     body: OrderUpdate,

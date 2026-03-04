@@ -160,6 +160,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                 <Input
                   type="number"
                   inputMode="decimal"
+                  dir="ltr"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
@@ -235,6 +236,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       onChange={(e) => setBankNumber(e.target.value)}
                       placeholder={t("payment.bankNumber")}
                       inputMode="numeric"
+                      dir="ltr"
                       startIcon={<Hash className="h-4 w-4" />}
                       onFocus={() => setFocusedField("bankNumber")}
                       onBlur={() => setFocusedField(null)}
@@ -247,6 +249,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       onChange={(e) => setBranchNumber(e.target.value)}
                       placeholder={t("payment.branchNumber")}
                       inputMode="numeric"
+                      dir="ltr"
                       startIcon={<Hash className="h-4 w-4" />}
                       onFocus={() => setFocusedField("branchNumber")}
                       onBlur={() => setFocusedField(null)}
@@ -259,6 +262,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       onChange={(e) => setAccountNumber(e.target.value)}
                       placeholder={t("payment.accountNumber")}
                       inputMode="numeric"
+                      dir="ltr"
                       startIcon={<Hash className="h-4 w-4" />}
                       onFocus={() => setFocusedField("accountNumber")}
                       onBlur={() => setFocusedField(null)}

@@ -5,7 +5,12 @@ from fastapi import APIRouter, File, UploadFile
 
 from app.api.deps import AdminSvc, CurrentUser, CustomerSvc, UserRepo, require_admin
 from app.schemas.admin import DebtStatsOut, ImportResult, SalesStatsOut
-from app.schemas.customer import AdminCustomerCreate, CustomerOut, CustomerUpdate, SalesRepOut
+from app.schemas.customer import (
+    AdminCustomerCreate,
+    CustomerOut,
+    CustomerUpdate,
+    SalesRepOut,
+)
 
 router = APIRouter()
 
@@ -45,26 +50,42 @@ async def eod_report(
     return await service.trigger_eod_report(report_date)
 
 
-@router.get("/customers", response_model=list[CustomerOut], dependencies=[require_admin])
+@router.get(
+    "/customers", response_model=list[CustomerOut], dependencies=[require_admin]
+)
 async def list_all_customers(service: CustomerSvc) -> list[CustomerOut]:
     return await service.get_all_customers_admin()
 
 
-@router.post("/customers", response_model=CustomerOut, status_code=201, dependencies=[require_admin])
-async def create_customer_for_rep(body: AdminCustomerCreate, service: CustomerSvc) -> CustomerOut:
+@router.post(
+    "/customers",
+    response_model=CustomerOut,
+    status_code=201,
+    dependencies=[require_admin],
+)
+async def create_customer_for_rep(
+    body: AdminCustomerCreate, service: CustomerSvc
+) -> CustomerOut:
     return await service.create_customer_for_rep(body)
 
 
-@router.put("/customers/{customer_id}", response_model=CustomerOut, dependencies=[require_admin])
+@router.put(
+    "/customers/{customer_id}", response_model=CustomerOut, dependencies=[require_admin]
+)
 async def update_customer(
-    customer_id: uuid.UUID, body: CustomerUpdate, current_user: CurrentUser, service: CustomerSvc
+    customer_id: uuid.UUID,
+    body: CustomerUpdate,
+    current_user: CurrentUser,
+    service: CustomerSvc,
 ) -> CustomerOut:
     return await service.update_customer(
         customer_id, body, uuid.UUID(current_user["sub"]), current_user["role"]
     )
 
 
-@router.get("/users/sales-reps", response_model=list[SalesRepOut], dependencies=[require_admin])
+@router.get(
+    "/users/sales-reps", response_model=list[SalesRepOut], dependencies=[require_admin]
+)
 async def list_sales_reps(repo: UserRepo) -> list[SalesRepOut]:
     reps = await repo.get_sales_reps()
     return [SalesRepOut.model_validate(r) for r in reps]

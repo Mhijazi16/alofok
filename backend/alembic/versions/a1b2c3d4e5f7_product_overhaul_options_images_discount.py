@@ -5,6 +5,7 @@ Revises: f7d8db5dd7c5
 Create Date: 2026-03-03 18:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -51,16 +52,12 @@ def upgrade() -> None:
     )
 
     # 2. Add new columns to products
-    op.add_column(
-        "products", sa.Column("trademark", sa.String(), nullable=True)
-    )
+    op.add_column("products", sa.Column("trademark", sa.String(), nullable=True))
     op.add_column(
         "products",
         sa.Column("purchase_price", sa.Numeric(precision=12, scale=2), nullable=True),
     )
-    op.add_column(
-        "products", sa.Column("discount_type", sa.String(), nullable=True)
-    )
+    op.add_column("products", sa.Column("discount_type", sa.String(), nullable=True))
     op.add_column(
         "products",
         sa.Column("discount_value", sa.Numeric(precision=12, scale=2), nullable=True),
@@ -73,23 +70,19 @@ def upgrade() -> None:
     op.execute("UPDATE products SET trademark = brand WHERE brand IS NOT NULL")
 
     # 4. Data migration: image_url → image_urls (as single-element array)
-    op.execute(
-        """
+    op.execute("""
         UPDATE products
         SET image_urls = jsonb_build_array(image_url)
         WHERE image_url IS NOT NULL
-        """
-    )
+        """)
 
     # 5. Data migration: discount_percentage → discount_type + discount_value
-    op.execute(
-        """
+    op.execute("""
         UPDATE products
         SET discount_type = 'percent',
             discount_value = discount_percentage
         WHERE discount_percentage IS NOT NULL
-        """
-    )
+        """)
 
     # 6. Drop old columns
     op.drop_column("products", "image_url")
@@ -107,9 +100,7 @@ def downgrade() -> None:
     )
     op.add_column(
         "products",
-        sa.Column(
-            "discounted_price", sa.Numeric(precision=12, scale=2), nullable=True
-        ),
+        sa.Column("discounted_price", sa.Numeric(precision=12, scale=2), nullable=True),
     )
     op.add_column(
         "products",
@@ -117,25 +108,19 @@ def downgrade() -> None:
             "discount_percentage", sa.Numeric(precision=5, scale=2), nullable=True
         ),
     )
-    op.add_column(
-        "products", sa.Column("brand", sa.String(), nullable=True)
-    )
-    op.add_column(
-        "products", sa.Column("image_url", sa.String(), nullable=True)
-    )
+    op.add_column("products", sa.Column("brand", sa.String(), nullable=True))
+    op.add_column("products", sa.Column("image_url", sa.String(), nullable=True))
 
     # Reverse data migrations
     op.execute("UPDATE products SET brand = trademark WHERE trademark IS NOT NULL")
     op.execute(
         "UPDATE products SET image_url = image_urls->>0 WHERE image_urls IS NOT NULL"
     )
-    op.execute(
-        """
+    op.execute("""
         UPDATE products
         SET discount_percentage = discount_value
         WHERE discount_type = 'percent'
-        """
-    )
+        """)
 
     # Drop new columns
     op.drop_column("products", "image_urls")

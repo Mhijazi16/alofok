@@ -75,7 +75,5 @@ async def delete_product(product_id: uuid.UUID, service: CatalogSvc) -> None:
     status_code=201,
     dependencies=[require_designer],
 )
-async def duplicate_product(
-    product_id: uuid.UUID, service: CatalogSvc
-) -> ProductOut:
+async def duplicate_product(product_id: uuid.UUID, service: CatalogSvc) -> ProductOut:
     return await service.duplicate_product(product_id)

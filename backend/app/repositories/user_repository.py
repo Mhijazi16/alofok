@@ -29,7 +29,9 @@ class UserRepository:
     async def get_sales_reps(self) -> list[User]:
         result = await self._db.execute(
             select(User).where(
-                User.role == UserRole.Sales, User.is_active.is_(True), User.is_deleted.is_(False)
+                User.role == UserRole.Sales,
+                User.is_active.is_(True),
+                User.is_deleted.is_(False),
             )
         )
         return list(result.scalars().all())

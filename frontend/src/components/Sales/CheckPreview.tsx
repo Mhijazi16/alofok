@@ -39,9 +39,12 @@ function buildMicrLine(
   return `\u2446${bn}\u2446  \u2448${br}\u2449  \u2448${ac}\u2448`;
 }
 
-// Highlight rect config per focusedField value
+function hasArabic(text: string): boolean {
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
+}
+
 const HIGHLIGHT_FILL = "#dc2626";
-const HIGHLIGHT_OPACITY = 0.06;
+const HIGHLIGHT_OPACITY = 0.08;
 
 type HighlightRect = {
   x: number;
@@ -55,17 +58,17 @@ function getHighlightRect(focusedField: string | null | undefined): HighlightRec
   if (!focusedField) return null;
   switch (focusedField) {
     case "bankName":
-      return { x: 14, y: 18, width: 220, height: 28, rx: 4 };
+      return { x: 16, y: 18, width: 320, height: 42, rx: 6 };
     case "holderName":
-      return { x: 366, y: 18, width: 220, height: 28, rx: 4 };
+      return { x: 460, y: 18, width: 224, height: 26, rx: 4 };
     case "dueDate":
-      return { x: 460, y: 50, width: 126, height: 28, rx: 4 };
+      return { x: 460, y: 42, width: 224, height: 24, rx: 4 };
     case "amount":
-      return { x: 462, y: 74, width: 122, height: 36, rx: 4 };
+      return { x: 520, y: 78, width: 160, height: 42, rx: 20 };
     case "bankNumber":
     case "branchNumber":
     case "accountNumber":
-      return { x: 0, y: 218, width: 600, height: 57, rx: 0 };
+      return { x: 0, y: 234, width: 700, height: 86, rx: 0 };
     default:
       return null;
   }
@@ -94,43 +97,53 @@ function CheckPreviewComponent({
   const currencySymbol = CURRENCY_SYMBOL[currency];
   const highlightRect = getHighlightRect(focusedField);
 
-  // Overflow handling: auto-shrink text if words are too long
   const wordsTextProps =
     amountInWords.length > 60
-      ? { textLength: 552, lengthAdjust: "spacingAndGlyphs" as const }
+      ? { textLength: 640, lengthAdjust: "spacingAndGlyphs" as const }
       : {};
 
   return (
     <div dir="ltr" className="w-full">
       <svg
-        viewBox="0 0 600 275"
-        style={{ width: "100%", aspectRatio: "600/275" }}
+        viewBox="0 0 700 320"
+        style={{ width: "100%", aspectRatio: "700/320" }}
         xmlns="http://www.w3.org/2000/svg"
         direction="ltr"
         aria-label="Check preview"
       >
-        {/* Paper background */}
-        <rect
-          width="600"
-          height="275"
-          rx="8"
-          fill="#faf7f2"
-          stroke="#d4c9b8"
-          strokeWidth="1"
-        />
-        {/* Inner decorative border */}
-        <rect
-          x="8"
-          y="8"
-          width="584"
-          height="259"
-          rx="4"
-          fill="none"
-          stroke="#e8dfd4"
-          strokeWidth="0.5"
-        />
+        <defs>
+          <linearGradient id="check-side-accent" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#dc2626" />
+            <stop offset="100%" stopColor="#7f1d1d" />
+          </linearGradient>
+          <clipPath id="check-body-clip">
+            <rect width="700" height="320" rx="10" />
+          </clipPath>
+        </defs>
 
-        {/* Focus highlights (rendered before content so text is on top) */}
+        {/* White card background */}
+        <rect width="700" height="320" rx="10" fill="#fff" stroke="#e5e5e5" strokeWidth="1" />
+
+        {/* Watermark circles */}
+        <g clipPath="url(#check-body-clip)">
+          <circle cx="140" cy="75" r="55" fill="#dc2626" opacity="0.10" />
+          <circle cx="110" cy="110" r="34" fill="#dc2626" opacity="0.12" />
+          <circle cx="375" cy="38" r="65" fill="#dc2626" opacity="0.08" />
+          <circle cx="560" cy="165" r="78" fill="#dc2626" opacity="0.09" />
+          <circle cx="620" cy="125" r="36" fill="#dc2626" opacity="0.11" />
+          <circle cx="235" cy="200" r="48" fill="#dc2626" opacity="0.08" />
+          <circle cx="468" cy="62" r="26" fill="#dc2626" opacity="0.13" />
+          <circle cx="70" cy="210" r="60" fill="#dc2626" opacity="0.07" />
+          <circle cx="410" cy="175" r="42" fill="#dc2626" opacity="0.09" />
+          <circle cx="655" cy="38" r="45" fill="#dc2626" opacity="0.08" />
+          <circle cx="292" cy="125" r="22" fill="#dc2626" opacity="0.14" />
+          <circle cx="515" cy="215" r="30" fill="#dc2626" opacity="0.10" />
+        </g>
+
+        {/* Left accent bar */}
+        <rect x="0" y="5" width="6" height="310" fill="url(#check-side-accent)" />
+
+        {/* Focus highlight */}
         {highlightRect && (
           <rect
             x={highlightRect.x}
@@ -143,238 +156,161 @@ function CheckPreviewComponent({
           />
         )}
 
-        {/* Bank name zone — top left */}
+        {/* Bank name — uses foreignObject for proper Arabic rendering */}
+        <foreignObject x="24" y="18" width="360" height="36">
+          <div
+            style={{
+              fontSize: "16px",
+              fontWeight: 700,
+              color: bankName ? "#111" : "#999",
+              letterSpacing: hasArabic(bankName) ? undefined : "0.3px",
+              direction: hasArabic(bankName) ? "rtl" as const : "ltr" as const,
+              textAlign: "left",
+              lineHeight: "36px",
+              whiteSpace: "nowrap",
+              fontFamily: "inherit",
+            }}
+          >
+            {bankName
+              ? hasArabic(bankName) ? bankName : bankName.toUpperCase()
+              : "BANK NAME"}
+          </div>
+        </foreignObject>
+
+        {/* Branch & account subtitle */}
         <text
-          x="24"
-          y="36"
-          fontSize="14"
-          fontWeight="700"
-          fill={bankName ? "#1a1a1a" : "#b0a898"}
+          x="32"
+          y="58"
+          fontSize="11"
+          fill={branchNumber || accountNumber ? "#333" : "#999"}
           direction="ltr"
         >
-          {bankName || "Bank Name"}
+          {branchNumber || accountNumber
+            ? `Branch ${branchNumber || "---"} · Account ${accountNumber || "---"}`
+            : "Branch --- · Account ---"}
         </text>
 
-        {/* Holder name zone — top right */}
+        {/* Holder — top right */}
         <text
-          x="576"
-          y="36"
-          fontSize="12"
-          fill={holderName ? "#1a1a1a" : "#b0a898"}
+          x="672"
+          y="38"
+          fontSize="13"
+          fill={holderName ? "#111" : "#999"}
           textAnchor="end"
           direction="ltr"
         >
           {holderName || "Holder Name"}
         </text>
 
-        {/* Date label */}
+        {/* Date — right, below holder */}
         <text
-          x="520"
-          y="56"
-          fontSize="8"
-          fill="#999"
-          letterSpacing="1"
-          direction="ltr"
-        >
-          DATE
-        </text>
-
-        {/* Date value */}
-        <text
-          x="576"
-          y="68"
-          fontSize="11"
-          fill={dueDate ? "#333" : "#b0a898"}
+          x="672"
+          y="58"
+          fontSize="12"
+          fill={dueDate ? "#222" : "#999"}
           textAnchor="end"
           direction="ltr"
         >
           {dueDate || "DD/MM/YYYY"}
         </text>
 
-        {/* Line under date */}
-        <line
-          x1="480"
-          y1="72"
-          x2="576"
-          y2="72"
-          stroke="#b0a898"
-          strokeWidth="0.5"
-        />
+        {/* Separator */}
+        <line x1="32" y1="72" x2="672" y2="72" stroke="#ddd" strokeWidth="1" />
 
-        {/* "PAY TO THE ORDER OF" label */}
+        {/* PAY TO THE ORDER OF */}
         <text
-          x="24"
-          y="90"
-          fontSize="8"
-          fill="#999"
-          letterSpacing="0.5"
+          x="32"
+          y="96"
+          fontSize="9"
+          fill="#888"
+          letterSpacing="2"
           direction="ltr"
         >
           PAY TO THE ORDER OF
         </text>
+        <line x1="32" y1="104" x2="510" y2="104" stroke="#e5e5e5" strokeWidth="0.75" />
 
-        {/* Horizontal rule below pay-to label */}
-        <line
-          x1="24"
-          y1="96"
-          x2="460"
-          y2="96"
-          stroke="#b0a898"
-          strokeWidth="0.5"
-        />
-
-        {/* Amount box */}
+        {/* Amount pill */}
         <rect
-          x="470"
-          y="78"
-          width="106"
-          height="28"
-          rx="3"
-          fill="none"
-          stroke="#1a1a1a"
-          strokeWidth="1"
+          x="526"
+          y="80"
+          width="154"
+          height="38"
+          rx="19"
+          fill="#fef2f2"
+          stroke="#fca5a5"
+          strokeWidth="0.75"
         />
-
-        {/* Currency symbol inside amount box */}
         <text
-          x="478"
-          y="97"
-          fontSize="11"
-          fill="#666"
+          x="544"
+          y="105"
+          fontSize="13"
+          fill="#dc2626"
           direction="ltr"
         >
           {currencySymbol}
         </text>
-
-        {/* Amount digits */}
         <text
-          x="570"
-          y="97"
-          fontSize="14"
+          x="670"
+          y="106"
+          fontSize="18"
           fontWeight="700"
-          fill="#1a1a1a"
+          fill="#dc2626"
           textAnchor="end"
           direction="ltr"
         >
           {amountDisplay}
         </text>
 
-        {/* Written amount (pay line) */}
+        {/* Written amount */}
         <text
-          x="24"
-          y="130"
-          fontSize="10"
-          fill={amountInWords ? "#333" : "#b0a898"}
+          x="32"
+          y="140"
+          fontSize="12"
+          fill={amountInWords ? "#333" : "#999"}
           direction="ltr"
           {...wordsTextProps}
         >
           {amountInWords || "Zero"}
         </text>
+        <line x1="32" y1="148" x2="672" y2="148" stroke="#ddd" strokeWidth="0.75" />
 
-        {/* Horizontal rule below written amount */}
-        <line
-          x1="24"
-          y1="136"
-          x2="576"
-          y2="136"
-          stroke="#b0a898"
-          strokeWidth="0.5"
-        />
-
-        {/* Memo label */}
+        {/* Memo */}
         <text
-          x="24"
-          y="170"
-          fontSize="8"
-          fill="#999"
-          letterSpacing="0.5"
+          x="32"
+          y="184"
+          fontSize="10"
+          fill="#888"
+          letterSpacing="1"
           direction="ltr"
         >
           MEMO
         </text>
-
-        {/* Memo line */}
-        <line
-          x1="24"
-          y1="176"
-          x2="340"
-          y2="176"
-          stroke="#b0a898"
-          strokeWidth="0.5"
-        />
+        <line x1="32" y1="192" x2="350" y2="192" stroke="#ddd" strokeWidth="0.75" />
 
         {/* Signature line */}
-        <line
-          x1="400"
-          y1="176"
-          x2="576"
-          y2="176"
-          stroke="#b0a898"
-          strokeWidth="0.5"
-        />
-
-        {/* Signature label */}
+        <line x1="440" y1="192" x2="672" y2="192" stroke="#ddd" strokeWidth="0.75" />
         <text
-          x="488"
-          y="188"
-          fontSize="8"
-          fill="#999"
-          direction="ltr"
+          x="556"
+          y="206"
+          fontSize="10"
+          fill="#888"
           textAnchor="middle"
+          direction="ltr"
         >
           SIGNATURE
         </text>
 
-        {/* Separator line above MICR */}
-        <line
-          x1="0"
-          y1="220"
-          x2="600"
-          y2="220"
-          stroke="#c0b8a8"
-          strokeWidth="0.5"
-        />
-
-        {/* MICR strip background */}
-        <rect
-          x="0"
-          y="220"
-          width="600"
-          height="55"
-          fill="#f0ebe2"
-        />
-
-        {/* Bottom rounded corners overlay (clips the rect to follow outer rx="8") */}
-        <rect
-          x="0"
-          y="267"
-          width="600"
-          height="8"
-          fill="#faf7f2"
-        />
-        <rect
-          x="0"
-          y="220"
-          width="8"
-          height="55"
-          fill="#faf7f2"
-        />
-        <rect
-          x="592"
-          y="220"
-          width="8"
-          height="55"
-          fill="#faf7f2"
-        />
-
-        {/* MICR strip text */}
+        {/* MICR strip */}
+        <rect x="6" y="236" width="686" height="74" fill="#fafafa" />
+        <line x1="6" y1="236" x2="692" y2="236" stroke="#eee" strokeWidth="0.5" />
         <text
-          x="24"
-          y="252"
+          x="32"
+          y="280"
           fontFamily="MICR, 'Courier New', monospace"
-          fontSize="14"
-          fill="#1a1a1a"
-          letterSpacing="3"
+          fontSize="16"
+          fill="#111"
+          letterSpacing="4"
           direction="ltr"
         >
           {micrLine}

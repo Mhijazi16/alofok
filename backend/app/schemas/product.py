@@ -3,7 +3,6 @@ from decimal import Decimal
 
 from pydantic import BaseModel, computed_field
 
-
 # ── Option schemas ────────────────────────────────────────────────────────────
 
 

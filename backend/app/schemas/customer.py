@@ -32,7 +32,9 @@ def _parse_day(v: str) -> AssignedDay:
     for alias, day in _DAY_ALIASES.items():
         if alias[:3] == low[:3]:
             return day
-    raise ValueError(f"Invalid day: {v!r}. Expected one of: {', '.join(d.value for d in AssignedDay)}")
+    raise ValueError(
+        f"Invalid day: {v!r}. Expected one of: {', '.join(d.value for d in AssignedDay)}"
+    )
 
 
 class CustomerOut(BaseModel):
