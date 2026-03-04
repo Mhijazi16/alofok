@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Check Enhancement
 status: completed
-stopped_at: Completed 09-02-PLAN.md — CheckCapture component and PaymentFlow integration
-last_updated: "2026-03-04T16:00:10.181Z"
+stopped_at: Completed 09-04-PLAN.md — CheckPhotoThumbnail in all role views
+last_updated: "2026-03-04T16:03:30.505Z"
 last_activity: 2026-03-04 — 09-01 complete (check image upload endpoint, imageCompression.ts, checkImageQueue.ts, syncQueue VERSION 2)
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 70
 ---
 
@@ -50,6 +50,7 @@ Progress: [███████░░░] 70%
 
 *Updated after each plan completion*
 | Phase 09 P03 | 269 | 2 tasks | 4 files |
+| Phase 09 P04 | 92 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 09-02]: Image upload failure on online path is non-fatal — payment submits without image_url rather than blocking user
 - [Phase 09-02]: pending_image_id stripped from payload before createPayment — server schema does not accept that field
 - [Phase 09-02]: IndexedDB blob cleaned immediately after successful upload during flush, not on payment success (avoids orphaned blobs)
+- [Phase 09]: stopPropagation on thumbnail click prevents card-level navigation from firing when tapping photo
+- [Phase 09]: Customer StatementView uses typeof cast for image_url — CustomerTransaction.data is Record<string,unknown>
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T16:00:02.080Z
-Stopped at: Completed 09-02-PLAN.md — CheckCapture component and PaymentFlow integration
+Last session: 2026-03-04T16:03:30.504Z
+Stopped at: Completed 09-04-PLAN.md — CheckPhotoThumbnail in all role views
 Resume with: /gsd:execute-phase 09 (Phase 9: Image Capture + OCR — continue next plan)
