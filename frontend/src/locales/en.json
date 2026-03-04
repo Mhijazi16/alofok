@@ -24,7 +24,8 @@
     "customers": "Customers",
     "products": "Products",
     "settings": "Settings",
-    "addProduct": "Add Product"
+    "addProduct": "Add Product",
+    "checks": "Checks"
   },
   "customer": {
     "balance": "Balance",
@@ -404,6 +405,31 @@
   },
   "filter": {
     "all": "All"
+  },
+  "checks": {
+    "title": "Check Management",
+    "filterAll": "All",
+    "filterPending": "Pending",
+    "filterDeposited": "Deposited",
+    "filterReturned": "Returned",
+    "deposit": "Deposit",
+    "return": "Return",
+    "depositSuccess": "Check marked as deposited",
+    "returnSuccess": "Check returned and balance updated",
+    "depositConfirmTitle": "Deposit Check",
+    "depositConfirmDesc": "Mark this check as deposited?",
+    "returnConfirmTitle": "Return Check",
+    "returnConfirmDesc": "This will re-debit {{amount}} {{currency}} to {{customer}}'s balance.",
+    "returnNotesPlaceholder": "Reason for return (optional)",
+    "confirmReturn": "Confirm Return",
+    "noChecks": "No checks found",
+    "bank": "Bank",
+    "dueDate": "Due Date",
+    "status": {
+      "Pending": "Pending",
+      "Deposited": "Deposited",
+      "Returned": "Returned"
+    }
   },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",

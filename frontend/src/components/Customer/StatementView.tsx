@@ -163,6 +163,19 @@ export function CustomerStatementView() {
                       <Badge variant="outline" size="sm">
                         {tx.currency}
                       </Badge>
+                      {tx.type === "Payment_Check" && tx.status && (
+                        <Badge
+                          variant={
+                            tx.status === "Pending" ? "warning"
+                            : tx.status === "Deposited" ? "success"
+                            : tx.status === "Returned" ? "destructive"
+                            : "outline"
+                          }
+                          size="sm"
+                        >
+                          {t(`checks.status.${tx.status}`, tx.status)}
+                        </Badge>
+                      )}
                       {tx.is_draft && (
                         <Badge variant="warning" size="sm">
                           {t("portal.draft")}

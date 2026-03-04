@@ -162,6 +162,19 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
                       <Badge variant="outline" size="sm">
                         {tx.currency}
                       </Badge>
+                      {tx.type === "Payment_Check" && tx.status && (
+                        <Badge
+                          variant={
+                            tx.status === "Pending" ? "warning"
+                            : tx.status === "Deposited" ? "success"
+                            : tx.status === "Returned" ? "destructive"
+                            : "outline"
+                          }
+                          size="sm"
+                        >
+                          {t(`checks.status.${tx.status}`, tx.status)}
+                        </Badge>
+                      )}
                       <span className="text-caption text-muted-foreground">
                         {formatTime(tx.created_at)}
                       </span>
