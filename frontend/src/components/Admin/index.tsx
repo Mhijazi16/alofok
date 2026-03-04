@@ -8,6 +8,7 @@ import {
   LogOut,
   Globe,
   Package,
+  FileCheck2,
 } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
@@ -28,6 +29,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 
 import { Overview } from "./Overview";
+import { AdminChecksView } from "./AdminChecksView";
 import { SalesStats } from "./SalesStats";
 import { DebtStats } from "./DebtStats";
 import { ProductList } from "@/components/Designer/ProductList";
@@ -45,6 +47,7 @@ import { syncQueue } from "@/lib/syncQueue";
 
 type AdminView =
   | "overview" | "sales" | "debt"
+  | "checks"
   | "customers" | "addCustomer" | "customerDetail" | "editCustomer"
   | "order" | "payment" | "statement"
   | "products" | "addProduct"
@@ -152,6 +155,7 @@ export default function AdminPanel() {
   const navItems = [
     { icon: LayoutDashboard, label: t("nav.overview"), value: "overview" },
     { icon: Package, label: t("nav.products"), value: "products" },
+    { icon: FileCheck2, label: t("nav.checks"), value: "checks" },
     { icon: Users, label: t("nav.customers"), value: "customers" },
     { icon: User, label: t("profile.title"), value: "profile" },
   ];
@@ -173,6 +177,8 @@ export default function AdminPanel() {
         return <SalesStats />;
       case "debt":
         return <DebtStats />;
+      case "checks":
+        return <AdminChecksView />;
       case "customers":
         return (
           <AllCustomersView
@@ -349,7 +355,7 @@ export default function AdminPanel() {
     }
   };
 
-  const isMainView = ["overview", "customers", "products", "addProduct", "profile"].includes(activeView);
+  const isMainView = ["overview", "customers", "products", "addProduct", "checks", "profile"].includes(activeView);
 
   const bottomNavActiveValue =
     activeView === "sales" || activeView === "debt" ? "overview"

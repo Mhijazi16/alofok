@@ -1,0 +1,223 @@
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Banknote, RotateCcw } from "lucide-react";
+import { adminApi, type CheckOut } from "@/services/adminApi";
+import { TopBar } from "@/components/ui/top-bar";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/useToast";
+
+type StatusFilter = "Pending" | "Deposited" | "Returned" | "all";
+
+const checkStatusVariant = (status: string | null) => {
+  if (status === "Pending") return "warning" as const;
+  if (status === "Deposited") return "success" as const;
+  if (status === "Returned") return "destructive" as const;
+  return "outline" as const;
+};
+
+export function AdminChecksView() {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("Pending");
+  const [selectedCheck, setSelectedCheck] = useState<CheckOut | null>(null);
+  const [depositDialogOpen, setDepositDialogOpen] = useState(false);
+  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+  const [returnNotes, setReturnNotes] = useState("");
+
+  const { data: checks = [], isLoading } = useQuery({
+    queryKey: ["admin-checks", statusFilter],
+    queryFn: () =>
+      adminApi.getChecks(statusFilter === "all" ? undefined : statusFilter),
+  });
+
+  const depositMutation = useMutation({
+    mutationFn: (checkId: string) => adminApi.depositCheck(checkId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
+      toast({ title: t("checks.depositSuccess"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const returnMutation = useMutation({
+    mutationFn: ({ checkId, notes }: { checkId: string; notes?: string }) =>
+      adminApi.returnCheck(checkId, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
+      toast({ title: t("checks.returnSuccess"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  return (
+    <div className="animate-fade-in">
+      <TopBar title={t("checks.title")} />
+
+      <div className="space-y-4 p-4">
+        {/* Status filter pills */}
+        <Tabs
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+        >
+          <TabsList variant="pills" className="w-full justify-between">
+            <TabsTrigger value="Pending">{t("checks.filterPending")}</TabsTrigger>
+            <TabsTrigger value="Deposited">{t("checks.filterDeposited")}</TabsTrigger>
+            <TabsTrigger value="Returned">{t("checks.filterReturned")}</TabsTrigger>
+            <TabsTrigger value="all">{t("checks.filterAll")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Check list */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} variant="text" className="h-28" />
+            ))}
+          </div>
+        ) : checks.length === 0 ? (
+          <EmptyState preset="no-data" title={t("checks.noChecks")} />
+        ) : (
+          <div className="space-y-3">
+            {checks.map((check) => (
+              <Card key={check.id} variant="glass">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-body-sm font-semibold text-foreground truncate">
+                      {check.customer_name}
+                    </p>
+                    <Badge variant={checkStatusVariant(check.status)} size="sm">
+                      {check.status
+                        ? t(`checks.status.${check.status}`, check.status)
+                        : "—"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 text-caption text-muted-foreground flex-wrap">
+                    <span className="font-medium text-foreground">
+                      {Math.abs(check.amount).toFixed(2)} {check.currency}
+                    </span>
+                    {check.data?.bank && <span>· {check.data.bank}</span>}
+                    {check.data?.due_date && <span>· {check.data.due_date}</span>}
+                  </div>
+                  {/* Action buttons — hidden (not disabled) for invalid transitions */}
+                  <div className="flex items-center gap-2">
+                    {check.status === "Pending" && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCheck(check);
+                          setDepositDialogOpen(true);
+                        }}
+                      >
+                        <Banknote className="h-3.5 w-3.5" />
+                        {t("checks.deposit")}
+                      </Button>
+                    )}
+                    {(check.status === "Pending" || check.status === "Deposited") && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setSelectedCheck(check);
+                          setReturnNotes("");
+                          setReturnDialogOpen(true);
+                        }}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        {t("checks.return")}
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Deposit confirmation dialog */}
+      <ConfirmationDialog
+        open={depositDialogOpen}
+        onOpenChange={setDepositDialogOpen}
+        title={t("checks.depositConfirmTitle")}
+        description={t("checks.depositConfirmDesc")}
+        confirmLabel={t("checks.deposit")}
+        cancelLabel={t("actions.cancel")}
+        isLoading={depositMutation.isPending}
+        onConfirm={() => {
+          if (selectedCheck) {
+            depositMutation.mutate(selectedCheck.id);
+          }
+          setDepositDialogOpen(false);
+        }}
+      />
+
+      {/* Return dialog with optional notes */}
+      <Dialog open={returnDialogOpen} onOpenChange={setReturnDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("checks.returnConfirmTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("checks.returnConfirmDesc", {
+                amount: selectedCheck
+                  ? Math.abs(selectedCheck.amount).toFixed(2)
+                  : "",
+                currency: selectedCheck?.currency ?? "",
+                customer: selectedCheck?.customer_name ?? "",
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder={t("checks.returnNotesPlaceholder")}
+            value={returnNotes}
+            onChange={(e) => setReturnNotes(e.target.value)}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setReturnDialogOpen(false)}
+            >
+              {t("actions.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (selectedCheck) {
+                  returnMutation.mutate({
+                    checkId: selectedCheck.id,
+                    notes: returnNotes || undefined,
+                  });
+                }
+                setReturnDialogOpen(false);
+              }}
+              isLoading={returnMutation.isPending}
+            >
+              {t("checks.confirmReturn")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

@@ -1,5 +1,5 @@
 import api from "./api";
-import type { Customer, CustomerCreate } from "./salesApi";
+import type { Customer, CustomerCreate, CheckData } from "./salesApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -50,6 +50,20 @@ export interface AdminCustomerCreate extends CustomerCreate {
   assigned_to: string;
 }
 
+export interface CheckOut {
+  id: string;
+  customer_id: string;
+  customer_name: string;
+  type: string;
+  currency: string;
+  amount: number;
+  status: string | null;
+  notes: string | null;
+  data: CheckData | null;
+  created_at: string;
+  related_transaction_id: string | null;
+}
+
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
 export const adminApi = {
@@ -93,4 +107,17 @@ export const adminApi = {
 
   updateCustomer: (id: string, body: Partial<AdminCustomerCreate>) =>
     api.put<Customer>(`/admin/customers/${id}`, body).then((r) => r.data),
+
+  getChecks: (status?: "Pending" | "Deposited" | "Returned") =>
+    api
+      .get<CheckOut[]>("/admin/checks", { params: status ? { status } : {} })
+      .then((r) => r.data),
+
+  depositCheck: (checkId: string) =>
+    api.put<CheckOut>(`/payments/checks/${checkId}/deposit`).then((r) => r.data),
+
+  returnCheck: (checkId: string, notes?: string) =>
+    api
+      .put<CheckOut>(`/payments/checks/${checkId}/return`, { notes: notes || null })
+      .then((r) => r.data),
 };
