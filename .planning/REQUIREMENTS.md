@@ -30,8 +30,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **LCY-01**: Admin can mark a Pending check as Deposited
 - [x] **LCY-02**: Admin can mark a Pending or Deposited check as Returned (creates Check_Return debit transaction)
 - [x] **LCY-03**: Backend enforces valid transitions only (rejects invalid ones with 409)
-- [ ] **LCY-04**: Invalid transition buttons are disabled/hidden in the UI
-- [ ] **LCY-05**: Check status is visible in customer statement and admin views
+- [x] **LCY-04**: Invalid transition buttons are disabled/hidden in the UI
+- [x] **LCY-05**: Check status is visible in customer statement and admin views
 
 ### Check Image
 
@@ -97,8 +97,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LCY-01 | Phase 8 | Complete |
 | LCY-02 | Phase 8 | Complete |
 | LCY-03 | Phase 8 | Complete |
-| LCY-04 | Phase 8 | Pending |
-| LCY-05 | Phase 8 | Pending |
+| LCY-04 | Phase 8 | Complete |
+| LCY-05 | Phase 8 | Complete |
 | IMG-01 | Phase 9 | Pending |
 | IMG-02 | Phase 9 | Pending |
 | IMG-03 | Phase 9 | Pending |

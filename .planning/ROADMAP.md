@@ -20,7 +20,7 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
 
 - [x] **Phase 6: Check Data Foundation** - Expand check schema to full typed model, extend the payment form with bank/branch/account/holder fields (completed 2026-03-04)
 - [x] **Phase 7: SVG Check Preview** - Live LTR bank check preview that mirrors a real check and updates as the user types (completed 2026-03-04)
-- [ ] **Phase 8: Check Lifecycle Management** - Admin can advance checks from Pending to Deposited or Returned with server-enforced state transitions
+- [x] **Phase 8: Check Lifecycle Management** - Admin can advance checks from Pending to Deposited or Returned with server-enforced state transitions (completed 2026-03-04)
 - [ ] **Phase 9: Image Capture and OCR** - Camera/gallery capture with offline-safe upload, plus optional OCR auto-fill from check photos
 
 ## Phase Details
@@ -84,5 +84,5 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
 |-------|-----------|----------------|--------|-----------|
 | 6. Check Data Foundation | 2/2 | Complete   | 2026-03-04 | - |
 | 7. SVG Check Preview | 2/2 | Complete   | 2026-03-04 | - |
-| 8. Check Lifecycle Management | 1/2 | In Progress|  | - |
+| 8. Check Lifecycle Management | 2/2 | Complete   | 2026-03-04 | - |
 | 9. Image Capture and OCR | v1.1 | 0/? | Not started | - |
