@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Banknote, RotateCcw } from "lucide-react";
+import { Banknote, FileCheck2, RotateCcw } from "lucide-react";
 import { adminApi, type CheckOut } from "@/services/adminApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
 import { useToast } from "@/hooks/useToast";
 
 type StatusFilter = "Pending" | "Deposited" | "Returned" | "all";
@@ -41,6 +42,7 @@ export function AdminChecksView() {
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [returnNotes, setReturnNotes] = useState("");
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
   const { data: checks = [], isLoading } = useQuery({
     queryKey: ["admin-checks", statusFilter],
@@ -101,12 +103,23 @@ export function AdminChecksView() {
         ) : (
           <div className="space-y-3">
             {checks.map((check) => (
-              <Card key={check.id} variant="glass">
+              <Card
+                key={check.id}
+                variant="glass"
+                className="cursor-pointer"
+                onClick={() => {
+                  setSelectedCheck(check);
+                  setDetailDialogOpen(true);
+                }}
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-body-sm font-semibold text-foreground truncate">
-                      {check.customer_name}
-                    </p>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileCheck2 className="h-4 w-4 text-primary shrink-0" />
+                      <p className="text-body-sm font-semibold text-foreground truncate">
+                        {check.customer_name}
+                      </p>
+                    </div>
                     <Badge variant={checkStatusVariant(check.status)} size="sm">
                       {check.status
                         ? t(`checks.status.${check.status}`, check.status)
@@ -125,7 +138,8 @@ export function AdminChecksView() {
                     {check.status === "Pending" && (
                       <Button
                         size="sm"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedCheck(check);
                           setDepositDialogOpen(true);
                         }}
@@ -138,7 +152,8 @@ export function AdminChecksView() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedCheck(check);
                           setReturnNotes("");
                           setReturnDialogOpen(true);
@@ -218,6 +233,22 @@ export function AdminChecksView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CheckDetailDialog
+        check={selectedCheck}
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        onDeposit={(id) => {
+          depositMutation.mutate(id);
+          setDetailDialogOpen(false);
+        }}
+        onReturn={(id) => {
+          setDetailDialogOpen(false);
+          setSelectedCheck(checks.find((c) => c.id === id) ?? null);
+          setReturnNotes("");
+          setReturnDialogOpen(true);
+        }}
+      />
     </div>
   );
 }
