@@ -275,4 +275,12 @@ export const salesApi = {
         `/customers/${customerId}/returned-checks`
       )
       .then((r) => r.data),
+
+  uploadCheckImage: (file: File | Blob) => {
+    const form = new FormData();
+    form.append("file", file, "check.jpg");
+    return api
+      .post<{ url: string }>("/payments/checks/upload-image", form)
+      .then((r) => r.data);
+  },
 };

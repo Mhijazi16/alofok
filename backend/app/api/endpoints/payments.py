@@ -1,6 +1,8 @@
+import os
 import uuid
 
-from fastapi import APIRouter
+import aiofiles
+from fastapi import APIRouter, File, UploadFile
 from pydantic import BaseModel
 
 from app.api.deps import CurrentUser, PaymentSvc, require_admin, require_sales
@@ -8,9 +10,28 @@ from app.schemas.transaction import PaymentCreate, TransactionOut
 
 router = APIRouter()
 
+CHECKS_UPLOAD_DIR = "static/checks"
+
 
 class ReturnCheckBody(BaseModel):
     notes: str | None = None
+
+
+@router.post(
+    "/checks/upload-image",
+    response_model=dict,
+    status_code=201,
+    dependencies=[require_sales],
+)
+async def upload_check_image(file: UploadFile = File(...)) -> dict:
+    os.makedirs(CHECKS_UPLOAD_DIR, exist_ok=True)
+    ext = os.path.splitext(file.filename or "")[1] or ".jpg"
+    filename = f"{uuid.uuid4()}{ext}"
+    path = os.path.join(CHECKS_UPLOAD_DIR, filename)
+    async with aiofiles.open(path, "wb") as f:
+        content = await file.read()
+        await f.write(content)
+    return {"url": f"/static/checks/{filename}"}
 
 
 @router.post(
