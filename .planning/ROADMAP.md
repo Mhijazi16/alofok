@@ -61,7 +61,9 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
   3. Invalid transition buttons (e.g., depositing a Returned check) are absent or disabled in the UI
   4. The backend rejects an invalid transition request with a 409 response even if sent directly
   5. Check status (Pending / Deposited / Returned) is visible in the customer statement view and admin check list
-**Plans**: TBD
+**Plans**: 2 plans
+  - [ ] 08-01-PLAN.md -- Backend: deposit_check service method, return_check notes parameter, RBAC endpoints, CheckOut schema, admin check list endpoint
+  - [ ] 08-02-PLAN.md -- Frontend: AdminChecksView component with filter pills and deposit/return dialogs, AdminPanel integration, StatementView status badges, locale keys
 
 ### Phase 9: Image Capture and OCR
 **Goal**: User can photograph or upload a check image that is stored against the payment, and optionally trigger OCR to pre-fill form fields
@@ -82,5 +84,5 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
 |-------|-----------|----------------|--------|-----------|
 | 6. Check Data Foundation | 2/2 | Complete   | 2026-03-04 | - |
 | 7. SVG Check Preview | 2/2 | Complete   | 2026-03-04 | - |
-| 8. Check Lifecycle Management | v1.1 | 0/? | Not started | - |
+| 8. Check Lifecycle Management | v1.1 | 0/2 | Planned | - |
 | 9. Image Capture and OCR | v1.1 | 0/? | Not started | - |
