@@ -47,13 +47,30 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 
 <!-- Current scope. Building toward these. -->
 
-(Pending — new milestone will define)
+- [ ] Enhanced check data capture (bank/branch/account numbers, holder name)
+- [ ] Live realistic check SVG preview (LTR layout, updates as user types)
+- [ ] Check lifecycle management UI (Pending → Deposited → Cleared / Returned)
+- [ ] Check image capture (camera/upload, wire up image_url)
+- [ ] OCR auto-fill from check photo
 
 ### Out of Scope
 
 <!-- Explicit boundaries. -->
 
-(To be determined with new milestone)
+- Capacitor mobile wrapper — defer to future milestone
+- Notification system — not related to check enhancement
+- Check batching/reconciliation — beyond current needs
+
+## Current Milestone: v1.1 Check Enhancement
+
+**Goal:** Transform the basic check payment form into a rich, realistic check capture experience with full lifecycle management and OCR.
+
+**Target features:**
+- Enhanced check form with bank/branch/account numbers and holder name
+- Live SVG check preview that mirrors a real bank check
+- Full check status lifecycle UI (Pending → Deposited → Cleared / Returned)
+- Check photo capture with image storage
+- OCR auto-fill from check photos
 
 ## Context
 
@@ -65,6 +82,8 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 - All 22 original PRD features shipped and functional
 - Customer portal added post-PRD with separate auth
 - Delivery date routing and bonus orders added post-PRD
+- Current check data in JSONB: {bank, due_date, image_url} — needs expansion
+- Check status enum exists (Pending/Deposited/Returned/Cleared) but only Return has UI
 
 ## Constraints
 
@@ -83,5 +102,8 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 | Server-authoritative sync | Avoids complex conflict resolution | ✓ Good |
 | delivery_date on Transaction | Decouple delivery scheduling from order creation | ✓ Good |
 
+| Check data in JSONB column | Flexible schema, easy to extend without migrations | ✓ Good |
+| LTR check layout | Standard check format, universal numerals | — Pending |
+
 ---
-*Last updated: 2026-03-04 after v1.0 bootstrap*
+*Last updated: 2026-03-04 after milestone v1.1 started*
