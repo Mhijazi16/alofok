@@ -78,7 +78,7 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
   6. If OCR fails or is unavailable, the form remains fully usable and shows a clear error state
 **Plans**: 4 plans
 Plans:
-- [ ] 09-01-PLAN.md -- Backend upload endpoint, IndexedDB V2 upgrade, checkImageQueue, imageCompression, salesApi upload
+- [x] 09-01-PLAN.md -- Backend upload endpoint, IndexedDB V2 upgrade, checkImageQueue, imageCompression, salesApi upload
 - [ ] 09-02-PLAN.md -- CheckCapture component with camera/gallery, PaymentFlow integration, offline blob queueing
 - [ ] 09-03-PLAN.md -- useOcr hook (Tesseract.js), OCR field extraction, confidence borders, error handling
 - [ ] 09-04-PLAN.md -- CheckPhotoThumbnail component, photo display in Admin/Sales/Customer views
@@ -90,4 +90,4 @@ Plans:
 | 6. Check Data Foundation | 2/2 | Complete   | 2026-03-04 | - |
 | 7. SVG Check Preview | 2/2 | Complete   | 2026-03-04 | - |
 | 8. Check Lifecycle Management | 2/2 | Complete   | 2026-03-04 | - |
-| 9. Image Capture and OCR | v1.1 | 0/4 | Not started | - |
+| 9. Image Capture and OCR | v1.1 | 1/4 | In progress | - |
