@@ -31,8 +31,21 @@ class PaymentService:
             raise HorizonException(400, "type must be Payment_Cash or Payment_Check")
         if body.amount <= 0:
             raise HorizonException(400, "amount must be positive")
-        if body.type in _CHECK_TYPES and not body.data:
-            raise HorizonException(400, "Check payments require data (bank, due_date)")
+        if body.type in _CHECK_TYPES:
+            if not body.data:
+                raise HorizonException(400, "Check payments require check data")
+            if not body.data.bank_number:
+                raise HorizonException(
+                    400, "bank_number is required for check payments"
+                )
+            if not body.data.branch_number:
+                raise HorizonException(
+                    400, "branch_number is required for check payments"
+                )
+            if not body.data.account_number:
+                raise HorizonException(
+                    400, "account_number is required for check payments"
+                )
 
         customer = await self._customers.get_by_id(body.customer_id)
         if customer is None:
@@ -45,7 +58,7 @@ class PaymentService:
             currency=body.currency,
             amount=-abs(body.amount),  # negative — reduces customer debt
             status=TransactionStatus.Pending if body.type in _CHECK_TYPES else None,
-            data=body.data,
+            data=body.data.model_dump(exclude_none=True) if body.data else None,
             notes=body.notes,
         )
         customer.balance -= abs(body.amount)
