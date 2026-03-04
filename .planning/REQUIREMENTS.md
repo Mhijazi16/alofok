@@ -35,10 +35,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Check Image
 
-- [ ] **IMG-01**: User can take a photo of a check using device camera
-- [ ] **IMG-02**: User can select a check photo from device gallery
+- [x] **IMG-01**: User can take a photo of a check using device camera
+- [x] **IMG-02**: User can select a check photo from device gallery
 - [x] **IMG-03**: Check photo is uploaded to server and URL stored with check data
-- [ ] **IMG-04**: Check photo works across iOS, Android Chrome, and desktop browsers
+- [x] **IMG-04**: Check photo works across iOS, Android Chrome, and desktop browsers
 - [x] **IMG-05**: Offline check payments queue the image separately (no base64 bloat in sync queue)
 
 ### OCR
@@ -99,10 +99,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LCY-03 | Phase 8 | Complete |
 | LCY-04 | Phase 8 | Complete |
 | LCY-05 | Phase 8 | Complete |
-| IMG-01 | Phase 9 | Pending |
-| IMG-02 | Phase 9 | Pending |
+| IMG-01 | Phase 9 | Complete |
+| IMG-02 | Phase 9 | Complete |
 | IMG-03 | Phase 9 | Complete (09-01) |
-| IMG-04 | Phase 9 | Pending |
+| IMG-04 | Phase 9 | Complete |
 | IMG-05 | Phase 9 | Complete (09-01) |
 | OCR-01 | Phase 9 | Complete |
 | OCR-02 | Phase 9 | Complete |

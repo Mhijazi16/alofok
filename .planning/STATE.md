@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Check Enhancement
 status: completed
-stopped_at: Completed 09-03-PLAN.md — OCR integration with Tesseract.js
-last_updated: "2026-03-04T15:59:47.968Z"
+stopped_at: Completed 09-02-PLAN.md — CheckCapture component and PaymentFlow integration
+last_updated: "2026-03-04T16:00:10.181Z"
 last_activity: 2026-03-04 — 09-01 complete (check image upload endpoint, imageCompression.ts, checkImageQueue.ts, syncQueue VERSION 2)
 progress:
   total_phases: 4
@@ -83,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase 09-01]: onblocked handler added to both openDB implementations for cross-tab upgrade warning
 - [Phase 09]: Lazy Tesseract worker: createWorker called on first scan, not on hook mount — avoids loading 20MB WebAssembly until user requests scan
 - [Phase 09]: onScanCheck only passed to CheckCapture when imageBlob is present — avoids confusing UI state with no photo
+- [Phase 09-02]: Image upload failure on online path is non-fatal — payment submits without image_url rather than blocking user
+- [Phase 09-02]: pending_image_id stripped from payload before createPayment — server schema does not accept that field
+- [Phase 09-02]: IndexedDB blob cleaned immediately after successful upload during flush, not on payment success (avoids orphaned blobs)
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T15:59:47.966Z
-Stopped at: Completed 09-03-PLAN.md — OCR integration with Tesseract.js
+Last session: 2026-03-04T16:00:02.080Z
+Stopped at: Completed 09-02-PLAN.md — CheckCapture component and PaymentFlow integration
 Resume with: /gsd:execute-phase 09 (Phase 9: Image Capture + OCR — continue next plan)
