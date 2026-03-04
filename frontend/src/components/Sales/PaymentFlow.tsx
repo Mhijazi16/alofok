@@ -8,6 +8,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector } from "@/store";
 import { BankAutocomplete, saveBankToHistory } from "@/components/ui/bank-autocomplete";
+import { CheckPreview } from "./CheckPreview";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -48,6 +49,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const paymentMutation = useMutation({
     mutationFn: salesApi.createPayment,
@@ -165,6 +167,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                   inputSize="lg"
                   min={0}
                   step="0.01"
+                  onFocus={() => setFocusedField("amount")}
+                  onBlur={() => setFocusedField(null)}
                 />
               </div>
 
@@ -199,6 +203,19 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
               {/* Check-specific fields */}
               {paymentType === "Payment_Check" && (
                 <div className="space-y-4 animate-fade-in">
+                  {/* Check SVG Preview — always LTR */}
+                  <CheckPreview
+                    amount={amount}
+                    currency={currency}
+                    bankName={bankName}
+                    bankNumber={bankNumber}
+                    branchNumber={branchNumber}
+                    accountNumber={accountNumber}
+                    holderName={holderName}
+                    dueDate={dueDate}
+                    focusedField={focusedField}
+                  />
+
                   <Separator label={t("payment.check")} />
 
                   <FormField label={t("payment.bank")} required>
@@ -207,6 +224,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       onChange={setBankName}
                       userId={userId}
                       placeholder={t("payment.bank")}
+                      onFocus={() => setFocusedField("bankName")}
+                      onBlur={() => setFocusedField(null)}
                     />
                   </FormField>
 
@@ -217,6 +236,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       placeholder={t("payment.bankNumber")}
                       inputMode="numeric"
                       startIcon={<Hash className="h-4 w-4" />}
+                      onFocus={() => setFocusedField("bankNumber")}
+                      onBlur={() => setFocusedField(null)}
                     />
                   </FormField>
 
@@ -227,6 +248,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       placeholder={t("payment.branchNumber")}
                       inputMode="numeric"
                       startIcon={<Hash className="h-4 w-4" />}
+                      onFocus={() => setFocusedField("branchNumber")}
+                      onBlur={() => setFocusedField(null)}
                     />
                   </FormField>
 
@@ -237,6 +260,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       placeholder={t("payment.accountNumber")}
                       inputMode="numeric"
                       startIcon={<Hash className="h-4 w-4" />}
+                      onFocus={() => setFocusedField("accountNumber")}
+                      onBlur={() => setFocusedField(null)}
                     />
                   </FormField>
 
@@ -246,6 +271,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       onChange={(e) => setHolderName(e.target.value)}
                       placeholder={t("payment.holderName")}
                       startIcon={<User className="h-4 w-4" />}
+                      onFocus={() => setFocusedField("holderName")}
+                      onBlur={() => setFocusedField(null)}
                     />
                   </FormField>
 
@@ -257,6 +284,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       startIcon={
                         <CalendarDays className="h-4 w-4" />
                       }
+                      onFocus={() => setFocusedField("dueDate")}
+                      onBlur={() => setFocusedField(null)}
                     />
                   </FormField>
                 </div>
