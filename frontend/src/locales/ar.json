@@ -142,6 +142,10 @@
     "paymentQueued": "تم حفظ الدفعة وسيتم إرسالها عند الاتصال",
     "confirmPayment": "تأكيد الدفع",
     "paymentSummary": "ملخص الدفعة",
+    "bankNumber": "رقم البنك",
+    "branchNumber": "رقم الفرع",
+    "accountNumber": "رقم الحساب",
+    "holderName": "اسم صاحب الشيك",
     "currencies": {
       "ILS": "شيكل",
       "USD": "دولار",

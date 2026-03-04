@@ -142,6 +142,10 @@
     "paymentQueued": "Payment saved and will sync when online",
     "confirmPayment": "Confirm Payment",
     "paymentSummary": "Payment Summary",
+    "bankNumber": "Bank Number",
+    "branchNumber": "Branch Number",
+    "accountNumber": "Account Number",
+    "holderName": "Holder Name",
     "currencies": {
       "ILS": "ILS",
       "USD": "USD",

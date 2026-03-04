@@ -426,8 +426,8 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
               ) : (
                 <div className="space-y-2">
                   {orders.map((order, idx) => {
-                    const itemCount = order.data?.items
-                      ? (order.data.items as unknown[]).length
+                    const itemCount = (order.data as any)?.items
+                      ? ((order.data as any).items as unknown[]).length
                       : 0;
 
                     const isDelivered = !!(order as any).delivered_date;
@@ -566,8 +566,8 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                 ) : (
                   <div className="space-y-2">
                     {bonusOrders && bonusOrders.map((order, idx) => {
-                      const itemCount = order.data?.items
-                        ? (order.data.items as unknown[]).length
+                      const itemCount = (order.data as any)?.items
+                        ? ((order.data as any).items as unknown[]).length
                         : 0;
 
                       const isDelivered = !!(order as any).delivered_date;

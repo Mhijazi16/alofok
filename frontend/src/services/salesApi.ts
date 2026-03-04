@@ -93,7 +93,7 @@ export interface Transaction {
   amount: number;
   status: string | null;
   notes: string | null;
-  data: Record<string, unknown> | null;
+  data: CheckData | null;
   created_at: string;
   related_transaction_id: string | null;
   delivery_date: string | null;
@@ -142,17 +142,23 @@ export interface OrderCreate {
   delivery_date?: string | null;
 }
 
+export interface CheckData {
+  bank?: string;
+  bank_number?: string;
+  branch_number?: string;
+  account_number?: string;
+  holder_name?: string;
+  due_date?: string;
+  image_url?: string;
+}
+
 export interface PaymentCreate {
   customer_id: string;
   type: "Payment_Cash" | "Payment_Check";
   currency: "ILS" | "USD" | "JOD";
   amount: number;
   notes?: string;
-  data?: {
-    bank?: string;
-    due_date?: string;
-    image_url?: string;
-  };
+  data?: CheckData;
 }
 
 // ── Endpoints ─────────────────────────────────────────────────────────────────
