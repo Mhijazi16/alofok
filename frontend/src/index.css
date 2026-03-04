@@ -16,7 +16,64 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light Mode (default) ── */
   :root {
+    /* Background scale */
+    --background: 0 0% 100%;
+    --background-subtle: 0 0% 97%;
+    --foreground: 0 0% 4%;
+
+    /* Card surfaces */
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 4%;
+    --card-hover: 0 0% 95%;
+
+    /* Primary: Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 217 91% 50%;
+
+    /* Secondary */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 0 0% 25%;
+
+    /* Muted */
+    --muted: 220 14% 96%;
+    --muted-foreground: 0 0% 40%;
+
+    /* Accent */
+    --accent: 220 14% 96%;
+    --accent-foreground: 0 0% 10%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Focus */
+    --border: 220 13% 91%;
+    --border-hover: 220 13% 80%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+
+    /* Semantic */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    /* Glass */
+    --glass-bg: 0 0% 100% / 0.7;
+    --glass-border: 0 0% 0% / 0.08;
+    --glass-blur: 12px;
+  }
+
+  /* ── Dark Mode ── */
+  .dark {
     /* Background scale */
     --background: 0 0% 4%;
     --background-subtle: 0 0% 7%;
@@ -62,9 +119,6 @@
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    /* Radius */
-    --radius: 0.75rem;
-
     /* Glass */
     --glass-bg: 0 0% 6% / 0.7;
     --glass-border: 0 0% 100% / 0.08;
@@ -89,11 +143,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(0 0% 25%);
+    background: hsl(var(--border-hover));
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(0 0% 35%);
+    background: hsl(var(--muted-foreground));
   }
 
   /* Focus visible for accessibility */
@@ -114,35 +168,35 @@
   .glass-strong {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    background: hsl(0 0% 6% / 0.85);
-    border: 1px solid hsl(0 0% 100% / 0.1);
+    background: hsl(var(--background) / 0.85);
+    border: 1px solid hsl(var(--glass-border));
   }
 
   /* Gradients */
   .gradient-header {
-    background: linear-gradient(135deg, hsl(0 72% 51% / 0.15), hsl(0 0% 4%) 60%);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--background)) 60%);
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(0 72% 51%), hsl(0 72% 40%));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));
   }
 
   .gradient-surface {
-    background: linear-gradient(180deg, hsl(0 0% 10%), hsl(0 0% 6%));
+    background: linear-gradient(180deg, hsl(var(--card-hover)), hsl(var(--card)));
   }
 
   .gradient-glow {
-    background: radial-gradient(ellipse at 50% 0%, hsl(0 72% 51% / 0.12) 0%, transparent 60%);
+    background: radial-gradient(ellipse at 50% 0%, hsl(var(--primary) / 0.12) 0%, transparent 60%);
   }
 
   .gradient-card {
-    background: linear-gradient(145deg, hsl(0 0% 10%), hsl(0 0% 7%));
+    background: linear-gradient(145deg, hsl(var(--card-hover)), hsl(var(--background-subtle)));
   }
 
   /* Text gradients */
   .text-gradient-primary {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(0 72% 60%), hsl(0 72% 45%));
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));
   }
 
   /* Safe area */
@@ -156,10 +210,10 @@
   /* Glass fallback for older browsers */
   @supports not (backdrop-filter: blur(12px)) {
     .glass {
-      background: hsl(0 0% 8% / 0.95);
+      background: hsl(var(--card) / 0.95);
     }
     .glass-strong {
-      background: hsl(0 0% 6% / 0.98);
+      background: hsl(var(--background) / 0.98);
     }
   }
 
@@ -174,11 +228,11 @@
 
   /* Glow effects */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(0 72% 51% / 0.15), 0 0 40px hsl(0 72% 51% / 0.05);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.15), 0 0 40px hsl(var(--primary) / 0.05);
   }
 
   .glow-sm {
-    box-shadow: 0 0 10px hsl(0 72% 51% / 0.1);
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.1);
   }
 
   /* Toast progress bar shrink */

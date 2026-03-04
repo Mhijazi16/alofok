@@ -4,6 +4,7 @@ import { useAppSelector } from "@/store";
 import { FullPageSpinner } from "@/components/ui/spinner";
 import { ErrorBoundary } from "@/components/patterns/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
+import { useTheme } from "@/hooks/useTheme";
 import LoginPage from "@/pages/LoginPage";
 
 const SalesRoot = lazy(() => import("@/components/Sales"));
@@ -33,6 +34,7 @@ function RoleRouter() {
 }
 
 export default function App() {
+  useTheme(); // Initialize theme from localStorage on mount
   return (
     <ErrorBoundary>
       <BrowserRouter>

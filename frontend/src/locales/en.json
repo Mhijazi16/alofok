@@ -337,6 +337,9 @@
     "language": "Language",
     "arabic": "العربية",
     "english": "English",
+    "theme": "Theme",
+    "darkMode": "Dark",
+    "lightMode": "Light",
     "version": "Version"
   },
   "portal": {

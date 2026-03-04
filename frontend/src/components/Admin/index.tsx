@@ -9,6 +9,8 @@ import {
   Globe,
   Package,
   FileCheck2,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
@@ -18,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useTheme } from "@/hooks/useTheme";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -159,6 +162,8 @@ export default function AdminPanel() {
     { icon: Users, label: t("nav.customers"), value: "customers" },
     { icon: User, label: t("profile.title"), value: "profile" },
   ];
+
+  const { isDark, toggleTheme } = useTheme();
 
   const toggleLanguage = () => {
     const next = i18n.language === "ar" ? "en" : "ar";
@@ -319,6 +324,19 @@ export default function AdminPanel() {
                       {i18n.language === "ar"
                         ? t("profile.english")
                         : t("profile.arabic")}
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  {/* Theme toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                      <span className="text-body-sm">{t("profile.theme")}</span>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={toggleTheme}>
+                      {isDark ? t("profile.lightMode") : t("profile.darkMode")}
                     </Button>
                   </div>
 

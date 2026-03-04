@@ -9,6 +9,8 @@ import {
   Globe,
   LogOut,
   Info,
+  Sun,
+  Moon,
   ShoppingCart,
   Plus,
   Minus,
@@ -23,6 +25,7 @@ import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useTheme } from "@/hooks/useTheme";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatCard } from "@/components/ui/stat-card";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -518,6 +521,8 @@ export default function SalesRoot() {
     setView("productDetail");
   }, [view]);
 
+  const { isDark, toggleTheme } = useTheme();
+
   const toggleLanguage = () => {
     const next = i18n.language === "ar" ? "en" : "ar";
     i18n.changeLanguage(next);
@@ -649,6 +654,27 @@ export default function SalesRoot() {
                       {i18n.language === "ar"
                         ? t("profile.arabic")
                         : t("profile.english")}
+                    </Badge>
+                  </button>
+
+                  <Separator />
+
+                  {/* Theme toggle */}
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="flex w-full items-center gap-3 rounded-xl p-3 transition-colors hover:bg-accent"
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-warning/15">
+                      {isDark ? <Moon className="h-4 w-4 text-warning" /> : <Sun className="h-4 w-4 text-warning" />}
+                    </div>
+                    <div className="flex-1 text-start">
+                      <p className="text-body-sm font-medium text-foreground">
+                        {t("profile.theme")}
+                      </p>
+                    </div>
+                    <Badge variant="outline" size="sm">
+                      {isDark ? t("profile.darkMode") : t("profile.lightMode")}
                     </Badge>
                   </button>
 
