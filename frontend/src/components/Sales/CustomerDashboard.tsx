@@ -207,18 +207,18 @@ export function CustomerDashboard({
         {(customer.returned_checks_count ?? 0) > 0 && (
           <Card
             variant="glass"
-            className="border-destructive/30 bg-destructive/5 cursor-pointer animate-slide-up"
+            className="border-warning/30 bg-warning/5 cursor-pointer animate-slide-up"
             onClick={() => {
               setReturnedCheckIdx(0);
               setReturnedCheckDialogOpen(true);
             }}
           >
             <CardContent className="flex items-center gap-3 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/15">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/15">
+                <AlertTriangle className="h-5 w-5 text-warning" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-body-sm font-semibold text-destructive">
+                <p className="text-body-sm font-semibold text-warning">
                   {t("checkDetail.returnedWarning", {
                     count: customer.returned_checks_count,
                   })}

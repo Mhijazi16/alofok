@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, Banknote, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Banknote, RotateCcw, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ export function CheckDetailDialog({
 }: CheckDetailDialogProps) {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const [zoomed, setZoomed] = useState(false);
 
   if (!check) return null;
 
@@ -65,8 +67,11 @@ export function CheckDetailDialog({
           </div>
         </DialogHeader>
 
-        {/* SVG Check Preview */}
-        <div className="rounded-lg border border-border/50 overflow-hidden">
+        {/* SVG Check Preview — click to zoom */}
+        <div
+          className="rounded-lg border border-border/50 overflow-hidden cursor-zoom-in"
+          onClick={() => setZoomed(true)}
+        >
           <CheckPreview
             amount={Math.abs(check.amount).toString()}
             currency={(check.currency as "ILS" | "USD" | "JOD") ?? "ILS"}
@@ -78,6 +83,33 @@ export function CheckDetailDialog({
             dueDate={data?.due_date ?? ""}
           />
         </div>
+
+        {/* Fullscreen zoom overlay */}
+        {zoomed && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm cursor-zoom-out"
+            onClick={() => setZoomed(false)}
+          >
+            <button
+              className="absolute top-4 end-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+              onClick={() => setZoomed(false)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="w-[95vw] max-w-3xl">
+              <CheckPreview
+                amount={Math.abs(check.amount).toString()}
+                currency={(check.currency as "ILS" | "USD" | "JOD") ?? "ILS"}
+                bankName={data?.bank ?? ""}
+                bankNumber={data?.bank_number ?? ""}
+                branchNumber={data?.branch_number ?? ""}
+                accountNumber={data?.account_number ?? ""}
+                holderName={data?.holder_name ?? ""}
+                dueDate={data?.due_date ?? ""}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Info Grid */}
         <div className="grid grid-cols-2 gap-3 text-body-sm">
