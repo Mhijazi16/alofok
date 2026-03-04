@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Banknote, CalendarDays, Hash, StickyNote, User } from "lucide-react";
 import { salesApi, type Customer, type PaymentCreate } from "@/services/salesApi";
 import { syncQueue } from "@/lib/syncQueue";
+import { checkImageQueue } from "@/lib/checkImageQueue";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector } from "@/store";
 import { BankAutocomplete, saveBankToHistory } from "@/components/ui/bank-autocomplete";
 import { CheckPreview } from "./CheckPreview";
+import { CheckCapture } from "./CheckCapture";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -51,6 +53,22 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  // Image capture state
+  const [imageBlob, setImageBlob] = useState<Blob | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  // OCR state
+  const { scan, isScanning, error: ocrError } = useOcr();
+  const [ocrConfidence, setOcrConfidence] = useState<Record<string, OcrConfidenceLevel | null>>({});
+
+  // Revoke object URL on unmount or when preview URL changes
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    };
+  }, [imagePreviewUrl]);
+
   const paymentMutation = useMutation({
     mutationFn: salesApi.createPayment,
     onSuccess: () => {
@@ -86,32 +104,87 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
     { value: "JOD", label: t("payment.currencies.JOD"), symbol: "د.أ" },
   ];
 
+  function handleCapture(blob: Blob, previewUrl: string) {
+    // Revoke previous preview URL if any
+    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    setImageBlob(blob);
+    setImagePreviewUrl(previewUrl);
+    setImageUrl(null); // Clear any previously uploaded server URL
+  }
+
+  function handleRemovePhoto() {
+    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    setImageBlob(null);
+    setImagePreviewUrl(null);
+    setImageUrl(null);
+  }
+
   const handleSubmit = async () => {
     if (paymentType === "Payment_Check" && bankName.trim()) {
       saveBankToHistory(bankName.trim(), userId);
     }
 
-    const payload: PaymentCreate = {
-      customer_id: customer.id,
-      type: paymentType,
-      currency,
-      amount: parsedAmount,
-      notes: notes.trim() || undefined,
-      ...(paymentType === "Payment_Check" && {
-        data: {
+    const checkData = paymentType === "Payment_Check"
+      ? {
           bank: bankName.trim(),
           bank_number: bankNumber.trim(),
           branch_number: branchNumber.trim(),
           account_number: accountNumber.trim(),
           holder_name: holderName.trim() || undefined,
           due_date: dueDate || undefined,
-        },
-      }),
-    };
+        }
+      : undefined;
 
     if (isOnline) {
+      // Online path: upload image first if present, then create payment
+      let resolvedImageUrl: string | undefined;
+      if (imageBlob) {
+        try {
+          const { url } = await salesApi.uploadCheckImage(imageBlob);
+          resolvedImageUrl = url;
+          setImageUrl(url);
+        } catch {
+          // Image upload failure is non-fatal — submit payment without image
+          console.warn("[PaymentFlow] Image upload failed, submitting without image_url");
+        }
+      }
+
+      const payload: PaymentCreate = {
+        customer_id: customer.id,
+        type: paymentType,
+        currency,
+        amount: parsedAmount,
+        notes: notes.trim() || undefined,
+        ...(checkData && {
+          data: {
+            ...checkData,
+            image_url: resolvedImageUrl,
+          },
+        }),
+      };
+
       paymentMutation.mutate(payload);
     } else {
+      // Offline path: store image blob in IndexedDB if present
+      let pendingImageId: number | undefined;
+      if (imageBlob) {
+        try {
+          pendingImageId = await checkImageQueue.pushImage(imageBlob);
+        } catch {
+          console.warn("[PaymentFlow] Failed to store image in IndexedDB, queuing without image");
+        }
+      }
+
+      const payload: PaymentCreate & { pending_image_id?: number } = {
+        customer_id: customer.id,
+        type: paymentType,
+        currency,
+        amount: parsedAmount,
+        notes: notes.trim() || undefined,
+        ...(checkData && { data: checkData }),
+        ...(pendingImageId !== undefined && { pending_image_id: pendingImageId }),
+      };
+
       await syncQueue.push("payment", payload);
       toast({ title: t("payment.paymentQueued"), variant: "success" });
       onDone();
@@ -204,6 +277,14 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
               {/* Check-specific fields */}
               {paymentType === "Payment_Check" && (
                 <div className="space-y-4 animate-fade-in">
+                  {/* Photo capture — above CheckPreview */}
+                  <CheckCapture
+                    imageBlob={imageBlob}
+                    imagePreviewUrl={imagePreviewUrl}
+                    onCapture={handleCapture}
+                    onRemove={handleRemovePhoto}
+                  />
+
                   {/* Check SVG Preview — always LTR */}
                   <CheckPreview
                     amount={amount}
@@ -385,6 +466,16 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                         </span>
                         <span className="text-body font-medium text-foreground">
                           {new Date(dueDate).toLocaleDateString("en-US")}
+                        </span>
+                      </div>
+                    )}
+                    {paymentType === "Payment_Check" && (imageBlob || imageUrl) && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-body-sm text-muted-foreground">
+                          {t("payment.checkImage")}
+                        </span>
+                        <span className="text-body-sm text-success font-medium">
+                          {imageUrl ? t("capture.checkPhoto") : t("capture.uploadPending")}
                         </span>
                       </div>
                     )}
