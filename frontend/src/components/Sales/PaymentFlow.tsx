@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Banknote, Building2, CalendarDays, StickyNote } from "lucide-react";
+import { Banknote, CalendarDays, Hash, StickyNote, User } from "lucide-react";
 import { salesApi, type Customer, type PaymentCreate } from "@/services/salesApi";
 import { syncQueue } from "@/lib/syncQueue";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
+import { useAppSelector } from "@/store";
+import { BankAutocomplete, saveBankToHistory } from "@/components/ui/bank-autocomplete";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -33,10 +35,16 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const userId = useAppSelector((state) => state.auth.userId) ?? "";
+
   const [paymentType, setPaymentType] = useState<PaymentType>("Payment_Cash");
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<Currency>("ILS");
   const [bankName, setBankName] = useState("");
+  const [bankNumber, setBankNumber] = useState("");
+  const [branchNumber, setBranchNumber] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [holderName, setHolderName] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -58,7 +66,11 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   const parsedAmount = parseFloat(amount) || 0;
   const isValid =
     parsedAmount > 0 &&
-    (paymentType === "Payment_Cash" || bankName.trim().length > 0);
+    (paymentType === "Payment_Cash" ||
+      (bankName.trim().length > 0 &&
+       bankNumber.trim().length > 0 &&
+       branchNumber.trim().length > 0 &&
+       accountNumber.trim().length > 0));
 
   const formatCurrency = (val: number) =>
     val.toLocaleString(i18n.language === "ar" ? "ar-SA" : "en-US", {
@@ -73,6 +85,10 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   ];
 
   const handleSubmit = async () => {
+    if (paymentType === "Payment_Check" && bankName.trim()) {
+      saveBankToHistory(bankName.trim(), userId);
+    }
+
     const payload: PaymentCreate = {
       customer_id: customer.id,
       type: paymentType,
@@ -82,6 +98,10 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
       ...(paymentType === "Payment_Check" && {
         data: {
           bank: bankName.trim(),
+          bank_number: bankNumber.trim(),
+          branch_number: branchNumber.trim(),
+          account_number: accountNumber.trim(),
+          holder_name: holderName.trim() || undefined,
           due_date: dueDate || undefined,
         },
       }),
@@ -181,22 +201,51 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                 <div className="space-y-4 animate-fade-in">
                   <Separator label={t("payment.check")} />
 
-                  <FormField
-                    label={t("payment.bank")}
-                    required
-                    error={
-                      paymentType === "Payment_Check" && !bankName.trim()
-                        ? undefined
-                        : undefined
-                    }
-                  >
-                    <Input
+                  <FormField label={t("payment.bank")} required>
+                    <BankAutocomplete
                       value={bankName}
-                      onChange={(e) => setBankName(e.target.value)}
+                      onChange={setBankName}
+                      userId={userId}
                       placeholder={t("payment.bank")}
-                      startIcon={
-                        <Building2 className="h-4 w-4" />
-                      }
+                    />
+                  </FormField>
+
+                  <FormField label={t("payment.bankNumber")} required>
+                    <Input
+                      value={bankNumber}
+                      onChange={(e) => setBankNumber(e.target.value)}
+                      placeholder={t("payment.bankNumber")}
+                      inputMode="numeric"
+                      startIcon={<Hash className="h-4 w-4" />}
+                    />
+                  </FormField>
+
+                  <FormField label={t("payment.branchNumber")} required>
+                    <Input
+                      value={branchNumber}
+                      onChange={(e) => setBranchNumber(e.target.value)}
+                      placeholder={t("payment.branchNumber")}
+                      inputMode="numeric"
+                      startIcon={<Hash className="h-4 w-4" />}
+                    />
+                  </FormField>
+
+                  <FormField label={t("payment.accountNumber")} required>
+                    <Input
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      placeholder={t("payment.accountNumber")}
+                      inputMode="numeric"
+                      startIcon={<Hash className="h-4 w-4" />}
+                    />
+                  </FormField>
+
+                  <FormField label={t("payment.holderName")}>
+                    <Input
+                      value={holderName}
+                      onChange={(e) => setHolderName(e.target.value)}
+                      placeholder={t("payment.holderName")}
+                      startIcon={<User className="h-4 w-4" />}
                     />
                   </FormField>
 
@@ -270,6 +319,30 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                         <span className="text-body font-medium text-foreground">
                           {bankName}
                         </span>
+                      </div>
+                    )}
+                    {paymentType === "Payment_Check" && bankNumber.trim() && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-body-sm text-muted-foreground">{t("payment.bankNumber")}</span>
+                        <span className="text-body font-medium text-foreground">{bankNumber}</span>
+                      </div>
+                    )}
+                    {paymentType === "Payment_Check" && branchNumber.trim() && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-body-sm text-muted-foreground">{t("payment.branchNumber")}</span>
+                        <span className="text-body font-medium text-foreground">{branchNumber}</span>
+                      </div>
+                    )}
+                    {paymentType === "Payment_Check" && accountNumber.trim() && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-body-sm text-muted-foreground">{t("payment.accountNumber")}</span>
+                        <span className="text-body font-medium text-foreground">{accountNumber}</span>
+                      </div>
+                    )}
+                    {paymentType === "Payment_Check" && holderName.trim() && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-body-sm text-muted-foreground">{t("payment.holderName")}</span>
+                        <span className="text-body font-medium text-foreground">{holderName}</span>
                       </div>
                     )}
                     {paymentType === "Payment_Check" && dueDate && (

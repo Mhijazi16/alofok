@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { clearBankHistory } from "@/components/ui/bank-autocomplete";
 
 export type UserRole = "Admin" | "Designer" | "Sales" | "Customer";
 
@@ -50,6 +51,7 @@ const authSlice = createSlice({
       localStorage.setItem(TOKEN_KEY, action.payload.token);
     },
     logout(state) {
+      clearBankHistory(state.userId ?? "");
       state.token = null;
       state.userId = null;
       state.role = null;
