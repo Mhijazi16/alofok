@@ -66,8 +66,20 @@ class PaymentService:
         txn = await self._transactions.create(txn)
         return TransactionOut.model_validate(txn)
 
-    async def return_check(
+    async def deposit_check(
         self, transaction_id: uuid.UUID, creator_id: uuid.UUID
+    ) -> TransactionOut:
+        check_txn = await self._transactions.get_by_id(transaction_id)
+        if check_txn is None or check_txn.type != TransactionType.Payment_Check:
+            raise HorizonException(404, "Check transaction not found")
+        if check_txn.status != TransactionStatus.Pending:
+            raise HorizonException(409, "Only Pending checks can be deposited")
+        check_txn.status = TransactionStatus.Deposited
+        check_txn = await self._transactions.update(check_txn)
+        return TransactionOut.model_validate(check_txn)
+
+    async def return_check(
+        self, transaction_id: uuid.UUID, creator_id: uuid.UUID, notes: str | None = None
     ) -> TransactionOut:
         check_txn = await self._transactions.get_by_id(transaction_id)
         if check_txn is None or check_txn.type != TransactionType.Payment_Check:
@@ -85,7 +97,7 @@ class PaymentService:
             currency=check_txn.currency,
             amount=original_amount,  # positive — re-debits customer
             related_transaction_id=check_txn.id,
-            notes=f"Returned check #{check_txn.id}",
+            notes=notes or f"Returned check #{check_txn.id}",
         )
 
         customer = await self._customers.get_by_id(check_txn.customer_id)
