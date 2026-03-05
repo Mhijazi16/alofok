@@ -72,6 +72,7 @@ class PaymentCreate(BaseModel):
     type: TransactionType  # Payment_Cash or Payment_Check
     currency: Currency
     amount: Decimal  # positive — will be stored as negative (payment)
+    exchange_rate: Decimal | None = None  # required when currency != ILS
     notes: str | None = None
     # Check-only fields
     data: CheckData | None = None

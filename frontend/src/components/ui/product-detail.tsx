@@ -1,5 +1,8 @@
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ChevronLeft,
+  ChevronRight,
   Package,
   Star,
   Tag,
@@ -9,7 +12,7 @@ import {
   Settings2,
 } from "lucide-react";
 import type { Product } from "@/services/salesApi";
-import { getCoverImage } from "@/lib/image";
+import { getImageUrl } from "@/lib/image";
 import { TopBar } from "@/components/ui/top-bar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -44,7 +47,30 @@ export function ProductDetail({ product, onBack, actions, embedded }: ProductDet
   const isAr = i18n.language === "ar";
   const name = isAr ? product.name_ar : product.name_en;
   const description = isAr ? product.description_ar : product.description_en;
-  const coverUrl = getCoverImage(product);
+
+  const images = (product.image_urls ?? [])
+    .map((u) => getImageUrl(u))
+    .filter((u): u is string => u !== null);
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null || images.length <= 1) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    // Swipe threshold 50px; flip direction for RTL
+    const rtl = isAr;
+    if (Math.abs(diff) > 50) {
+      const goNext = rtl ? diff > 0 : diff < 0;
+      setActiveIdx((i) =>
+        goNext ? Math.min(i + 1, images.length - 1) : Math.max(i - 1, 0)
+      );
+    }
+    touchStartX.current = null;
+  }
 
   const stockColor =
     (product.stock_qty ?? 0) > 10
@@ -62,14 +88,66 @@ export function ProductDetail({ product, onBack, actions, embedded }: ProductDet
         />
       )}
 
-      {/* Hero image */}
-      <div className={cn("relative w-full overflow-hidden bg-muted", embedded ? "aspect-video" : "aspect-square")}>
-        {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={name}
-            className="h-full w-full object-cover"
-          />
+      {/* Image gallery */}
+      <div
+        className={cn("relative w-full overflow-hidden bg-muted", embedded ? "aspect-video" : "aspect-square")}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {images.length > 0 ? (
+          <>
+            <img
+              src={images[activeIdx]}
+              alt={`${name} ${activeIdx + 1}`}
+              className="h-full w-full object-cover transition-opacity duration-200"
+              key={activeIdx}
+            />
+
+            {/* Prev / Next arrows (desktop & multi-image) */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveIdx((i) => Math.max(i - 1, 0))}
+                  disabled={activeIdx === 0}
+                  className="absolute start-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white backdrop-blur-sm transition-opacity disabled:opacity-0"
+                >
+                  <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
+                </button>
+                <button
+                  onClick={() => setActiveIdx((i) => Math.min(i + 1, images.length - 1))}
+                  disabled={activeIdx === images.length - 1}
+                  className="absolute end-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white backdrop-blur-sm transition-opacity disabled:opacity-0"
+                >
+                  <ChevronRight className="h-5 w-5 rtl:rotate-180" />
+                </button>
+              </>
+            )}
+
+            {/* Dot indicators */}
+            {images.length > 1 && (
+              <div className="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveIdx(idx)}
+                    className={cn(
+                      "h-2 rounded-full transition-all",
+                      idx === activeIdx
+                        ? "w-5 bg-white"
+                        : "w-2 bg-white/50"
+                    )}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Counter badge */}
+            {images.length > 1 && (
+              <div className="absolute end-3 top-3 rounded-full bg-black/50 px-2.5 py-0.5 text-caption text-white backdrop-blur-sm">
+                {activeIdx + 1}/{images.length}
+              </div>
+            )}
+          </>
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <Package className="h-20 w-20 text-muted-foreground/20" />

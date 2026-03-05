@@ -153,6 +153,9 @@
     "branchNumber": "رقم الفرع",
     "accountNumber": "رقم الحساب",
     "holderName": "اسم صاحب الشيك",
+    "exchangeRate": "سعر الصرف",
+    "rateToILS": "{{symbol}} ← ₪ (شيكل)",
+    "ilsEquivalent": "المعادل بالشيكل",
     "currencies": {
       "ILS": "شيكل",
       "USD": "دولار",

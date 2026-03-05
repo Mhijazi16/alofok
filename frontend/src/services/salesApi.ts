@@ -161,6 +161,7 @@ export interface PaymentCreate {
   type: "Payment_Cash" | "Payment_Check";
   currency: "ILS" | "USD" | "JOD";
   amount: number;
+  exchange_rate?: number;
   notes?: string;
   data?: CheckData;
 }

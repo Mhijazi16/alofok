@@ -2,7 +2,10 @@ import uuid
 from decimal import Decimal
 
 from app.core.errors import HorizonException
+from decimal import Decimal
+
 from app.models.transaction import (
+    Currency,
     Transaction,
     TransactionStatus,
     TransactionType,
@@ -48,21 +51,39 @@ class PaymentService:
                     400, "account_number is required for check payments"
                 )
 
+        # Validate exchange rate for foreign currencies
+        if body.currency != Currency.ILS:
+            if not body.exchange_rate or body.exchange_rate <= 0:
+                raise HorizonException(
+                    400, "exchange_rate is required for non-ILS currencies"
+                )
+
         customer = await self._customers.get_by_id(body.customer_id)
         if customer is None:
             raise HorizonException(404, "Customer not found")
+
+        # Compute ILS equivalent for balance update
+        if body.currency != Currency.ILS and body.exchange_rate:
+            ils_amount = abs(body.amount) * body.exchange_rate
+        else:
+            ils_amount = abs(body.amount)
+
+        # Store exchange rate in data JSONB
+        data_dict = body.data.model_dump(exclude_none=True) if body.data else {}
+        if body.exchange_rate:
+            data_dict["exchange_rate"] = float(body.exchange_rate)
 
         txn = Transaction(
             customer_id=body.customer_id,
             created_by=creator_id,
             type=body.type,
             currency=body.currency,
-            amount=-abs(body.amount),  # negative — reduces customer debt
+            amount=-ils_amount,  # negative ILS equivalent — reduces customer debt
             status=TransactionStatus.Pending if body.type in _CHECK_TYPES else None,
-            data=body.data.model_dump(exclude_none=True) if body.data else None,
+            data=data_dict or None,
             notes=body.notes,
         )
-        customer.balance -= abs(body.amount)
+        customer.balance -= ils_amount
         await self._customers.update_balance(customer)
         txn = await self._transactions.create(txn)
         return TransactionOut.model_validate(txn)

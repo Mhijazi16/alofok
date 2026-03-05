@@ -153,6 +153,9 @@
     "branchNumber": "Branch Number",
     "accountNumber": "Account Number",
     "holderName": "Holder Name",
+    "exchangeRate": "Exchange Rate",
+    "rateToILS": "{{symbol}} → ₪ (ILS)",
+    "ilsEquivalent": "ILS Equivalent",
     "currencies": {
       "ILS": "ILS",
       "USD": "USD",

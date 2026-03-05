@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Banknote, CalendarDays, Hash, StickyNote, User } from "lucide-react";
+import { ArrowLeftRight, Banknote, CalendarDays, Hash, StickyNote, User } from "lucide-react";
 import { salesApi, type Customer, type PaymentCreate } from "@/services/salesApi";
 import { syncQueue } from "@/lib/syncQueue";
 import { checkImageQueue } from "@/lib/checkImageQueue";
@@ -32,6 +32,12 @@ interface PaymentFlowProps {
 type PaymentType = "Payment_Cash" | "Payment_Check";
 type Currency = "ILS" | "USD" | "JOD";
 
+const DEFAULT_EXCHANGE_RATES: Record<Currency, number> = {
+  ILS: 1,
+  USD: 3.65,
+  JOD: 5.15,
+};
+
 export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   const { t, i18n } = useTranslation();
   const { isOnline } = useOfflineSync();
@@ -43,6 +49,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   const [paymentType, setPaymentType] = useState<PaymentType>("Payment_Cash");
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<Currency>("ILS");
+  const [exchangeRate, setExchangeRate] = useState("");
   const [bankName, setBankName] = useState("");
   const [bankNumber, setBankNumber] = useState("");
   const [branchNumber, setBranchNumber] = useState("");
@@ -80,8 +87,12 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   });
 
   const parsedAmount = parseFloat(amount) || 0;
+  const parsedRate = parseFloat(exchangeRate) || 0;
+  const ilsEquivalent = currency !== "ILS" && parsedRate > 0 ? parsedAmount * parsedRate : parsedAmount;
+
   const isValid =
     parsedAmount > 0 &&
+    (currency === "ILS" || parsedRate > 0) &&
     (paymentType === "Payment_Cash" ||
       (bankName.trim().length > 0 &&
        bankNumber.trim().length > 0 &&
@@ -99,6 +110,15 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
     { value: "USD", label: t("payment.currencies.USD"), symbol: "$" },
     { value: "JOD", label: t("payment.currencies.JOD"), symbol: "د.أ" },
   ];
+
+  function handleCurrencyChange(c: Currency) {
+    setCurrency(c);
+    if (c !== "ILS") {
+      setExchangeRate(DEFAULT_EXCHANGE_RATES[c].toString());
+    } else {
+      setExchangeRate("");
+    }
+  }
 
   function handleCapture(blob: Blob, previewUrl: string) {
     // Revoke previous preview URL if any
@@ -150,6 +170,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
         type: paymentType,
         currency,
         amount: parsedAmount,
+        ...(currency !== "ILS" && { exchange_rate: parsedRate }),
         notes: notes.trim() || undefined,
         ...(checkData && {
           data: {
@@ -176,6 +197,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
         type: paymentType,
         currency,
         amount: parsedAmount,
+        ...(currency !== "ILS" && { exchange_rate: parsedRate }),
         notes: notes.trim() || undefined,
         ...(checkData && { data: checkData }),
         ...(pendingImageId !== undefined && { pending_image_id: pendingImageId }),
@@ -261,7 +283,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                         currency === c.value &&
                           "border-primary bg-primary/5 ring-1 ring-primary"
                       )}
-                      onClick={() => setCurrency(c.value)}
+                      onClick={() => handleCurrencyChange(c.value)}
                     >
                       <span className="text-h3 font-bold text-foreground">
                         {c.symbol}
@@ -273,6 +295,43 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                   ))}
                 </div>
               </div>
+
+              {/* Exchange Rate (for USD / JOD) */}
+              {currency !== "ILS" && (
+                <div className="space-y-2 animate-fade-in">
+                  <FormField label={t("payment.exchangeRate")}>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        dir="ltr"
+                        value={exchangeRate}
+                        onChange={(e) => setExchangeRate(e.target.value)}
+                        placeholder="0.00"
+                        className="max-w-[140px]"
+                        min={0}
+                        step="0.01"
+                        startIcon={<ArrowLeftRight className="h-4 w-4" />}
+                      />
+                      <span className="text-body-sm text-muted-foreground whitespace-nowrap">
+                        {t("payment.rateToILS", {
+                          symbol: currencies.find((c) => c.value === currency)?.symbol,
+                        })}
+                      </span>
+                    </div>
+                  </FormField>
+                  {parsedAmount > 0 && parsedRate > 0 && (
+                    <div className="flex items-center justify-between rounded-lg bg-primary/5 border border-primary/20 px-3 py-2">
+                      <span className="text-body-sm text-muted-foreground">
+                        {t("payment.ilsEquivalent")}
+                      </span>
+                      <span className="text-body font-bold text-primary" dir="ltr">
+                        ₪ {formatCurrency(ilsEquivalent)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Check-specific fields */}
               {paymentType === "Payment_Check" && (
@@ -437,6 +496,26 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                         {currencies.find((c) => c.value === currency)?.label}
                       </span>
                     </div>
+                    {currency !== "ILS" && parsedRate > 0 && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-sm text-muted-foreground">
+                            {t("payment.exchangeRate")}
+                          </span>
+                          <span className="text-body font-medium text-foreground" dir="ltr">
+                            1 {currencies.find((c) => c.value === currency)?.symbol} = {parsedRate} ₪
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-sm text-muted-foreground">
+                            {t("payment.ilsEquivalent")}
+                          </span>
+                          <span className="text-body font-bold text-primary" dir="ltr">
+                            ₪ {formatCurrency(ilsEquivalent)}
+                          </span>
+                        </div>
+                      </>
+                    )}
                     {paymentType === "Payment_Check" && bankName.trim() && (
                       <div className="flex items-center justify-between">
                         <span className="text-body-sm text-muted-foreground">
@@ -507,7 +586,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                         {t("customer.balance")} ({t("actions.pay")})
                       </span>
                       <span className="text-body-sm text-success font-medium">
-                        {formatCurrency(customer.balance)} → {formatCurrency(customer.balance - parsedAmount)}
+                        {formatCurrency(customer.balance)} → {formatCurrency(customer.balance - ilsEquivalent)}
                       </span>
                     </div>
                   </CardContent>
