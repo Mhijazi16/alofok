@@ -22,10 +22,10 @@ Requirements for v1.2 Business Operations milestone. Each maps to roadmap phases
 ### Daily Cash Report
 
 - [x] **CASH-01**: Admin can view a daily cash report showing all incoming payments (cash + checks) and all outgoing expenses across all salesmen and admin
-- [ ] **CASH-02**: Admin can traverse dates (prev/next day) to view different days' reports
+- [x] **CASH-02**: Admin can traverse dates (prev/next day) to view different days' reports
 - [x] **CASH-03**: Admin can confirm receiving a salesman's daily cash handover
 - [x] **CASH-04**: Admin can flag a discrepancy in a salesman's handover with notes
-- [ ] **CASH-05**: Discrepancies (>5% difference) are visually highlighted in the report
+- [x] **CASH-05**: Discrepancies (>5% difference) are visually highlighted in the report
 
 ### Offline Caching
 
@@ -108,10 +108,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXP-04 | Phase 12 | Pending |
 | EXP-05 | Phase 12 | Pending |
 | CASH-01 | Phase 11 | Complete |
-| CASH-02 | Phase 11 | Pending |
+| CASH-02 | Phase 11 | Complete |
 | CASH-03 | Phase 11 | Complete |
 | CASH-04 | Phase 11 | Complete |
-| CASH-05 | Phase 11 | Pending |
+| CASH-05 | Phase 11 | Complete |
 | OFFL-01 | Phase 13 | Pending |
 | OFFL-02 | Phase 13 | Pending |
 | OFFL-03 | Phase 13 | Pending |

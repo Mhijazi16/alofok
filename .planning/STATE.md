@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Business Operations
 status: executing
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-03-05T14:06:42.471Z"
+stopped_at: "Completed 11-02 Tasks 1-2, awaiting checkpoint:human-verify (Task 3)"
+last_updated: "2026-03-05T14:13:20.422Z"
 last_activity: "2026-03-05 — 10-01 DB Foundation executed: indexes, Purchase enum, Expense and DailyCashConfirmation models"
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 10
 ---
 
@@ -47,6 +47,7 @@ Progress: [██░░░░░░░░] 10%
 
 *Updated after each plan completion*
 | Phase 11-daily-cash-report P01 | 18 | 2 tasks | 3 files |
+| Phase 11-daily-cash-report P02 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 10-db-foundation]: Module-level sa.Enum objects in migrations prevent DuplicateObjectError vs manual op.execute CREATE TYPE
 - [Phase 11-daily-cash-report]: LEFT JOIN from users drives cash report so all active Sales reps appear even with zero transactions/expenses
 - [Phase 11-daily-cash-report]: pg_insert upsert for confirm/flag makes both operations idempotent; confirm always resets is_flagged=False
+- [Phase 11-daily-cash-report]: DatePicker used directly in date nav bar — has internal popover, no custom wrapper needed
+- [Phase 11-daily-cash-report]: editingReps cleared on data reload so confirmed cards reset to display state after mutation success
 
 ### Pending Todos
 
@@ -75,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T14:06:42.468Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-05T14:13:20.421Z
+Stopped at: Completed 11-02 Tasks 1-2, awaiting checkpoint:human-verify (Task 3)
 Resume with: /gsd:plan-phase 10

@@ -27,7 +27,7 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
 **Milestone Goal:** Add expense tracking, daily cash reconciliation, offline catalog and route caching, customer purchase buy-back with weighted-average costing, and customer statement enhancements.
 
 - [x] **Phase 10: DB Foundation** - Performance indexes on the transactions table and new DB schema for expenses, cash reports, and purchases (completed 2026-03-05)
-- [ ] **Phase 11: Daily Cash Report** - Admin can view, navigate, and reconcile daily incoming payments and outgoing expenses across all reps
+- [x] **Phase 11: Daily Cash Report** - Admin can view, navigate, and reconcile daily incoming payments and outgoing expenses across all reps (completed 2026-03-05)
 - [ ] **Phase 12: Expense Tracking** - Sales reps log field expenses; Admin logs business expenses and confirms or flags them
 - [ ] **Phase 13: Offline Caching** - Product catalog and route data cached in IndexedDB and available when the device has no connectivity
 - [ ] **Phase 14: Purchase from Customer** - Sales rep buys products back from a customer, crediting their balance and updating inventory with weighted-average costing
@@ -58,7 +58,7 @@ Plans:
   3. Admin can confirm a salesman's cash handover for a given day, and that confirmation persists on refresh
   4. Admin can flag a discrepancy in a handover with a free-text note, and the flag is visible on the report
   5. Rep rows where the handed-over amount differs from the computed total by more than 5% are visually highlighted (distinct color or icon) without requiring any admin action
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
 - [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
@@ -128,7 +128,7 @@ Plans:
 | 8. Check Lifecycle Management | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 9. Image Capture and OCR | v1.1 | 4/4 | Complete | 2026-03-04 |
 | 10. DB Foundation | 1/1 | Complete    | 2026-03-05 | - |
-| 11. Daily Cash Report | 1/2 | In Progress|  | - |
+| 11. Daily Cash Report | 2/2 | Complete   | 2026-03-05 | - |
 | 12. Expense Tracking | v1.2 | 0/TBD | Not started | - |
 | 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
 | 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
