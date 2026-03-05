@@ -58,7 +58,10 @@ Plans:
   3. Admin can confirm a salesman's cash handover for a given day, and that confirmation persists on refresh
   4. Admin can flag a discrepancy in a handover with a free-text note, and the flag is visible on the report
   5. Rep rows where the handed-over amount differs from the computed total by more than 5% are visually highlighted (distinct color or icon) without requiring any admin action
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
+- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
 
 ### Phase 12: Expense Tracking
 **Goal**: Sales reps can record field expenses, Admin can record business expenses, and Admin can review and act on all submitted expenses
@@ -70,7 +73,10 @@ Plans:
   3. Admin can see a list of all expenses filterable by rep, date range, and status (pending / confirmed / flagged)
   4. A Sales rep can see their own submitted expenses and their current status
   5. Admin can confirm or flag any expense with an optional note, and the status updates immediately in both the admin list and the rep's view
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
+- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
 
 ### Phase 13: Offline Caching
 **Goal**: A Sales rep visiting a customer with no internet connection can still browse the full product catalog and see their assigned route and today's orders
@@ -80,7 +86,10 @@ Plans:
   1. With connectivity, the app silently caches the product catalog in IndexedDB; after switching to airplane mode, the Sales catalog still loads and shows all products
   2. With connectivity, the app caches the rep's route customers and today's orders; after switching to airplane mode, the route view loads and shows today's customers and orders
   3. Cached data displays a "last updated" timestamp so the rep knows how fresh the offline data is
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
+- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
 
 ### Phase 14: Purchase from Customer
 **Goal**: A Sales rep can record buying products back from a customer, which credits the customer's balance, increases stock, and updates the product's weighted-average purchase price
@@ -92,7 +101,10 @@ Plans:
   3. After a purchase, each purchased product's stock_qty in the catalog increases by the purchased quantity
   4. After a purchase, each product's purchase_price reflects the weighted-average of the old stock at old price and the new stock at the purchase price
   5. The purchase appears in the customer's statement as a distinct "Purchase" line item, visually differentiated from orders and payments
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
+- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
 
 ### Phase 15: Statement Enhancements
 **Goal**: Users can filter a customer statement by any custom date range and download that statement as a properly rendered Arabic PDF
@@ -102,7 +114,10 @@ Plans:
   1. User can select an arbitrary "from" and "to" date on the customer statement page and see only transactions in that range, with the running balance recalculated correctly
   2. User can click a download button and receive a PDF of the currently displayed statement
   3. The downloaded PDF renders Arabic customer names, Arabic column headers, and mixed Arabic/numeric amounts correctly in RTL layout
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
+- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
 
 ## Progress
 
