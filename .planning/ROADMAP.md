@@ -112,7 +112,7 @@ Plans:
 | 7. SVG Check Preview | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 8. Check Lifecycle Management | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 9. Image Capture and OCR | v1.1 | 4/4 | Complete | 2026-03-04 |
-| 10. DB Foundation | 1/1 | Complete   | 2026-03-05 | - |
+| 10. DB Foundation | 1/1 | Complete    | 2026-03-05 | - |
 | 11. Daily Cash Report | v1.2 | 0/TBD | Not started | - |
 | 12. Expense Tracking | v1.2 | 0/TBD | Not started | - |
 | 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
