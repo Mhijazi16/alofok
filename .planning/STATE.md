@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Business Operations
 status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-03-05T13:49:41.648Z"
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-03-05T14:06:42.471Z"
 last_activity: "2026-03-05 — 10-01 DB Foundation executed: indexes, Purchase enum, Expense and DailyCashConfirmation models"
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  total_plans: 3
+  completed_plans: 2
   percent: 10
 ---
 
@@ -46,6 +46,7 @@ Progress: [██░░░░░░░░] 10%
 | 10-db-foundation | 1 plan | 25 min | 25 min |
 
 *Updated after each plan completion*
+| Phase 11-daily-cash-report P01 | 18 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [v1.2 scope]: Phase 13 (offline caching) precedes Phase 14 (purchase) so PurchaseFlow has IndexedDB catalog available
 - [v1.2 scope]: DailyCashReport is a per-day aggregate snapshot; per-transaction confirmed state is out of scope
 - [Phase 10-db-foundation]: Module-level sa.Enum objects in migrations prevent DuplicateObjectError vs manual op.execute CREATE TYPE
+- [Phase 11-daily-cash-report]: LEFT JOIN from users drives cash report so all active Sales reps appear even with zero transactions/expenses
+- [Phase 11-daily-cash-report]: pg_insert upsert for confirm/flag makes both operations idempotent; confirm always resets is_flagged=False
 
 ### Pending Todos
 
@@ -72,6 +75,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T13:49:41.646Z
-Stopped at: Phase 11 context gathered
+Last session: 2026-03-05T14:06:42.468Z
+Stopped at: Completed 11-01-PLAN.md
 Resume with: /gsd:plan-phase 10
