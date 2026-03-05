@@ -167,8 +167,8 @@ export function DailyCashReportView() {
   return (
     <div className="space-y-5 max-w-2xl mx-auto" dir={isAr ? "rtl" : "ltr"}>
 
-      {/* Date navigation — arrows always Left=prev Right=next regardless of RTL */}
-      <div className="flex items-center justify-center gap-3">
+      {/* Date navigation */}
+      <div className="flex items-center justify-center gap-3" dir="ltr">
         <Button variant="ghost" size="sm" onClick={goToPrev} className="p-2">
           <ChevronLeft className="h-5 w-5" />
         </Button>
@@ -187,9 +187,6 @@ export function DailyCashReportView() {
           <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
-
-      {/* Localized date label */}
-      <p className="text-center text-body-sm text-muted-foreground">{formattedDate}</p>
 
       {report && report.reps.length === 0 && (
         <EmptyState preset="no-data" title={t("cash.noActivity")} className="py-12" />
