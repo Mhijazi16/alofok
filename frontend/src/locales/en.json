@@ -25,7 +25,8 @@
     "products": "Products",
     "settings": "Settings",
     "addProduct": "Add Product",
-    "checks": "Checks"
+    "checks": "Checks",
+    "finance": "Finance"
   },
   "customer": {
     "balance": "Balance",
@@ -497,6 +498,9 @@
     "undoConfirm": "Edit",
     "discrepancy": "{{pct}}% discrepancy",
     "noActivity": "No activity",
+    "incoming": "Incoming",
+    "outgoing": "Outgoing",
+    "repHandovers": "Rep Handovers",
     "statCardLabel": "Today's Cash",
     "pendingStatus": "Pending",
     "confirmedStatus": "Confirmed",

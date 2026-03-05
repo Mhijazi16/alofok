@@ -8,10 +8,11 @@ import {
   CheckCircle2,
   AlertTriangle,
   Pencil,
+  ArrowDownCircle,
+  ArrowUpCircle,
 } from "lucide-react";
 import { subDays, addDays, format } from "date-fns";
 
-import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,23 +20,19 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/useToast";
 import { adminApi } from "@/services/adminApi";
 import type { RepCashSummary } from "@/services/adminApi";
 import { toLocalDateStr } from "@/lib/utils";
 
-interface Props {
-  onBack: () => void;
-}
-
-export function DailyCashReportView({ onBack }: Props) {
+export function DailyCashReportView() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const isRTL = i18n.language === "ar";
 
   const [reportDate, setReportDate] = useState<Date>(new Date());
-  const [expandedReps, setExpandedReps] = useState<Set<string>>(new Set());
   const [handedOverInputs, setHandedOverInputs] = useState<Record<string, string>>({});
   const [flagInputs, setFlagInputs] = useState<Record<string, string>>({});
   const [flaggingRep, setFlaggingRep] = useState<string | null>(null);
@@ -53,7 +50,6 @@ export function DailyCashReportView({ onBack }: Props) {
     queryFn: () => adminApi.getDailyCashReport(dateStr),
   });
 
-  // Initialize handed-over inputs when data loads
   useEffect(() => {
     if (!report) return;
     const initial: Record<string, string> = {};
@@ -91,15 +87,6 @@ export function DailyCashReportView({ onBack }: Props) {
     },
   });
 
-  const toggleExpanded = (repId: string) => {
-    setExpandedReps((prev) => {
-      const next = new Set(prev);
-      if (next.has(repId)) next.delete(repId);
-      else next.add(repId);
-      return next;
-    });
-  };
-
   const enterEditMode = (repId: string) => {
     setEditingReps((prev) => {
       const next = new Set(prev);
@@ -120,12 +107,6 @@ export function DailyCashReportView({ onBack }: Props) {
     if (!rep.confirmation) return "pending";
     if (rep.confirmation.is_flagged) return "flagged";
     return "confirmed";
-  };
-
-  const getCardBorderClass = (rep: RepCashSummary) => {
-    if (rep.confirmation?.is_flagged) return "border-destructive ring-1 ring-destructive";
-    if (rep.confirmation && !editingReps.has(rep.rep_id)) return "border-green-500 ring-1 ring-green-500";
-    return "";
   };
 
   const handleConfirm = (rep: RepCashSummary) => {
@@ -159,32 +140,25 @@ export function DailyCashReportView({ onBack }: Props) {
 
   if (isLoading) {
     return (
-      <PageContainer>
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} variant="card" className="h-40" />
-          ))}
-        </div>
-      </PageContainer>
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} variant="card" className="h-32" />
+        ))}
+      </div>
     );
   }
 
-  return (
-    <PageContainer>
-      <div className="space-y-5 max-w-2xl mx-auto">
+  // Compute section totals
+  const totalIncoming = report ? report.grand_cash + report.grand_checks : 0;
+  const totalOutgoing = report ? report.grand_expenses : 0;
 
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={onBack} className="p-1">
-            {isRTL ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-          </Button>
-          <h1 className="text-h2 font-bold text-foreground">{t("cash.title")}</h1>
-        </div>
+  return (
+      <div className="space-y-5 max-w-2xl mx-auto">
 
         {/* Date navigation */}
         <div className="flex items-center justify-center gap-3">
           <Button variant="ghost" size="sm" onClick={goToPrev} className="p-2">
-            <ChevronLeft className="h-5 w-5" />
+            {isRTL ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
           </Button>
 
           <div className="flex-1 max-w-[220px]">
@@ -204,311 +178,312 @@ export function DailyCashReportView({ onBack }: Props) {
             disabled={isToday}
             className="p-2"
           >
-            <ChevronRight className="h-5 w-5" />
+            {isRTL ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
           </Button>
         </div>
 
-        {/* Grand totals bar */}
-        {report && (
-          <Card variant="glass">
-            <CardContent className="p-4">
-              <p className="text-body-sm font-semibold text-muted-foreground mb-3">
-                {t("cash.grandTotals")}
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-caption text-muted-foreground">{t("cash.cashPayments")}</p>
-                  <p className="text-body font-bold text-foreground tabular-nums">
-                    {formatCurrency(report.grand_cash)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-caption text-muted-foreground">{t("cash.checkPayments")}</p>
-                  <p className="text-body font-bold text-foreground tabular-nums">
-                    {formatCurrency(report.grand_checks)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-caption text-muted-foreground">{t("cash.expenses")}</p>
-                  <p className="text-body font-bold text-destructive tabular-nums">
-                    -{formatCurrency(report.grand_expenses)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-caption text-muted-foreground">{t("cash.netHandover")}</p>
-                  <p className="text-body font-bold text-primary tabular-nums">
-                    {formatCurrency(report.grand_net)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Rep cards */}
         {report && report.reps.length === 0 && (
           <EmptyState preset="no-data" title={t("cash.noActivity")} className="py-12" />
         )}
 
-        {report && report.reps.map((rep) => {
-          const status = getRepStatus(rep);
-          const borderClass = getCardBorderClass(rep);
-          const isExpanded = expandedReps.has(rep.rep_id);
-          const isInEditMode = editingReps.has(rep.rep_id);
-          const showConfirmForm = status === "pending" || isInEditMode;
-          const showFlagForm = flaggingRep === rep.rep_id;
-          const { pct, hasDiscrepancy } = getDiscrepancy(rep);
+        {report && report.reps.length > 0 && (
+          <>
+            {/* ── INCOMING SECTION ── */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <ArrowDownCircle className="h-5 w-5 text-emerald-400" />
+                <h2 className="text-body font-bold text-foreground">{t("cash.incoming")}</h2>
+                <div className="flex-1" />
+                <span className="text-body font-bold text-emerald-400 tabular-nums">
+                  {formatCurrency(totalIncoming)}
+                </span>
+              </div>
 
-          return (
-            <Card key={rep.rep_id} variant="glass" className={`transition-all ${borderClass}`}>
-              <CardContent className="p-4 space-y-4">
-
-                {/* Card header: rep name, status badge, expand toggle */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="font-semibold text-foreground truncate">{rep.rep_name}</span>
-                    <Badge
-                      variant={
-                        status === "confirmed" ? "success"
-                        : status === "flagged" ? "destructive"
-                        : "outline"
-                      }
-                      size="sm"
-                    >
-                      {status === "confirmed" && <CheckCircle2 className="h-3 w-3 me-1" />}
-                      {status === "flagged" && <Flag className="h-3 w-3 me-1" />}
-                      {status === "pending" && t("cash.pendingStatus")}
-                      {status === "confirmed" && t("cash.confirmedStatus")}
-                      {status === "flagged" && t("cash.flaggedStatus")}
-                    </Badge>
+              {/* Cash total card */}
+              <Card className="border-emerald-500/20 bg-emerald-500/5">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-body-sm text-muted-foreground">{t("cash.cashPayments")}</span>
+                    <span className="text-body-sm font-semibold text-emerald-400 tabular-nums">
+                      {formatCurrency(report.grand_cash)}
+                    </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 shrink-0"
-                    onClick={() => toggleExpanded(rep.rep_id)}
-                  >
-                    {isExpanded
-                      ? <ChevronRight className="h-4 w-4 rotate-90" />
-                      : <ChevronRight className="h-4 w-4 -rotate-90" />
-                    }
-                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Checks total card */}
+              <Card className="border-blue-500/20 bg-blue-500/5">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-body-sm text-muted-foreground">{t("cash.checkPayments")}</span>
+                    <span className="text-body-sm font-semibold text-blue-400 tabular-nums">
+                      {formatCurrency(report.grand_checks)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Separator />
+
+            {/* ── OUTGOING SECTION ── */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <ArrowUpCircle className="h-5 w-5 text-red-400" />
+                <h2 className="text-body font-bold text-foreground">{t("cash.outgoing")}</h2>
+                <div className="flex-1" />
+                <span className="text-body font-bold text-red-400 tabular-nums">
+                  {formatCurrency(totalOutgoing)}
+                </span>
+              </div>
+
+              <Card className="border-red-500/20 bg-red-500/5">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-body-sm text-muted-foreground">{t("cash.expenses")}</span>
+                    <span className="text-body-sm font-semibold text-red-400 tabular-nums">
+                      {formatCurrency(report.grand_expenses)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Separator />
+
+            {/* ── NET SUMMARY ── */}
+            <Card variant="glass">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-body font-semibold text-foreground">{t("cash.netHandover")}</span>
+                  <span className={`text-h3 font-bold tabular-nums ${report.grand_net >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                    {formatCurrency(report.grand_net)}
+                  </span>
                 </div>
-
-                {/* Totals row */}
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  <div>
-                    <p className="text-caption text-muted-foreground">{t("cash.cashPayments")}</p>
-                    <p className="text-body-sm font-semibold tabular-nums text-foreground">
-                      {formatCurrency(rep.cash_total)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-caption text-muted-foreground">{t("cash.checkPayments")}</p>
-                    <p className="text-body-sm font-semibold tabular-nums text-foreground">
-                      {formatCurrency(rep.check_total)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-caption text-muted-foreground">{t("cash.expenses")}</p>
-                    <p className="text-body-sm font-semibold tabular-nums text-destructive">
-                      -{formatCurrency(rep.expense_total)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-caption text-muted-foreground">{t("cash.netHandover")}</p>
-                    <p className="text-body-sm font-semibold tabular-nums text-primary">
-                      {formatCurrency(rep.computed_net)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Expandable section */}
-                {isExpanded && (
-                  <div className="rounded-lg bg-card/50 p-3 text-body-sm text-muted-foreground space-y-1">
-                    <p>{t("cash.payments")}: <span className="font-semibold text-foreground">{rep.payment_count}</span></p>
-                    <p>{t("cash.expensesList")}: <span className="font-semibold text-foreground">{rep.expense_count}</span></p>
-                  </div>
-                )}
-
-                {/* Confirmed display (when confirmed and not in edit mode) */}
-                {status === "confirmed" && !isInEditMode && rep.confirmation && (
-                  <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-body-sm font-semibold text-foreground">
-                          {formatCurrency(rep.confirmation.handed_over_amount)}
-                        </p>
-                        <p className="text-caption text-muted-foreground">
-                          {t("cash.confirmedAt")}{" "}
-                          {rep.confirmation.confirmed_at
-                            ? format(new Date(rep.confirmation.confirmed_at), "PPp")
-                            : "—"}
-                          {rep.confirmation.confirmer_name && (
-                            <> {t("cash.confirmedBy")} {rep.confirmation.confirmer_name}</>
-                          )}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => enterEditMode(rep.rep_id)}
-                        className="shrink-0"
-                      >
-                        <Pencil className="h-3.5 w-3.5 me-1" />
-                        {t("cash.undoConfirm")}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Flagged display */}
-                {status === "flagged" && !isInEditMode && rep.confirmation && (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5 flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <Flag className="h-3.5 w-3.5 text-destructive shrink-0" />
-                          <p className="text-body-sm font-semibold text-foreground">
-                            {formatCurrency(rep.confirmation.handed_over_amount)}
-                          </p>
-                        </div>
-                        {rep.confirmation.flag_notes && (
-                          <p className="text-caption text-muted-foreground truncate">
-                            {rep.confirmation.flag_notes}
-                          </p>
-                        )}
-                        <p className="text-caption text-muted-foreground">
-                          {t("cash.confirmedAt")}{" "}
-                          {rep.confirmation.confirmed_at
-                            ? format(new Date(rep.confirmation.confirmed_at), "PPp")
-                            : "—"}
-                          {rep.confirmation.confirmer_name && (
-                            <> {t("cash.confirmedBy")} {rep.confirmation.confirmer_name}</>
-                          )}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => enterEditMode(rep.rep_id)}
-                        className="shrink-0 ms-2"
-                      >
-                        <Pencil className="h-3.5 w-3.5 me-1" />
-                        {t("cash.undoConfirm")}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Confirmation form (pending or edit mode) */}
-                {showConfirmForm && !showFlagForm && (
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <label className="text-caption text-muted-foreground font-medium">
-                        {t("cash.handedOver")}
-                      </label>
-                      <Input
-                        type="number"
-                        value={handedOverInputs[rep.rep_id] ?? ""}
-                        onChange={(e) =>
-                          setHandedOverInputs((prev) => ({
-                            ...prev,
-                            [rep.rep_id]: e.target.value,
-                          }))
-                        }
-                        className="tabular-nums"
-                      />
-                    </div>
-
-                    {/* Discrepancy warning */}
-                    {hasDiscrepancy && (
-                      <div className="flex items-center gap-1.5 text-warning text-caption">
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                        <span>
-                          {t("cash.discrepancy", { pct: (pct * 100).toFixed(1) })}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleConfirm(rep)}
-                        isLoading={confirmMutation.isPending}
-                        disabled={confirmMutation.isPending}
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5 me-1.5" />
-                        {t("cash.confirm")}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => setFlaggingRep(rep.rep_id)}
-                        disabled={confirmMutation.isPending}
-                      >
-                        <Flag className="h-3.5 w-3.5 me-1.5" />
-                        {t("cash.flag")}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Flag notes form */}
-                {showFlagForm && (
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <label className="text-caption text-muted-foreground font-medium">
-                        {t("cash.flagNotes")}
-                      </label>
-                      <textarea
-                        value={flagInputs[rep.rep_id] ?? ""}
-                        onChange={(e) =>
-                          setFlagInputs((prev) => ({
-                            ...prev,
-                            [rep.rep_id]: e.target.value,
-                          }))
-                        }
-                        rows={3}
-                        placeholder={t("cash.flagNotesRequired")}
-                        className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleFlag(rep)}
-                        isLoading={flagMutation.isPending}
-                        disabled={
-                          flagMutation.isPending ||
-                          !(flagInputs[rep.rep_id]?.trim().length > 0)
-                        }
-                      >
-                        <Flag className="h-3.5 w-3.5 me-1.5" />
-                        {t("cash.flag")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setFlaggingRep(null)}
-                        disabled={flagMutation.isPending}
-                      >
-                        {t("actions.cancel")}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
               </CardContent>
             </Card>
-          );
-        })}
+
+            <Separator />
+
+            {/* ── PER-REP HANDOVER ── */}
+            <div className="space-y-3">
+              <h2 className="text-body font-bold text-foreground">{t("cash.repHandovers")}</h2>
+
+              {report.reps.map((rep) => {
+                const status = getRepStatus(rep);
+                const isInEditMode = editingReps.has(rep.rep_id);
+                const showConfirmForm = status === "pending" || isInEditMode;
+                const showFlagForm = flaggingRep === rep.rep_id;
+                const { pct, hasDiscrepancy } = getDiscrepancy(rep);
+
+                const borderClass =
+                  rep.confirmation?.is_flagged ? "border-red-500/40"
+                  : rep.confirmation && !isInEditMode ? "border-emerald-500/40"
+                  : "border-yellow-500/20";
+
+                return (
+                  <Card key={rep.rep_id} className={`transition-all ${borderClass}`}>
+                    <CardContent className="p-4 space-y-3">
+
+                      {/* Rep header */}
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-foreground">{rep.rep_name}</span>
+                        <Badge
+                          variant={
+                            status === "confirmed" ? "success"
+                            : status === "flagged" ? "destructive"
+                            : "outline"
+                          }
+                          size="sm"
+                        >
+                          {status === "confirmed" && <CheckCircle2 className="h-3 w-3 me-1" />}
+                          {status === "flagged" && <Flag className="h-3 w-3 me-1" />}
+                          {t(`cash.${status}Status`)}
+                        </Badge>
+                      </div>
+
+                      {/* Mini summary: 3 colored values */}
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <p className="text-caption text-muted-foreground">{t("cash.cashPayments")}</p>
+                          <p className="text-body-sm font-semibold text-emerald-400 tabular-nums">
+                            {formatCurrency(rep.cash_total)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-caption text-muted-foreground">{t("cash.checkPayments")}</p>
+                          <p className="text-body-sm font-semibold text-blue-400 tabular-nums">
+                            {formatCurrency(rep.check_total)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-caption text-muted-foreground">{t("cash.expenses")}</p>
+                          <p className="text-body-sm font-semibold text-red-400 tabular-nums">
+                            {formatCurrency(rep.expense_total)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Net for this rep */}
+                      <div className="flex items-center justify-between rounded-lg bg-card/50 px-3 py-2">
+                        <span className="text-body-sm text-muted-foreground">{t("cash.netHandover")}</span>
+                        <span className={`text-body-sm font-bold tabular-nums ${rep.computed_net >= 0 ? "text-yellow-400" : "text-red-400"}`}>
+                          {formatCurrency(rep.computed_net)}
+                        </span>
+                      </div>
+
+                      {/* Confirmed display */}
+                      {status === "confirmed" && !isInEditMode && rep.confirmation && (
+                        <div className="flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
+                          <div className="space-y-0.5">
+                            <p className="text-body-sm font-semibold text-foreground">
+                              {formatCurrency(rep.confirmation.handed_over_amount)}
+                            </p>
+                            <p className="text-caption text-muted-foreground">
+                              {rep.confirmation.confirmed_at
+                                ? format(new Date(rep.confirmation.confirmed_at), "PPp")
+                                : ""}
+                            </p>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => enterEditMode(rep.rep_id)}>
+                            <Pencil className="h-3.5 w-3.5 me-1" />
+                            {t("cash.undoConfirm")}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Flagged display */}
+                      {status === "flagged" && !isInEditMode && rep.confirmation && (
+                        <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-0.5 flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <Flag className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                                <p className="text-body-sm font-semibold text-foreground">
+                                  {formatCurrency(rep.confirmation.handed_over_amount)}
+                                </p>
+                              </div>
+                              {rep.confirmation.flag_notes && (
+                                <p className="text-caption text-muted-foreground truncate">
+                                  {rep.confirmation.flag_notes}
+                                </p>
+                              )}
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => enterEditMode(rep.rep_id)} className="shrink-0 ms-2">
+                              <Pencil className="h-3.5 w-3.5 me-1" />
+                              {t("cash.undoConfirm")}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Confirm form */}
+                      {showConfirmForm && !showFlagForm && (
+                        <div className="space-y-3">
+                          <div className="space-y-1.5">
+                            <label className="text-caption text-muted-foreground font-medium">
+                              {t("cash.handedOver")}
+                            </label>
+                            <Input
+                              type="number"
+                              value={handedOverInputs[rep.rep_id] ?? ""}
+                              onChange={(e) =>
+                                setHandedOverInputs((prev) => ({
+                                  ...prev,
+                                  [rep.rep_id]: e.target.value,
+                                }))
+                              }
+                              className="tabular-nums"
+                            />
+                          </div>
+
+                          {hasDiscrepancy && (
+                            <div className="flex items-center gap-1.5 text-yellow-400 text-caption">
+                              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                              <span>{t("cash.discrepancy", { pct: (pct * 100).toFixed(1) })}</span>
+                            </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleConfirm(rep)}
+                              isLoading={confirmMutation.isPending}
+                              disabled={confirmMutation.isPending}
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5 me-1.5" />
+                              {t("cash.confirm")}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => setFlaggingRep(rep.rep_id)}
+                              disabled={confirmMutation.isPending}
+                            >
+                              <Flag className="h-3.5 w-3.5 me-1.5" />
+                              {t("cash.flag")}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Flag notes form */}
+                      {showFlagForm && (
+                        <div className="space-y-3">
+                          <div className="space-y-1.5">
+                            <label className="text-caption text-muted-foreground font-medium">
+                              {t("cash.flagNotes")}
+                            </label>
+                            <textarea
+                              value={flagInputs[rep.rep_id] ?? ""}
+                              onChange={(e) =>
+                                setFlagInputs((prev) => ({
+                                  ...prev,
+                                  [rep.rep_id]: e.target.value,
+                                }))
+                              }
+                              rows={3}
+                              placeholder={t("cash.flagNotesRequired")}
+                              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleFlag(rep)}
+                              isLoading={flagMutation.isPending}
+                              disabled={
+                                flagMutation.isPending ||
+                                !(flagInputs[rep.rep_id]?.trim().length > 0)
+                              }
+                            >
+                              <Flag className="h-3.5 w-3.5 me-1.5" />
+                              {t("cash.flag")}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setFlaggingRep(null)}
+                              disabled={flagMutation.isPending}
+                            >
+                              {t("actions.cancel")}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </>
+        )}
 
       </div>
-    </PageContainer>
   );
 }

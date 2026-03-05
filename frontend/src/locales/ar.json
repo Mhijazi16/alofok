@@ -25,7 +25,8 @@
     "products": "المنتجات",
     "settings": "الإعدادات",
     "addProduct": "إضافة منتج",
-    "checks": "الشيكات"
+    "checks": "الشيكات",
+    "finance": "المالية"
   },
   "customer": {
     "balance": "الرصيد",
@@ -497,6 +498,9 @@
     "undoConfirm": "تعديل",
     "discrepancy": "فارق {{pct}}%",
     "noActivity": "لا نشاط",
+    "incoming": "الوارد",
+    "outgoing": "الصادر",
+    "repHandovers": "تسليم المندوبين",
     "statCardLabel": "نقدية اليوم",
     "pendingStatus": "معلّق",
     "confirmedStatus": "مؤكّد",

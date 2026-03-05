@@ -32,7 +32,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 
 import { Overview } from "./Overview";
-import { DailyCashReportView } from "./DailyCashReportView";
+import { FinanceView } from "./FinanceView";
 import { AdminChecksView } from "./AdminChecksView";
 import { SalesStats } from "./SalesStats";
 import { DebtStats } from "./DebtStats";
@@ -52,7 +52,7 @@ import { toLocalDateStr } from "@/lib/utils";
 
 type AdminView =
   | "overview" | "sales" | "debt"
-  | "checks"
+  | "checks" | "finance"
   | "customers" | "addCustomer" | "customerDetail" | "editCustomer"
   | "order" | "payment" | "statement"
   | "products" | "addProduct"
@@ -161,7 +161,7 @@ export default function AdminPanel() {
   const navItems = [
     { icon: LayoutDashboard, label: t("nav.overview"), value: "overview" },
     { icon: Package, label: t("nav.products"), value: "products" },
-    { icon: FileCheck2, label: t("nav.checks"), value: "checks" },
+    { icon: FileCheck2, label: t("nav.finance"), value: "finance" },
     { icon: Users, label: t("nav.customers"), value: "customers" },
     { icon: User, label: t("profile.title"), value: "profile" },
   ];
@@ -181,8 +181,8 @@ export default function AdminPanel() {
     switch (activeView) {
       case "overview":
         return <Overview onNavigate={(v) => setActiveView(v as AdminView)} />;
-      case "cashReport":
-        return <DailyCashReportView onBack={() => setActiveView("overview")} />;
+      case "finance":
+        return <FinanceView />;
       case "sales":
         return <SalesStats />;
       case "debt":
@@ -378,10 +378,11 @@ export default function AdminPanel() {
     }
   };
 
-  const isMainView = ["overview", "customers", "products", "addProduct", "checks", "profile"].includes(activeView);
+  const isMainView = ["overview", "customers", "products", "addProduct", "finance", "checks", "profile"].includes(activeView);
 
   const bottomNavActiveValue =
-    activeView === "sales" || activeView === "debt" || activeView === "cashReport" ? "overview"
+    activeView === "sales" || activeView === "debt" ? "overview"
+    : activeView === "checks" || activeView === "cashReport" ? "finance"
     : ["customerDetail", "addCustomer", "editCustomer", "order", "payment", "statement"].includes(activeView) ? "customers"
     : activeView === "addProduct" ? "products"
     : activeView;
