@@ -1,25 +1,25 @@
 # Feature Research
 
-**Domain:** Check payment enhancement — SVG preview, lifecycle management, OCR auto-fill
-**Researched:** 2026-03-04
-**Confidence:** HIGH (existing code fully audited) / MEDIUM (OCR behavior, verified via Tesseract.js docs + Smashing Magazine)
+**Domain:** Wholesale trading app — v1.2 Business Operations milestone
+**Researched:** 2026-03-05
+**Confidence:** HIGH (existing code audited, patterns established) / MEDIUM (PDF library tradeoffs, WAC formula integration)
 
 ---
 
 ## Context: What Already Exists
 
-The baseline before this milestone (from code audit):
-
 | What exists | Where | Notes |
 |-------------|-------|-------|
-| `Payment_Check` transaction type | `transaction.py` model | Stored in JSONB `data` col |
-| Check `data` JSONB: `{bank, due_date, image_url}` | Backend | bank = free-text name only |
-| `TransactionStatus` enum: Pending/Deposited/Returned/Cleared | Model | Only `Returned` has UI action |
-| Return check workflow | `payment_service.py` | Creates re-debit `Check_Return` txn |
-| `return_check` endpoint | `/payments/{id}/return` | Only lifecycle mutation that exists |
-| Overdue checks list | Admin `DebtStats.tsx` | Read-only table, no status mutations |
-| PaymentFlow check form | `PaymentFlow.tsx` | Bank name (text) + due date only |
-| Product image upload pattern | `products.py` | `aiofiles` + `/static/products/` — reusable |
+| Transaction model (Order, Payment_Cash, Payment_Check, Check_Return, Opening_Balance) | `transaction.py` | Signed amounts, JSONB data column |
+| Customer balance tracking | `customers.balance` column | Updated on each transaction |
+| Admin insights dashboard (sales stats, debt by city, overdue checks) | `admin_service.py` + Admin UI | Date range query, EOD Slack report |
+| EOD report via Slack webhook | `admin_service.py.trigger_eod_report` | Per-rep daily summary |
+| Customer statement (date range, since-zero toggle, running balance) | `salesApi.ts.getStatement` | `start_date`/`end_date` query params exist |
+| Offline sync queue (orders + payments) | IndexedDB + React Query | Server-authoritative, flush on reconnect |
+| Product catalog (products + stock_qty + purchase_price) | `product.py` | No purchase transaction type yet |
+| Redis cache (catalog 10min, route 5min, insights 2min) | `CacheBackend` | Invalidated on write |
+| React Query client cache | Frontend | Not persisted to IndexedDB yet |
+| `@react-pdf/renderer` — not yet installed | — | Needs adding |
 
 ---
 
@@ -27,89 +27,125 @@ The baseline before this milestone (from code audit):
 
 ### Table Stakes (Users Expect These)
 
-Features the accounting team and admin consider non-negotiable for the check workflow to be useful.
+Features that make the v1.2 scope feel complete. Missing any of these = the milestone is not done.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **Extended check data fields** (bank number, branch number, account number, holder name) | A check without these numbers is useless for reconciliation and banking. Current form only captures bank name (free text). | LOW | Backend: expand `data` JSONB keys — no migration needed (JSONB). Frontend: 4 new `FormField` inputs in `PaymentFlow.tsx`. Validation: bank number required for check payments. |
-| **Live SVG check preview** (updates as user types, LTR layout) | Mental confirmation that data is correct before submitting. Standard UX in any serious check-writing software. Users catch typos before they become accounting disputes. | MEDIUM | Pure SVG rendered in React from form state — no library needed. LTR forced regardless of app RTL via `dir="ltr"` wrapper. Dark theme compatible. Fields: holder name, amount in digits + words, bank name, bank number, branch, account, due date. Check number auto-generated (transaction ID prefix). |
-| **Check status lifecycle UI** (Pending → Deposited, Pending/Deposited → Cleared, Pending/Deposited → Returned) | All 4 status values exist in the backend enum; only `Returned` has a UI action. Admin cannot mark checks as deposited or cleared without the UI. Creates dead data. | MEDIUM | Two new backend endpoints: `PATCH /payments/{id}/deposit`, `PATCH /payments/{id}/clear`. Frontend: action buttons in Admin check table and/or check detail sheet. State machine: Pending → {Deposited, Returned}; Deposited → {Cleared, Returned}; Cleared and Returned are terminal. |
-| **Check photo capture and storage** (camera + file upload, image stored, visible in Admin) | Physical check must be photographed as legal record. Mandatory for any business that handles post-dated checks. `image_url` field already in JSONB schema but is never populated via UI. | MEDIUM | Pattern is identical to product image upload (already working: `aiofiles`, `/static/checks/`, return URL). Frontend: `<input type="file" accept="image/*" capture="environment">` in PaymentFlow check form. No new library needed. Preview thumbnail before submit. |
+| **Expense logging — Sales rep field expenses** | Reps spend money on fuel, parking, meals during route. Business needs records for reimbursement and tax. Without this, expenses are tracked on paper or not at all. | MEDIUM | New `Expense` model (not a Transaction — different semantic). Fields: amount, currency, category (enum: fuel / meals / parking / misc), date, notes, receipt_url, created_by (user), status (Pending / Confirmed / Flagged). Separate table; no customer_id (business-level). Soft delete via BaseMixin. |
+| **Expense logging — Admin business expenses** | Admin needs to record non-salesman costs (rent, supplies, bank fees). Same model as field expenses but category scope differs. | LOW | Same `Expense` model with role-based categories. Admin can create with any category. Salesman restricted to field categories only. No workflow difference — just category enum extended. |
+| **Daily cash report with date traversal** | Admin needs a consolidated view: "What did each salesman collect today, and has it been handed over?" Replaces the EOD Slack summary with an interactive UI. | MEDIUM | New Admin page. Date picker (default today). Per-rep breakdown: orders placed, cash collected, check count, total. Date traversal: prev/next day arrows. Reads from existing transaction data — no new backend model. New endpoint: `GET /admin/daily-report?date=YYYY-MM-DD`. |
+| **Payment confirmation / flagging** | Admin must be able to mark each salesman's daily cash handover as confirmed or flag a discrepancy. "Ahmed collected 2,400 ILS — confirmed received" or "Flagged: reported 2,400, received 2,200." | MEDIUM | New `CashHandover` model: date, user_id (rep), reported_amount, confirmed_amount (nullable), status (Pending / Confirmed / Flagged), admin_notes, confirmed_by (admin user_id), confirmed_at. Links to a date + rep, not individual transactions. One row per rep per day. |
+| **Offline catalog caching** | Sales reps browse catalog offline when visiting customers with no connectivity. Currently catalog is fetched fresh on load — if offline, nothing displays. | MEDIUM | Persist React Query catalog cache to IndexedDB using `@tanstack/react-query-persist-client` + `idb-keyval`. Catalog TTL in IndexedDB: 24h (longer than Redis 10min, because offline needs day-long coverage). Service worker optional — React Query persister is sufficient. Mark stale data with "last updated" badge. |
+| **Offline route data caching** | Reps need customer list + today's orders available when offline. Already have sync queue for new mutations; read-side (customer data, route) must also survive offline. | MEDIUM | Same persistence approach as catalog. Persist `my-route` and `by-day/{day}` query results to IndexedDB. TTL: 12h. On app load: serve from IndexedDB, background-refresh when online. Existing mutation sync queue (orders/payments) already handles the write side — no change needed there. |
+| **Purchase from customer (reverse order)** | Business buys goods back from customers (returns, buy-back of surplus stock). Increases inventory, reduces customer debt. Existing `Order` type only goes one direction (sale). | HIGH | New `TransactionType.Purchase` enum value. New endpoint `POST /purchases`. Service: creates positive amount transaction (like Order — increases customer balance) but also increments `product.stock_qty` and recalculates `product.purchase_price` using weighted-average cost formula. Frontend: new PurchaseFlow component in Sales, similar to order flow but labeled differently. |
+| **Weighted-average cost recalculation on purchase** | When buying back goods, the purchase price per unit changes based on blended history. Standard accounting (WAC = (existing stock cost + new purchase cost) / total units). Keeps `product.purchase_price` accurate. | MEDIUM | Formula: `new_wac = (old_stock_qty * old_purchase_price + qty_bought * buy_price) / (old_stock_qty + qty_bought)`. Applied in purchase service atomically with stock_qty update. Alembic migration not needed — `purchase_price` column already exists. |
+| **Custom date range picker in customer statements** | Existing statement API already accepts `start_date`/`end_date`. The frontend only offers presets (7d, 30d, 90d, since-zero). Users need arbitrary ranges for period-end reporting. | LOW | Replace or augment the preset buttons with a date range input (two date pickers: from / to). The `getStatement` API call already supports this — purely frontend work. Uses existing `DatePicker` UI component. |
+| **Customer statement PDF export** | Accountants and customers need printable statements. Digital scrolling is not sufficient for record-keeping or handing to a customer. | MEDIUM | Use `@react-pdf/renderer` (not jsPDF — see Anti-Features). Generate PDF client-side from statement data already in React Query cache. PDF structure: header (business name, customer name, date range), transaction table (date, type, amount, balance), closing balance. RTL text: `@react-pdf/renderer` supports RTL via `textDirection: 'rtl'` on `<Text>`. Download triggered by button in statement view. No backend change. |
 
 ### Differentiators (Competitive Advantage)
 
-Features that make this check workflow materially better than a manual paper process.
+Features that raise the quality bar above a basic business app.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **OCR auto-fill from check photo** | Reduces data entry errors. Sales rep photographs the check, fields pre-populate, rep corrects if needed. Faster workflow in the field. | HIGH | See OCR Analysis section below for approach decision. Recommended: client-side Tesseract.js v5 (no server round-trip, offline-capable), Arabic + English language packs, treat output as suggestions not authoritative values. Must be progressive — form stays usable if OCR fails or is slow. |
-| **Amount in words auto-generation** (Hebrew/Arabic/English from numeric amount) | Check preview shows amount spelled out — reduces fraud risk, looks professional. Standard on real checks. | LOW | JavaScript: `Intl.NumberFormat` does not produce written-out words. Use a small utility function or `number-to-words` npm package (1.8kB). Hebrew/Arabic word-form for amounts is complex — English fallback acceptable since the check preview is LTR / English-format. |
-| **Check number on preview** | Real checks have sequential check numbers. Audit trail. | LOW | Derive from transaction ID (first 8 chars of UUID) displayed in MICR position on preview. No separate counter needed. |
-| **Overdue check quick-action from Admin** | Admin can deposit/clear/return directly from the overdue checks table without navigating to the customer statement. | LOW | Add action dropdown to existing `DebtStats.tsx` table rows. Reuses lifecycle endpoints above. |
+| **Expense receipt photo capture** | Field reps photograph paper receipts on the spot. No lost receipts, no reimbursement disputes. Same upload pattern as check photos (already proven). | LOW | Reuse `/static/receipts/` + `aiofiles` pattern from check image upload. Frontend: `<input type="file" accept="image/*" capture="environment">` in expense form. Store `receipt_url` in `Expense.receipt_url` column. |
+| **Cash report discrepancy highlighting** | When admin confirmed amount differs from reported amount by >5%, visually flag the rep row in red. Instant audit signal without manual calculation. | LOW | Pure frontend logic. Compute `abs(confirmed - reported) / reported` — if >5%, apply red styling. No backend change. |
+| **Offline-aware data freshness indicators** | "Catalog last updated 3h ago" badge when offline. Users know whether to trust the data they see. Reduces confusion when serving stale cache. | LOW | Read persisted-at timestamp from IndexedDB. Compare to now. Display badge in CatalogView header. Localizable string. |
+| **Purchase from customer in customer statement** | Purchase transactions appear in the customer statement with a distinct type label ("Purchase / شراء"), so the customer can see their full transaction history including goods sold back. | LOW | No schema change — uses existing statement query which shows all transaction types. Just needs correct label in statement UI for the new `Purchase` type. |
+| **DB performance indexes** | Queries on transactions table degrade as data grows. `created_by`, `type`, `status` columns filter in every admin/statement query but have no indexes. | LOW | Alembic migration adding: `idx_transactions_created_by`, `idx_transactions_type`, `idx_transactions_status`. Compound index on `(created_by, type, created_at)` for the daily report query pattern. No code change beyond migration. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| **Full automatic OCR with no manual review** | "Save time, don't make users type" | Bank check OCR accuracy with mobile photos is 60-85% at best (lighting, angle, MICR font, Arabic mixed content). Financial data errors from uncorrected OCR create accounting disputes that cost far more time to fix than typing. | Always pre-fill as suggestions in editable fields. User must confirm. OCR result is an assist, not a replacement. |
-| **MICR line decoding** (routing/account from magnetic ink) | Looks impressive, solves routing number capture | Mobile phone cameras cannot read MICR magnetic encoding — MICR scanners use magnetic heads. OCR of MICR characters is unreliable due to E-13B font design. | Manual entry of bank number, branch number, account number — with the preview giving visual feedback. |
-| **Real-time server-side OCR** (upload photo → API → return fields) | Server can use heavier models | Breaks offline-first requirement (Sales rep critical path). Adds latency, cost, server complexity. Tesseract.js v5 works in a Web Worker — does not block the UI. | Client-side Tesseract.js in Web Worker. Offline-safe. |
-| **Automatic check status progression** (cron marks Deposited after N days) | "Checks clear automatically after 3 business days" | Business rules vary by bank, currency, relationship. Auto-advancing status without human confirmation creates false accounting state. | Manual status updates by Admin. Clear audit trail of who changed status and when. |
-| **Check batching / reconciliation view** | "Show me all checks due this week grouped by bank" | Out of scope for this milestone (explicitly excluded in PROJECT.md). Adds significant backend query complexity. | The overdue checks table in Admin already surfaces urgency via days-overdue badges. Sufficient for now. |
+| **Expense approval multi-level workflow** | "Manager reviews, then finance approves" | Overkill for a 2-3 person office. Every extra step is a friction point that causes reps to stop submitting expenses. | Simple confirm/flag by Admin. One human decision, one status field. |
+| **jsPDF for statement export** | Popular, lots of tutorials | jsPDF requires manual coordinate-based layout. RTL Arabic text requires extra hacks. Breaks on multi-page content. Hard to maintain. | `@react-pdf/renderer` uses React component model, supports RTL via `textDirection`, handles pagination natively. More maintainable. |
+| **Server-side PDF generation** | "Backend controls the template" | Breaks offline-first. Adds server load. Requires puppeteer/wkhtmltopdf server dependency. Client already has all the data. | Client-side `@react-pdf/renderer`. Data is in React Query cache. Download happens instantly. |
+| **Automatic WAC update on every product edit** | "Keep purchase_price always current" | Admin manually editing purchase_price via Designer UI should not trigger WAC recalculation — that would corrupt carefully set values. | WAC recalculation only triggered by `Purchase` transaction service. Manual edit via Designer remains a direct override. |
+| **Real-time cash report sync** | "Admin sees rep's new payments instantly as they happen" | Adds WebSocket or polling complexity. For an EOD reconciliation workflow, near-real-time (page refresh) is sufficient. | Manual refresh button on cash report. Or implicit refresh on navigation. Statement is accurate to last page load. |
+| **Offline expense submission** | "Reps should be able to submit expenses offline too" | Expense submission is lower urgency than orders/payments (no customer-facing impact). Adds complexity to already-extended sync queue. | Expenses require connectivity. Inform rep with disabled state + offline banner. Orders/payments retain offline priority. |
+| **Purchase order / supplier management** | "Track where we buy our stock" | Entirely different domain — supplier relationships, POs, receiving workflow. Out of scope for this business model (customer buy-back, not supplier procurement). | Purchase from customer (buy-back) only. Supplier procurement is a separate system concern. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Extended check data fields]
-    └──enables──> [Live SVG check preview]  (preview needs the data to display)
-    └──enables──> [Check photo capture]     (image_url goes into same data JSONB)
+[DB Indexes]
+    (no dependencies — purely additive migration)
 
-[Check photo capture]
-    └──enables──> [OCR auto-fill]           (OCR needs a photo to process)
+[Expense Model — backend]
+    └──enables──> [Expense logging — Sales rep]
+    └──enables──> [Expense logging — Admin]
+    └──enables──> [Expense receipt photo]     (needs expense record to attach to)
+    └──enables──> [Admin expense review]      (needs expense records to confirm/flag)
 
-[Check status lifecycle UI]
-    └──requires──> [deposit endpoint]       (backend must exist first)
-    └──requires──> [clear endpoint]         (backend must exist first)
-    └──enhances──> [Overdue check quick-action]  (same mutations, different entry point)
+[CashHandover Model — backend]
+    └──requires──> [Daily cash report endpoint]  (report is read-only; handover is write)
+    └──enables──> [Payment confirmation UI]
 
-[Live SVG check preview]
-    └──enhances──> [Extended check data fields]  (visual feedback loop improves data quality)
+[Daily cash report endpoint]
+    └──requires──> [DB Indexes]               (daily report query hits created_by + type + date)
+    └──enables──> [Daily cash report UI]
+    └──enables──> [Cash discrepancy highlighting]
 
-[OCR auto-fill]
-    └──enhances──> [Extended check data fields]  (pre-populates but does not replace)
+[Offline catalog caching — IndexedDB persister]
+    └──enables──> [Offline data freshness indicators]
+    └──enables──> [Offline route data caching]  (same persister setup, different queries)
+
+[Purchase TransactionType — backend]
+    └──requires──> [DB Indexes]               (purchase queries filter by type)
+    └──enables──> [WAC recalculation]         (triggered by purchase service)
+    └──enables──> [Purchase from customer UI] (PurchaseFlow component)
+    └──enables──> [Purchase in customer statement]  (statement shows all types; label only)
+
+[Custom date range picker]
+    (no new dependencies — API already supports start_date/end_date)
+    └──enables──> [Statement PDF export]      (PDF covers the selected date range)
+
+[Statement PDF export]
+    └──requires──> [Custom date range picker]  (natural entry point for PDF trigger)
+    └──requires──> @react-pdf/renderer installed
 ```
 
 ### Dependency Notes
 
-- **Extended fields must come first:** SVG preview, photo capture, and OCR all depend on the form having the right fields. This is the foundational piece.
-- **Backend lifecycle endpoints must precede Admin UI:** `PATCH /deposit` and `PATCH /clear` must exist before adding action buttons to the UI.
-- **OCR is optional progressive enhancement:** The check form works without OCR. Photo capture works without OCR. OCR layered on top after both exist.
-- **No conflicts:** All five features stack cleanly. No feature excludes another.
+- **DB indexes first:** The daily cash report query joins transactions on `created_by`, `type`, and date. Adding indexes before building the report endpoint prevents slow queries from the start.
+- **Expense model is independent:** Can be built in parallel with offline caching and purchase features. No cross-dependency.
+- **CashHandover is additive:** The daily report reads existing transaction data. `CashHandover` only tracks the admin confirmation layer on top — the report works without it (read-only mode), confirmation is the second step.
+- **Offline caching is read-side only:** The mutation sync queue for orders/payments already exists. This feature only adds read-side persistence. No conflict with existing sync logic.
+- **Purchase service is self-contained:** WAC calculation happens inside the purchase service atomically. No other service touches `purchase_price` programmatically — Designer edit is a direct field write, not WAC-triggered.
+- **PDF depends on custom date range:** The PDF should export exactly the range the user is viewing. Building custom date range first means the PDF trigger is a natural addition to the same UI.
 
 ---
 
 ## MVP Definition
 
-This milestone has a single clear goal: transform the basic check form into a rich capture experience. The features below are ordered by dependency, not just value.
+This is a subsequent milestone on a shipped product. "MVP" here means: minimum to deliver the stated v1.2 goal — not minimum to launch a product.
 
-### Launch With (this milestone, v1.1)
+### Launch With (v1.2)
 
-- [x] **Extended check data fields** — foundation for everything else; backend JSONB expansion, 4 new form inputs, updated validation
-- [x] **Live SVG check preview** — immediate visual payoff; zero dependencies beyond form state; motivates correct data entry
-- [x] **Check status lifecycle UI** — closes the biggest functional gap; checks currently get stuck at Pending forever
-- [x] **Check photo capture and storage** — legal record requirement; pattern already proven by product image upload
+- [ ] **DB performance indexes** — prerequisite for everything query-heavy; Alembic migration only
+- [ ] **Expense logging backend** (Expense model + CRUD endpoints) — foundational for expense features
+- [ ] **Expense logging frontend** — Sales rep submits field expenses; Admin submits business expenses
+- [ ] **Daily cash report + payment confirmation** — Admin's primary operational need for this milestone
+- [ ] **Offline catalog caching** — Sales rep critical path; catalog must survive no connectivity
+- [ ] **Offline route data caching** — Sales rep critical path; customer list must survive no connectivity
+- [ ] **Purchase from customer** (backend + frontend) — reverse order with WAC update
+- [ ] **Custom date range picker in statement** — purely frontend; API already supports it
+- [ ] **Customer statement PDF export** — closes the statement feature loop
 
 ### Add After Validation (v1.x)
 
-- [ ] **OCR auto-fill** — adds on top of photo capture; requires Tesseract.js Web Worker integration; highest complexity item; must not block form if slow
-- [ ] **Overdue check quick-action in Admin** — convenience shortcut; the lifecycle endpoints from above make this trivial to add
+- [ ] **Expense receipt photo capture** — adds legal record keeping; can ship after core expense flow is stable
+- [ ] **Cash report discrepancy highlighting** — frontend-only polish; add when cash report is in use
+- [ ] **Offline data freshness indicators** — UX quality; implement after offline caching is working
 
 ### Future Consideration (v2+)
 
-- [ ] **Amount in words (Arabic/Hebrew)** — nice on the preview but complex locale-correct implementation; English words acceptable as v1 fallback
-- [ ] **Check batch/reconciliation view** — explicitly out of scope per PROJECT.md; defer until admin requests it with specific requirements
+- [ ] **Offline expense submission** — adds queue complexity; defer until explicitly requested
+- [ ] **Supplier / purchase order management** — different domain; not part of this app's scope
+- [ ] **Check batch reconciliation view** — explicitly deferred per PROJECT.md
 
 ---
 
@@ -117,133 +153,51 @@ This milestone has a single clear goal: transform the basic check form into a ri
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Extended check data fields | HIGH | LOW | P1 |
-| Live SVG check preview | HIGH | MEDIUM | P1 |
-| Check status lifecycle UI | HIGH | MEDIUM | P1 |
-| Check photo capture and storage | HIGH | LOW-MEDIUM | P1 |
-| OCR auto-fill | MEDIUM | HIGH | P2 |
-| Overdue check quick-action | MEDIUM | LOW | P2 |
-| Amount in words | LOW | MEDIUM | P3 |
+| DB indexes | HIGH (prevents future pain) | LOW | P1 |
+| Expense logging backend | HIGH | MEDIUM | P1 |
+| Expense logging frontend (Sales) | HIGH | MEDIUM | P1 |
+| Expense logging frontend (Admin) | HIGH | LOW (same UI, different categories) | P1 |
+| Daily cash report (read) | HIGH | MEDIUM | P1 |
+| Payment confirmation (write) | HIGH | MEDIUM | P1 |
+| Offline catalog caching | HIGH | MEDIUM | P1 |
+| Offline route data caching | HIGH | LOW (same pattern as catalog) | P1 |
+| Purchase from customer | HIGH | HIGH | P1 |
+| WAC recalculation | HIGH | MEDIUM | P1 |
+| Custom date range picker | MEDIUM | LOW | P1 |
+| Statement PDF export | MEDIUM | MEDIUM | P1 |
+| Expense receipt photo | MEDIUM | LOW | P2 |
+| Cash discrepancy highlighting | LOW | LOW | P2 |
+| Offline freshness indicators | LOW | LOW | P2 |
 
 **Priority key:**
-- P1: Must have for this milestone
-- P2: Should have, add when P1 is stable
-- P3: Nice to have, future consideration
+- P1: Required for v1.2 milestone to be complete
+- P2: Quality improvement, add once P1 is stable
+- P3: Future milestone
 
 ---
 
-## OCR Analysis (Detailed)
+## New Models Required
 
-### Approach: Client-side Tesseract.js v5 in a Web Worker
+| Model | Purpose | Key Fields | Depends On |
+|-------|---------|------------|------------|
+| `Expense` | Track all business expenses (field + admin) | amount, currency, category (enum), date, notes, receipt_url, created_by, status (Pending/Confirmed/Flagged), confirmed_by, confirmed_at | BaseMixin (UUID, soft delete) |
+| `CashHandover` | Admin confirmation of daily cash from each rep | date, user_id, reported_amount, confirmed_amount, status (Pending/Confirmed/Flagged), admin_notes, confirmed_by, confirmed_at | User model |
+| `TransactionType.Purchase` (enum addition) | Reverse order (buy-back from customer) | Extends existing enum; same `Transaction` table via STI | Transaction model + migration |
 
-**Why client-side:** The offline-first constraint eliminates server-side OCR. Sales reps operate in the field without reliable connectivity.
+### New Endpoints Required
 
-**Why Tesseract.js:** Pure JavaScript, no server dependency, 100+ language support (Arabic + English both available), runs in Web Worker (non-blocking), actively maintained (GitHub: naptha/tesseract.js, 35k+ stars).
-
-**Realistic accuracy expectations for check photos (MEDIUM confidence, multiple sources):**
-- Clean printed text on white check: 80-90% character accuracy
-- Mobile phone photo under field lighting: 60-80%
-- Handwritten amounts: 30-50% (unreliable)
-- MICR E-13B font characters: unreliable via camera (not magnetic)
-- Arabic text mixed with numbers: accuracy degrades vs pure Latin
-
-**Implementation pattern:**
-```
-User captures photo → image stored → Tesseract worker processes in background
-→ extracted text parsed for number-like fields → fields pre-populated as suggestions
-→ user reviews and corrects → submits
-```
-
-**The OCR result must never auto-submit.** It fills form fields. User confirms.
-
-**Bundle size concern:** Tesseract.js language packs are large (Arabic: ~4MB, English: ~3MB). Load language packs lazily only when user taps the OCR button. Do not import at app startup.
-
-### What OCR can reliably extract from a check photo
-
-| Field | OCR Reliability | Notes |
-|-------|----------------|-------|
-| Amount (numeric) | MEDIUM | Printed clearly, but decimal point confusion |
-| Due date | MEDIUM | Printed, but format varies |
-| Bank name | MEDIUM | Printed, may overlap with logo |
-| Account number | LOW-MEDIUM | Printed numbers, but MICR font is tricky |
-| Branch number | LOW-MEDIUM | Short numeric sequence, easier |
-| Holder name | LOW | Often handwritten or cursive |
-
-### What OCR cannot reliably do
-
-- Understand check layout/zones (it returns a blob of text, not structured fields)
-- Handle handwriting with financial accuracy
-- Read MICR magnetic ink line (camera-only limitation)
-
-**Conclusion:** OCR is a useful assist, not a replacement for manual entry. Implement as an optional "scan to pre-fill" button that activates after photo is captured. Always allow manual override. Flag extracted values visually so user knows they came from OCR.
-
----
-
-## Check Lifecycle State Machine
-
-```
-[Pending]
-    ├── deposit() → [Deposited]
-    └── return()  → [Returned]  (terminal)
-
-[Deposited]
-    ├── clear()   → [Cleared]   (terminal)
-    └── return()  → [Returned]  (terminal)
-
-[Cleared]   — no further transitions
-[Returned]  — no further transitions (Check_Return transaction created by existing logic)
-```
-
-### Transition rules (business logic)
-
-- Only Admin can advance check status (Sales creates, Admin manages lifecycle)
-- Each transition creates an audit entry (use existing `notes` field + `updated_at`)
-- `Cleared` does NOT create a new transaction (the payment already reduced the balance; clearing is confirmation only)
-- `Returned` uses the existing `return_check` service method (creates `Check_Return` re-debit txn)
-- `Deposited` is informational only — no balance change
-
----
-
-## SVG Check Preview Design Specification
-
-### Layout (LTR, always — regardless of app RTL)
-
-A realistic check preview should mirror the standard horizontal check format:
-
-```
-┌─────────────────────────────────────────────────────┐
-│  [Holder Name]                         Check #XXXXX │
-│  [Address line — static placeholder]         [Date] │
-│                                                     │
-│  Pay to the order of: _________________________    │
-│                                                     │
-│  Amount: [numeric]     [Amount in words]________   │
-│                                                     │
-│  [Bank Name]                                        │
-│  Branch: [branch]  Account: [account]               │
-│                                                     │
-│  Memo: _____________________   [Signature line]    │
-│                                                     │
-│  ⠿⠿ [MICR-style decorative line] ⠿⠿               │
-└─────────────────────────────────────────────────────┘
-```
-
-### Dark theme adaptation
-
-Real checks are white/cream on dark theme screens. Two options:
-1. Render check as white background (paper color) inside dark UI — most realistic
-2. Invert to dark check — less realistic but more consistent
-
-**Recommendation:** White/cream background (like actual paper) inside a dark card container. This is what users recognize as a check. Contrast is higher for readability.
-
-### What updates live as user types
-
-- Holder name → top left
-- Due date → top right
-- Amount (numeric) → amount box
-- Bank name → bottom left
-- Bank/branch/account numbers → bottom number region
-- Check number → auto from UUID prefix (static once created)
+| Endpoint | Method | Role | Purpose |
+|----------|--------|------|---------|
+| `POST /expenses` | POST | Sales/Admin | Create expense |
+| `GET /expenses` | GET | Admin | List all expenses (filterable by rep, date, status) |
+| `GET /expenses/mine` | GET | Sales | List own expenses |
+| `PATCH /expenses/{id}/confirm` | PATCH | Admin | Confirm expense |
+| `PATCH /expenses/{id}/flag` | PATCH | Admin | Flag expense discrepancy |
+| `GET /admin/daily-report` | GET | Admin | Per-rep daily summary by date |
+| `POST /admin/cash-handover` | POST | Admin | Record cash handover confirmation |
+| `PUT /admin/cash-handover/{id}` | PUT | Admin | Update confirmation |
+| `POST /purchases` | POST | Sales/Admin | Record purchase from customer |
+| `GET /admin/daily-report/export` | GET | Admin | (future) CSV export — defer |
 
 ---
 
@@ -251,28 +205,37 @@ Real checks are white/cream on dark theme screens. Two options:
 
 | New Feature | Touches Existing | Change Type |
 |-------------|-----------------|-------------|
-| Extended data fields | `PaymentFlow.tsx`, `payment_service.py`, `schemas/transaction.py` | Add fields; JSONB — no migration |
-| SVG preview | `PaymentFlow.tsx` | New sub-component, no backend |
-| Photo capture | `PaymentFlow.tsx`, new `POST /payments/upload-image` endpoint | Pattern from products.py is identical |
-| Lifecycle UI | `Admin/DebtStats.tsx`, new `PATCH /payments/{id}/deposit` + `/clear` | Extend existing admin view |
-| OCR | `PaymentFlow.tsx`, Tesseract.js Web Worker | Client-only, no backend change |
+| DB indexes | `alembic/versions/` | New migration only |
+| Expense model | New `expense.py` model file | Additive |
+| Expense endpoints | New `expenses.py` router | Additive |
+| Daily cash report | `admin_service.py` | New method; extends existing pattern |
+| CashHandover model | New `cash_handover.py` | Additive |
+| Offline catalog cache | `frontend/src/main.tsx` or `App.tsx` | Add `PersistQueryClientProvider` wrapper |
+| Offline route cache | `salesApi.ts` query keys | Add `staleTime` + persister config |
+| Purchase transaction | `transaction.py` enum, new `purchase_service.py` | Extend enum + new service |
+| Purchase WAC | `product.py` — no schema change | `purchase_service.py` updates `stock_qty` + `purchase_price` |
+| PurchaseFlow UI | New `Sales/PurchaseFlow.tsx` | New component; mirrors OrderFlow |
+| Custom date range | `Sales/StatementView.tsx` | Replace preset buttons with date inputs |
+| PDF export | `Sales/StatementView.tsx` | Add download button + `@react-pdf/renderer` Document component |
 
 ---
 
 ## Sources
 
-- Code audit: `/home/ka1ser/projects/alofok/frontend/src/components/Sales/PaymentFlow.tsx`
-- Code audit: `/home/ka1ser/projects/alofok/backend/app/models/transaction.py`
-- Code audit: `/home/ka1ser/projects/alofok/backend/app/services/payment_service.py`
-- Code audit: `/home/ka1ser/projects/alofok/backend/app/api/endpoints/products.py` (image upload pattern)
-- [Tesseract.js GitHub](https://github.com/naptha/tesseract.js) — OCR library reference
-- [Image to Text with React and Tesseract.js — Smashing Magazine](https://www.smashingmagazine.com/2021/06/image-text-conversion-react-tesseract-js-ocr/) — accuracy limitations
-- [Microsoft Azure Document Intelligence — Bank Check Extraction](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/prebuilt/bank-check?view=doc-intel-4.0.0) — standard check fields reference
-- [Complete Guide to Bank Check Extraction using OCR — KlearStack](https://klearstack.com/bank-check-extraction-using-ocr) — accuracy benchmarks
-- [react-webcam npm](https://www.npmjs.com/package/react-webcam) — camera capture library (alternative to native input)
-- [FastAPI File Uploads — official docs](https://fastapi.tiangolo.com/tutorial/request-files/) — upload endpoint pattern
+- Code audit: `/home/ka1ser/projects/alofok/backend/app/models/transaction.py` — existing TransactionType enum
+- Code audit: `/home/ka1ser/projects/alofok/backend/app/models/product.py` — `stock_qty`, `purchase_price` columns confirmed
+- Code audit: `/home/ka1ser/projects/alofok/backend/app/services/admin_service.py` — existing query patterns
+- Code audit: `/home/ka1ser/projects/alofok/frontend/src/services/salesApi.ts` — `getStatement` already accepts `start_date`/`end_date`
+- [Expense Management for Field Sales — BreezeFSM](https://breezefsm.in/expense-management-for-field-sales/) — field expense category patterns
+- [Weighted Average Cost — ShipBob](https://www.shipbob.com/blog/inventory-weighted-average/) — WAC formula verification
+- [Weighted Average Cost — Corporate Finance Institute](https://corporatefinanceinstitute.com/resources/accounting/weighted-average-cost-method/) — GAAP/IFRS confirmation
+- [Generating PDFs in React with react-pdf — LogRocket](https://blog.logrocket.com/generating-pdfs-react/) — library comparison
+- [Best JavaScript PDF libraries 2025 — Nutrient](https://www.nutrient.io/blog/javascript-pdf-libraries/) — @react-pdf/renderer vs jsPDF tradeoffs
+- [Offline-first frontend apps in 2025 — LogRocket](https://blog.logrocket.com/offline-first-frontend-apps-2025-indexeddb-sqlite/) — IndexedDB patterns
+- [Powering offline-ready apps with React Query](https://www.kylereblora.com/posts/powering-offline-ready-apps-with-react-query) — persist client setup
+- [Cash Reconciliation Guide — Numeric](https://www.numeric.io/blog/cash-reconciliation-guide) — daily reconciliation workflow patterns
 
 ---
 
-*Feature research for: Alofok v1.1 Check Enhancement milestone*
-*Researched: 2026-03-04*
+*Feature research for: Alofok v1.2 Business Operations milestone*
+*Researched: 2026-03-05*

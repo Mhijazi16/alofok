@@ -1,678 +1,844 @@
 # Architecture Research
 
-**Domain:** Check Enhancement Integration — wholesale trading app (Alofok v1.1)
-**Researched:** 2026-03-04
-**Confidence:** HIGH (based on direct codebase analysis + verified web sources)
+**Domain:** Wholesale trading app — v1.2 Business Operations
+**Researched:** 2026-03-05
+**Confidence:** HIGH (existing codebase inspected directly)
 
 ---
 
 ## Existing Architecture Baseline
 
-Before describing new integration points, this is the current state of the relevant stack:
+Current backend structure (`backend/app/`):
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Frontend (React + Vite)                     │
-├──────────────────┬──────────────────────┬───────────────────────┤
-│  Sales/          │  Sales/              │  Sales/               │
-│  PaymentFlow.tsx │  StatementView.tsx   │  CustomerDashboard    │
-│  (Check tab:     │  (Renders tx.data    │  (returnCheck()       │
-│   bank + date    │   but not check      │   → only transition   │
-│   only)          │   detail fields)     │   is Returned)        │
-├──────────────────┴──────────────────────┴───────────────────────┤
-│  salesApi.ts  →  PaymentCreate.data = { bank?, due_date?,       │
-│                  image_url? }  (flat dict, weakly typed)         │
-├─────────────────────────────────────────────────────────────────┤
-│  IndexedDB syncQueue  →  persists payment payload as-is         │
-└────────────────────────┬────────────────────────────────────────┘
-                         │ HTTP / Bearer JWT
-┌────────────────────────▼────────────────────────────────────────┐
-│                    Backend (FastAPI + async SA)                   │
-├─────────────────────────────────────────────────────────────────┤
-│  POST /payments  →  PaymentService.create_payment()             │
-│  PUT  /payments/checks/{id}/status  →  return_check() only      │
-│                                        (no deposit/clear paths)  │
-├─────────────────────────────────────────────────────────────────┤
-│  Transaction.data (JSONB)  →  { bank, due_date, image_url }     │
-│  Transaction.status  →  Pending | Deposited | Returned | Cleared │
-│  (enum exists; only Returned path implemented)                   │
-├─────────────────────────────────────────────────────────────────┤
-│  /static/avatars/  →  aiofiles write, StaticFiles mount         │
-│  (avatar upload pattern; no check-image upload endpoint yet)     │
-└─────────────────────────────────────────────────────────────────┘
+api/endpoints/    admin.py, auth.py, customers.py, orders.py, payments.py, products.py
+services/         admin_service.py, auth_service.py, catalog_service.py,
+                  customer_service.py, order_service.py, payment_service.py
+repositories/     customer_repository.py, transaction_repository.py, ...
+models/           customer.py, product.py, transaction.py, user.py, customer_auth.py
+schemas/          (per domain)
 ```
 
-**Current gaps:**
-- `Transaction.data` holds only `{bank, due_date, image_url}` — bank/branch/account/holder fields missing
-- Status transitions Deposited and Cleared exist in the enum but have no endpoint or service logic
-- No check image upload endpoint (avatar upload exists as the template)
-- No OCR endpoint
-- PaymentFlow check tab has only 2 fields; no SVG preview, no camera capture, no lifecycle UI
-- StatementView shows check transactions but does not render check detail fields from `data`
-- Admin overdue checks query uses `t.data->>'bank'` only — extended fields need same pattern
+Current frontend structure (`frontend/src/`):
+
+```
+components/Sales/   RouteView, OrderFlow, PaymentFlow, StatementView, CustomerDashboard,
+                    AllCustomersView, CheckCapture, CheckPreview, ReturnedChecksView
+components/Admin/   Overview, SalesStats, DebtStats, AdminChecksView, AdminCustomerPanel
+services/           salesApi.ts, adminApi.ts, designerApi.ts, customerApi.ts
+lib/                syncQueue.ts (IndexedDB — mutations), checkImageQueue.ts, cart.ts
+hooks/              useOfflineSync.ts, useToast.ts, useTheme.ts
+store/              authSlice.ts
+```
+
+Key existing patterns to carry forward:
+- `BaseMixin` gives every model: `id` (UUID), `created_at`, `updated_at`, `is_deleted` (soft delete)
+- `Transaction.amount` is signed — positive = customer owes money, negative = payment/credit
+- `Transaction.data` is JSONB for flexible metadata (already used for check details)
+- `TransactionType` is a SQLAlchemy enum — adding values requires an Alembic migration
+- IndexedDB DB name: `alofok_offline`, version 2, stores: `sync_queue`, `check_images`
+- React Query manages server-state cache; Redux Toolkit manages auth + UI state
 
 ---
 
-## System Overview: Post-Enhancement Architecture
+## System Overview: Post-v1.2 Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                       Frontend (React + Vite)                        │
-├───────────────────────┬─────────────────────┬───────────────────────┤
-│  Sales/PaymentFlow    │  Sales/CheckLifecycle│  Admin/ChecksPanel   │
-│  (MODIFIED — extends  │  (NEW — status UI    │  (NEW — deposit/clear │
-│   check tab with      │   for existing       │   actions on overdue  │
-│   5 new fields +      │   checks in          │   check list)         │
-│   SVG preview +       │   StatementView or   │                       │
-│   camera/OCR)         │   standalone)        │                       │
-├───────────────────────┴─────────────────────┴───────────────────────┤
-│  ui/CheckPreview.tsx (NEW — pure presentational SVG component)       │
-│  ui/BankAutocomplete.tsx (NEW — combobox with localStorage history)  │
-│  hooks/useCheckOCR.ts (NEW — image → OCR → field fill)              │
-├─────────────────────────────────────────────────────────────────────┤
-│  salesApi.ts (MODIFIED — expanded PaymentCreate.data type,          │
-│               new updateCheckStatus(), new uploadCheckImage())       │
-│  adminApi.ts (MODIFIED — new check lifecycle actions)               │
-├─────────────────────────────────────────────────────────────────────┤
-│  IndexedDB syncQueue (UNCHANGED — payload passthrough)              │
-└────────────────────────────┬────────────────────────────────────────┘
-                             │ HTTP / Bearer JWT
-┌────────────────────────────▼────────────────────────────────────────┐
-│                     Backend (FastAPI + async SA)                      │
-├─────────────────────────────────────────────────────────────────────┤
-│  POST /payments           (UNCHANGED — now accepts extended data)    │
-│  POST /payments/checks/upload-image  (NEW — returns image_url)      │
-│  POST /payments/checks/ocr           (NEW — returns extracted fields)│
-│  PUT  /payments/checks/{id}/status   (MODIFIED — all transitions)   │
-├─────────────────────────────────────────────────────────────────────┤
-│  PaymentService (MODIFIED)                                           │
-│    create_payment() — validation updated for extended data           │
-│    return_check()  — unchanged                                       │
-│    update_check_status() — NEW method, Deposited + Cleared paths     │
-├─────────────────────────────────────────────────────────────────────┤
-│  Transaction.data (JSONB) — schema expands in-place (no migration): │
-│  { bank, branch_number?, account_number?, holder_name?,             │
-│    due_date?, image_url? }                                           │
-│  (JSONB schema changes need NO Alembic migration)                    │
-├─────────────────────────────────────────────────────────────────────┤
-│  /static/checks/{uuid}.jpg  (NEW upload dir, same static mount)     │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          React Frontend (Vite)                           │
+├──────────────┬──────────────┬──────────────┬────────────────────────────┤
+│  Sales/      │  Admin/      │  Designer/   │  Customer/                 │
+│  Components  │  Components  │  Components  │  Components                │
+│  +Expense    │  +DailyCash  │  (unchanged) │  (unchanged)               │
+│  +Purchase   │   Report     │              │                            │
+├──────────────┴──────────────┴──────────────┴────────────────────────────┤
+│           Service Layer (salesApi, adminApi — extended)                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│           React Query (server-state + stale-while-revalidate)           │
+│           Redux Toolkit (auth + UI state)                                │
+├─────────────────────┬───────────────────────────────────────────────────┤
+│  IndexedDB          │  React Query cache (catalog, route — NEW)         │
+│  sync_queue  (mut.) │  with placeholderData from offlineCache.ts        │
+│  check_images(blob) │                                                   │
+│  catalog_cache (NEW)│                                                   │
+│  route_cache   (NEW)│                                                   │
+└─────────────────────┴─────────────────────────────────────────────────-─┘
+                              HTTP / Bearer JWT
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        FastAPI Backend                                   │
+│   GZip → GlobalErrorHandler → AuthMiddleware → Endpoints                │
+├──────────────┬───────────────┬──────────────┬──────────────────────────┤
+│  api/        │  services/    │  repositories│  models/                 │
+│  endpoints/  │  (business    │  (async SA   │  (BaseMixin,             │
+│  +expenses   │   logic)      │   queries)   │   +Expense,              │
+│  +purchases  │  +ExpenseSvc  │  +ExpenseRepo│   +DailyCashReport)      │
+│              │  +PurchaseSvc │              │                          │
+│              │  AdminSvc ext.│              │                          │
+├──────────────┴───────────────┴──────────────┴──────────────────────────┤
+│                    Redis (TTL cache — catalog, route, insights)          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                PostgreSQL (authoritative — +expenses, +daily_cash_reports│
+│                +Purchase enum value, +partial indexes on transactions)   │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Component Responsibilities
+## New Models Required
 
-### New Components
+### 1. Expense — New table
 
-| Component | File | Responsibility | Notes |
-|-----------|------|----------------|-------|
-| CheckPreview | `ui/CheckPreview.tsx` | Pure SVG check render, LTR layout, updates live as user types | Props-driven, no state, reusable |
-| BankAutocomplete | `ui/BankAutocomplete.tsx` | Combobox with recent bank names from localStorage | localStorage key: `alofok_banks_history`, max 20 entries |
-| useCheckOCR | `hooks/useCheckOCR.ts` | Camera/file → backend OCR → return field map | Returns `{bank?, account?, holder?}` |
-| CheckLifecycleActions | inline in relevant view | Status transition buttons (Deposit / Clear / Return) based on current status | NOT a standalone component — embed in StatementView or Admin checks panel |
+The `Transaction` model is **customer-scoped** (`customer_id` NOT NULL) and carries signed-amount balance semantics. Expenses have no customer, no balance effect, and need an admin approval workflow. Mixing them into the transactions STI table would require nullable `customer_id` and would pollute customer statement queries.
 
-### Modified Components
-
-| Component | File | What Changes |
-|-----------|------|--------------|
-| PaymentFlow | `Sales/PaymentFlow.tsx` | Check tab adds 4 fields + BankAutocomplete + CheckPreview + camera/OCR trigger |
-| StatementView | `Sales/StatementView.tsx` | Check transactions gain expanded data display + lifecycle action buttons |
-| salesApi.ts | `services/salesApi.ts` | `PaymentCreate.data` type expanded; add `updateCheckStatus()`, `uploadCheckImage()`, `ocrCheckImage()` |
-| adminApi.ts | `services/adminApi.ts` | Add `updateCheckStatus()` for Admin check panel |
-| en.json / ar.json | `locales/` | New keys for all new fields and actions |
-
-### Modified Backend
-
-| File | What Changes |
-|------|--------------|
-| `schemas/transaction.py` | `PaymentCreate.data` typed more strictly (optional CheckData model) |
-| `services/payment_service.py` | `update_check_status()` method for Deposited/Cleared transitions |
-| `api/endpoints/payments.py` | New upload-image route, OCR route, status update route expansion |
-
----
-
-## Recommended Project Structure (new files only)
-
-```
-frontend/src/
-├── components/
-│   ├── ui/
-│   │   ├── CheckPreview.tsx        # SVG check preview (LTR, pure)
-│   │   └── BankAutocomplete.tsx    # Combobox + localStorage history
-│   └── Sales/
-│       └── PaymentFlow.tsx         # MODIFIED — extended check tab
-├── hooks/
-│   └── useCheckOCR.ts              # Image → OCR → field map hook
-└── services/
-    └── salesApi.ts                 # MODIFIED — new types + endpoints
-
-backend/app/
-├── api/endpoints/
-│   └── payments.py                 # MODIFIED — image upload + OCR + status routes
-└── services/
-    └── payment_service.py          # MODIFIED — update_check_status()
-```
-
-No new top-level directories. No Alembic migration needed for JSONB expansion.
-
----
-
-## Architectural Patterns
-
-### Pattern 1: JSONB Schema Extension Without Migration
-
-**What:** Add new fields to `Transaction.data` JSONB by expanding the Pydantic schema on both read and write paths. Existing rows with partial data continue to work because unset keys return `None`.
-
-**When to use:** Adding optional fields to an already-JSONB column. Mandatory fields would require a real column + migration instead.
-
-**Trade-offs:** No migration needed, no downtime. Downside is no DB-level constraint on structure — application layer must validate.
-
-**Example (backend schema):**
 ```python
-class CheckData(BaseModel):
-    bank: str
-    branch_number: str | None = None
-    account_number: str | None = None
-    holder_name: str | None = None
-    due_date: str | None = None       # ISO date string
-    image_url: str | None = None
+# backend/app/models/expense.py
 
-class PaymentCreate(BaseModel):
-    customer_id: uuid.UUID
-    type: TransactionType
-    currency: Currency
-    amount: Decimal
-    notes: str | None = None
-    data: CheckData | None = None     # replaces dict | None
+class ExpenseCategory(str, enum.Enum):
+    Field = "Field"        # salesman field expenses (fuel, parking, meals)
+    Business = "Business"  # admin business expenses (rent, utilities, supplies)
+
+class Expense(BaseMixin, Base):
+    __tablename__ = "expenses"
+
+    created_by: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    category: Mapped[ExpenseCategory] = mapped_column(
+        SAEnum(ExpenseCategory, name="expensecategory"), nullable=False
+    )
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    currency: Mapped[Currency] = mapped_column(
+        SAEnum(Currency, name="currency"), default=Currency.ILS, nullable=False
+    )
+    description: Mapped[str] = mapped_column(String, nullable=False)
+    expense_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    receipt_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    confirmed_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+    )
+    confirmed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    status: Mapped[str] = mapped_column(String, default="pending")  # pending|confirmed|rejected
+    notes: Mapped[str | None] = mapped_column(String, nullable=True)
 ```
 
-Existing rows with `{"bank": "X", "due_date": "2024-01-01"}` still validate against `CheckData` because all new fields are optional.
+### 2. DailyCashReport — New table
 
-**Example (frontend type):**
-```typescript
-export interface CheckData {
-  bank: string;
-  branch_number?: string;
-  account_number?: string;
-  holder_name?: string;
-  due_date?: string;
-  image_url?: string;
-}
+Admin physically confirms that cash/checks collected by a salesman on a given day were received. This is an audit record separate from the transactions themselves. A JSONB snapshot is stored at generation time so the record remains stable even if transactions are later soft-deleted.
 
-export interface PaymentCreate {
-  customer_id: string;
-  type: "Payment_Cash" | "Payment_Check";
-  currency: "ILS" | "USD" | "JOD";
-  amount: number;
-  notes?: string;
-  data?: CheckData;
-}
-```
-
----
-
-### Pattern 2: Inline React SVG Check Preview
-
-**What:** A pure React component that renders an SVG check using `<svg>` JSX directly. Fields are placed via SVG `<text>` elements at fixed coordinates matching a real check layout. LTR direction enforced via `direction="ltr"` on the SVG root.
-
-**When to use:** Live preview that updates as the user types (no round-trip, no image loading). Avoids external dependencies.
-
-**Trade-offs:** SVG positioning is fiddly — coordinates need careful calibration. But zero bundle overhead vs any external library.
-
-**Example:**
-```tsx
-// components/ui/CheckPreview.tsx
-interface CheckPreviewProps {
-  bank: string;
-  holderName: string;
-  accountNumber?: string;
-  branchNumber?: string;
-  amount: string;
-  dueDate: string;
-}
-
-export function CheckPreview({ bank, holderName, accountNumber, branchNumber, amount, dueDate }: CheckPreviewProps) {
-  return (
-    <svg
-      viewBox="0 0 520 200"
-      xmlns="http://www.w3.org/2000/svg"
-      direction="ltr"
-      className="w-full rounded-xl border border-border bg-white font-mono text-black"
-    >
-      {/* Check background */}
-      <rect width="520" height="200" fill="#fafafa" rx="8" />
-      {/* Bank name */}
-      <text x="24" y="36" fontSize="14" fontWeight="bold" fill="#111">{bank || "Bank Name"}</text>
-      {/* Date line */}
-      <text x="380" y="36" fontSize="11" fill="#555">Date:</text>
-      <text x="420" y="36" fontSize="11" fill="#111">{dueDate || "__/__/____"}</text>
-      {/* Pay to line */}
-      <text x="24" y="80" fontSize="11" fill="#555">Pay to the order of:</text>
-      <line x1="160" y1="82" x2="496" y2="82" stroke="#ccc" strokeWidth="0.5" />
-      <text x="164" y="80" fontSize="13" fill="#111">{holderName || ""}</text>
-      {/* Amount box */}
-      <rect x="390" y="88" width="106" height="24" fill="#fff" stroke="#ccc" strokeWidth="0.8" rx="2" />
-      <text x="494" y="105" fontSize="14" fontWeight="bold" fill="#111" textAnchor="end">{amount || "0.00"}</text>
-      {/* Branch / Account */}
-      <text x="24" y="160" fontSize="10" fill="#555" fontFamily="monospace">
-        {branchNumber ? `Branch: ${branchNumber}` : ""}
-        {accountNumber ? `  Acct: ${accountNumber}` : ""}
-      </text>
-      {/* MICR line */}
-      <text x="24" y="185" fontSize="9" fill="#888" fontFamily="monospace">
-        ⑆{branchNumber || "000000"}⑆  {accountNumber || "000000000000"}
-      </text>
-    </svg>
-  );
-}
-```
-
----
-
-### Pattern 3: Check Status State Machine (Backend)
-
-**What:** Explicit allowed transitions enforced in the service layer. Current status → allowed next statuses. Violations raise `HorizonException(409)`.
-
-**When to use:** Any lifecycle with invalid transition prevention.
-
-**Trade-offs:** Simple to implement. Does not block concurrent updates (no optimistic locking). Acceptable given single-operator use case.
-
-**Example:**
 ```python
-_ALLOWED_TRANSITIONS: dict[TransactionStatus, set[TransactionStatus]] = {
-    TransactionStatus.Pending:    {TransactionStatus.Deposited, TransactionStatus.Returned},
-    TransactionStatus.Deposited:  {TransactionStatus.Cleared, TransactionStatus.Returned},
-    TransactionStatus.Returned:   set(),   # terminal
-    TransactionStatus.Cleared:    set(),   # terminal
-}
+# backend/app/models/daily_cash_report.py
 
-async def update_check_status(
-    self, transaction_id: uuid.UUID, new_status: TransactionStatus, creator_id: uuid.UUID
-) -> TransactionOut:
-    check_txn = await self._transactions.get_by_id(transaction_id)
-    if check_txn is None or check_txn.type != TransactionType.Payment_Check:
-        raise HorizonException(404, "Check transaction not found")
+class DailyCashReport(BaseMixin, Base):
+    __tablename__ = "daily_cash_reports"
 
-    allowed = _ALLOWED_TRANSITIONS.get(check_txn.status, set())
-    if new_status not in allowed:
-        raise HorizonException(409, f"Cannot transition from {check_txn.status} to {new_status}")
+    report_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    sales_rep_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    # Snapshot: {cash_ils, cash_usd, cash_jod, check_count, check_total_ils,
+    #            transaction_ids: [...], expenses_total: ...}
+    summary: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    confirmed_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+    )
+    confirmed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    status: Mapped[str] = mapped_column(String, default="pending")  # pending|confirmed|flagged
+    notes: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    if new_status == TransactionStatus.Returned:
-        # Re-use existing return_check() which creates Check_Return transaction
-        return await self.return_check(transaction_id, creator_id)
-
-    check_txn.status = new_status
-    await self._transactions.update(check_txn)
-    return TransactionOut.model_validate(check_txn)
-```
-
-**Endpoint pattern:**
-```python
-# MODIFIED: payments.py
-class CheckStatusUpdate(BaseModel):
-    status: TransactionStatus  # Deposited | Cleared | Returned
-
-@router.put("/checks/{transaction_id}/status", response_model=TransactionOut)
-async def update_check_status(
-    transaction_id: uuid.UUID,
-    body: CheckStatusUpdate,
-    current_user: CurrentUser,
-    service: PaymentSvc,
-) -> TransactionOut:
-    return await service.update_check_status(
-        transaction_id, body.status, uuid.UUID(current_user["sub"])
+    __table_args__ = (
+        UniqueConstraint("report_date", "sales_rep_id", name="uq_daily_cash_report"),
     )
 ```
 
-The existing `return_check()` endpoint becomes redundant — the new generic route handles all transitions including Returned.
+The `UniqueConstraint` prevents duplicate reports. Generation uses `INSERT ... ON CONFLICT DO UPDATE` (upsert) so calling the endpoint again re-computes the snapshot until it is confirmed.
 
----
+### 3. Transaction model — enum extension
 
-### Pattern 4: Check Image Upload (Reuse Avatar Upload Pattern)
+Add `Purchase` to `TransactionType`. This requires an Alembic migration to ALTER the PostgreSQL enum type.
 
-**What:** New FastAPI endpoint under `/payments/checks/upload-image` using the same `aiofiles` pattern as `/customers/upload-avatar`. Returns `{"url": "/static/checks/{uuid}.jpg"}`. Frontend then includes this URL in the `data.image_url` field of `PaymentCreate`.
-
-**When to use:** Whenever an image needs to be captured before form submission.
-
-**Trade-offs:** Two-step flow (upload first, then submit payment) is necessary to get the `image_url` before the transaction is created. Alternative (submit together as multipart) would require restructuring the payment creation endpoint significantly — not worth it.
-
-**Backend:**
 ```python
-@router.post("/checks/upload-image", response_model=dict, dependencies=[require_sales])
-async def upload_check_image(file: UploadFile):
-    ext = Path(file.filename).suffix or ".jpg"
-    filename = f"{uuid.uuid4()}{ext}"
-    path = Path("static/checks") / filename
-    path.parent.mkdir(parents=True, exist_ok=True)
-    async with aiofiles.open(path, "wb") as f:
-        await f.write(await file.read())
-    return {"url": f"/static/checks/{filename}"}
+class TransactionType(str, enum.Enum):
+    Order = "Order"
+    Payment_Cash = "Payment_Cash"
+    Payment_Check = "Payment_Check"
+    Check_Return = "Check_Return"
+    Opening_Balance = "Opening_Balance"
+    Purchase = "Purchase"   # NEW — reverse order, stock in, WAC update
 ```
 
-**Frontend capture pattern (HTML input with camera):**
-```tsx
-<input
-  type="file"
-  accept="image/*"
-  capture="environment"   // rear camera on mobile; ignored on desktop
-  onChange={handleCameraCapture}
-  className="hidden"
-  ref={cameraInputRef}
-/>
-<Button onClick={() => cameraInputRef.current?.click()}>
-  {t("payment.captureCheck")}
-</Button>
-```
+`Purchase` transactions carry a **negative** amount (money paid to the customer, reducing their balance or creating a credit). The `data` JSONB field stores line items and the WAC snapshot at time of purchase.
 
-No additional library needed. `capture="environment"` opens the rear camera on Android/iOS. On desktop it falls back to a standard file picker. Confidence: HIGH — MDN confirms this behavior as of July 2025.
+### 4. Product model — no schema changes
+
+`purchase_price` (Numeric 12,2, nullable) and `stock_qty` (Integer, nullable) already exist. WAC logic lives entirely in the service layer.
+
+### 5. Missing indexes — Performance fix (Alembic migration)
+
+```sql
+-- Partial indexes exclude soft-deleted rows (all queries filter is_deleted = FALSE)
+CREATE INDEX ix_transactions_created_by
+    ON transactions (created_by) WHERE is_deleted = FALSE;
+
+CREATE INDEX ix_transactions_type
+    ON transactions (type) WHERE is_deleted = FALSE;
+
+CREATE INDEX ix_transactions_status
+    ON transactions (status) WHERE is_deleted = FALSE;
+```
 
 ---
 
-### Pattern 5: Server-Side OCR Endpoint
+## New / Modified Endpoints
 
-**What:** Backend endpoint that accepts an image upload, runs pytesseract against it, and returns extracted field candidates. Frontend applies the results to form fields (user can override). OCR runs on the server to avoid shipping the ~20MB Tesseract WASM bundle to mobile clients.
+### expenses.py — New router
 
-**When to use:** Check photos contain printed text (bank name, account, holder). OCR accuracy varies; results are always suggestions, not authoritative.
-
-**Trade-offs:** Server-side OCR requires `pytesseract` + Tesseract system binary in the Docker image (+~50MB image size). Tesseract.js browser-side would avoid server changes but adds ~20MB to initial JS bundle — unacceptable for offline-first mobile UX.
-
-**Example:**
-```python
-# In payments.py
-@router.post("/checks/ocr", response_model=dict, dependencies=[require_sales])
-async def ocr_check_image(file: UploadFile):
-    import pytesseract
-    from PIL import Image
-    import io
-    content = await file.read()
-    img = Image.open(io.BytesIO(content))
-    text = pytesseract.image_to_string(img, lang="ara+eng")
-    # Return raw text; frontend parses into fields
-    return {"raw_text": text}
+```
+POST  /expenses                         Sales: log a field expense
+GET   /expenses/my?start_date=&end_date= Sales: list own expenses
+GET   /admin/expenses?rep_id=&date=      Admin: list expenses with filters
+PUT   /admin/expenses/{id}/confirm       Admin: confirm expense
+PUT   /admin/expenses/{id}/reject        Admin: reject with note
+POST  /expenses/receipt-upload           Sales: upload receipt image (same pattern as check image upload)
 ```
 
-**Frontend hook:**
-```typescript
-// hooks/useCheckOCR.ts
-export function useCheckOCR() {
-  const ocrMutation = useMutation({
-    mutationFn: (file: File) => salesApi.ocrCheckImage(file),
-  });
+### admin.py — Extend existing router
 
-  const extractFields = (rawText: string) => {
-    // Heuristic: find sequences that look like account numbers (digits), etc.
-    // Return partial match; user fills the rest
-    return { raw: rawText };
-  };
-
-  return { run: ocrMutation.mutateAsync, extractFields, isPending: ocrMutation.isPending };
-}
+```
+POST  /admin/reports/daily-cash                   Generate/refresh report for a rep+date
+GET   /admin/reports/daily-cash?date=&rep_id=     List reports with filters
+PUT   /admin/reports/daily-cash/{id}/confirm       Confirm receipt
+PUT   /admin/reports/daily-cash/{id}/flag          Flag discrepancy with note
 ```
 
-OCR accuracy on check photos will be imperfect — the UX must make clear results are suggestions. Auto-fill then let user correct.
+### purchases.py — New router
+
+```
+POST  /purchases    Sales: create a purchase-from-customer transaction
+```
+
+The purchase endpoint calls `PurchaseService` which wraps all writes in a single database transaction:
+1. Validate customer exists
+2. For each line item: load `Product` with `SELECT FOR UPDATE`, compute WAC, update `stock_qty` and `purchase_price`
+3. Create `Transaction(type=Purchase, amount=negative, data=line_items_snapshot)`
+4. Update `customer.balance += amount` (negative amount reduces balance / creates credit)
+
+### products.py — Minor extension
+
+```
+GET   /products/offline-snapshot    Full catalog for local cache (no pagination)
+```
+
+Cached in Redis at 30-minute TTL. Same shape as existing catalog list response. This endpoint exists so the frontend can fetch the full catalog in a single request for IndexedDB hydration.
+
+### customers.py — Minor extension
+
+```
+GET   /customers/{id}/statement/pdf?start_date=&end_date=    Returns PDF binary
+```
+
+Uses `weasyprint` + Jinja2 HTML template. Returns `Content-Type: application/pdf`. The Docker image must include `weasyprint` system dependencies and Noto Arabic fonts.
 
 ---
 
-### Pattern 6: Bank Name Autocomplete with localStorage History
+## Frontend Architecture Changes
 
-**What:** A combobox component that shows a dropdown of recently-used bank names. On each payment submission, the bank name is saved to `localStorage` (key: `alofok_banks_history`, max 20 items, deduped). No backend endpoint required.
+### Offline Catalog + Route Caching
 
-**When to use:** The set of banks a given sales rep encounters is small and repetitive. localStorage is sufficient; no need to query the server.
+The current `syncQueue` IndexedDB database handles mutation queuing. Catalog and route data are **read-only** and benefit from React Query's persistent cache backed by IndexedDB.
 
-**Trade-offs:** Per-device history (not shared across reps). Acceptable — each rep's bank set is personal. If cross-device history is needed later, a `GET /payments/checks/banks` endpoint returning distinct bank values from `Transaction.data->>'bank'` is straightforward to add via PostgreSQL JSONB extraction.
+Approach: bump IndexedDB version to 3, add `catalog_cache` and `route_cache` object stores. A new `lib/offlineCache.ts` module wraps access. React Query uses `placeholderData` to serve stale IndexedDB data while network fetch is in progress or unavailable.
 
-**Component pattern:**
 ```typescript
-// components/ui/BankAutocomplete.tsx
-const STORAGE_KEY = "alofok_banks_history";
-const MAX_HISTORY = 20;
+// lib/offlineCache.ts (NEW FILE)
+// Shares the openDB() helper with syncQueue — same DB, different stores
 
-export function saveBankToHistory(bank: string) {
-  const current: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-  const updated = [bank, ...current.filter((b) => b !== bank)].slice(0, MAX_HISTORY);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-}
+const VERSION = 3; // was 2 in syncQueue.ts
 
-export function getBankHistory(): string[] {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
+export const offlineCache = {
+  saveCatalog(products: Product[]): Promise<void>,   // writes to "catalog_cache" store
+  loadCatalog(): Promise<Product[] | null>,           // reads from "catalog_cache" store
+  saveRoute(date: string, data: RouteData): Promise<void>,
+  loadRoute(date: string): Promise<RouteData | null>,
 }
 ```
 
-Call `saveBankToHistory(bankName)` in `PaymentFlow.handleSubmit()` before mutation fires.
+React Query integration in existing hooks:
+
+```typescript
+// In RouteView or a shared hook
+const cachedCatalog = useRef<Product[] | null>(null);
+
+// On mount, load from IndexedDB
+useEffect(() => {
+  offlineCache.loadCatalog().then(d => { cachedCatalog.current = d });
+}, []);
+
+const { data: products } = useQuery({
+  queryKey: ["catalog"],
+  queryFn: () => salesApi.getOfflineSnapshot(),
+  staleTime: 30 * 60 * 1000,
+  placeholderData: () => cachedCatalog.current ?? undefined,
+});
+
+// Persist fresh data
+useEffect(() => {
+  if (products) offlineCache.saveCatalog(products);
+}, [products]);
+```
+
+The `syncQueue.ts` file's `openDB()` and `VERSION` constant must be updated to 3 and include the new stores in `onupgradeneeded`. The cleanest approach is to centralize the DB open logic in `offlineCache.ts` and import it from `syncQueue.ts` rather than duplicating.
+
+### Statement Custom Date Range
+
+`StatementView.tsx` currently has `FilterPreset = "zero" | "week" | "month" | "year"`. Extension:
+
+1. Add `"custom"` to the `FilterPreset` union
+2. When `preset === "custom"`, render a start/end `DatePicker` pair (existing UI component)
+3. The existing query param logic already handles `start_date` / `end_date`; no backend change needed
+
+### Statement PDF Export
+
+Add a "Download PDF" button in `StatementView.tsx` that:
+1. Calls `GET /customers/{id}/statement/pdf` with the current date range params
+2. Receives the binary response as a Blob
+3. Creates an object URL and triggers a download via `<a>` click
+
+```typescript
+async function handleDownloadPdf() {
+  const blob = await salesApi.downloadStatementPdf(customer.id, queryParams);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `statement-${customer.name}-${Date.now()}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+```
+
+PDF button is disabled with a tooltip when offline.
+
+### New Sales Components
+
+```
+frontend/src/components/Sales/
+├── ExpenseForm.tsx       NEW — form to log a field expense (category, amount, description, date, optional photo)
+├── ExpensesView.tsx      NEW — list own expenses, grouped by date, with status badges
+└── PurchaseFlow.tsx      NEW — reverse order flow (product picker, qty, purchase price per item)
+```
+
+`PurchaseFlow.tsx` reuses the product picker pattern from `OrderFlow.tsx`. Key differences:
+- User sets a **purchase price** per item (defaults to existing `product.purchase_price`)
+- WAC impact is shown as an info tooltip (frontend-estimated only; authoritative WAC computed server-side)
+- Submitted via `salesApi.createPurchase()` or queued offline in `syncQueue` as type `"purchase"`
+
+### New Admin Components
+
+```
+frontend/src/components/Admin/
+└── DailyCashReport.tsx    NEW — date navigator (prev/next day), per-rep summary cards with confirm/flag
+```
+
+Shown in Admin shell as a new tab or page. Each card shows: rep name, total cash by currency, check count/total, expenses total, confirm/flag actions.
+
+### Offline Queue Extension
+
+Extend `QueueItem.type` from `"order" | "payment"` to `"order" | "payment" | "purchase"`. Add purchase flushing in `useOfflineSync.ts`:
+
+```typescript
+if (item.type === "purchase") {
+  await salesApi.createPurchase(item.payload as PurchaseCreate);
+}
+```
 
 ---
 
 ## Data Flow
 
-### Flow 1: New Check Payment with Image + OCR
+### Expense Submission (Sales Rep)
 
 ```
-User taps "Capture Check Photo"
+ExpenseForm (submit)
+    ↓ [optional: upload receipt image first → POST /expenses/receipt-upload → get url]
+salesApi.createExpense(payload)
     ↓
-<input capture="environment"> opens camera (mobile) / file picker (desktop)
+POST /expenses
     ↓
-handleCameraCapture(file)
-    ├─→ salesApi.uploadCheckImage(file)  →  POST /payments/checks/upload-image
-    │       ↓ returns { url: "/static/checks/uuid.jpg" }
-    │       ↓ store imageUrl in local state
-    └─→ salesApi.ocrCheckImage(file)     →  POST /payments/checks/ocr
-            ↓ returns { raw_text: "..." }
-            ↓ extractFields() → auto-fill bank, account, holder in form
-            ↓ user verifies / corrects fields
-            ↓ CheckPreview SVG updates live from form state
-User taps Confirm
+ExpenseService.create_expense()
+    → writes Expense row (status: "pending", expense_date, created_by)
     ↓
-handleSubmit():
-  payload = { ..., data: { bank, branch_number, account_number, holder_name, due_date, image_url } }
-  saveBankToHistory(bank)
-  isOnline ? paymentMutation.mutate(payload) : syncQueue.push("payment", payload)
+React Query invalidate ["expenses", "my"]
     ↓
-POST /payments  →  PaymentService.create_payment()
-    ↓
-Transaction.data JSONB = { bank, branch_number?, account_number?, holder_name?, due_date?, image_url? }
-Transaction.status = Pending
+Admin sees expense in DailyCashReport summary for that day
 ```
 
-### Flow 2: Check Lifecycle Transition (Admin or Sales)
+### Daily Cash Report Generation and Confirmation
 
 ```
-Admin/Sales opens check list or StatementView
+Admin opens DailyCashReport for date D, rep R
     ↓
-Check card shows current status badge (Pending/Deposited)
-Deposit button visible if status = Pending
-Clear button visible if status = Deposited
-Return button visible if status = Pending | Deposited
+adminApi.getDailyCashReport(date, repId)
     ↓
-User taps "Mark Deposited"
+GET /admin/reports/daily-cash?date=D&rep_id=R
     ↓
-salesApi.updateCheckStatus(checkId, "Deposited")
-    →  PUT /payments/checks/{id}/status  { status: "Deposited" }
-    →  PaymentService.update_check_status()
-    →  validates transition (Pending → Deposited allowed)
-    →  txn.status = Deposited; commit
+AdminService.get_or_generate_report(date, rep_id)
+    → SELECT transactions WHERE created_by=R AND date=D AND type IN [Payment_Cash, Payment_Check]
+    → SELECT expenses WHERE created_by=R AND expense_date=D
+    → aggregate by currency, count checks, sum expenses
+    → UPSERT daily_cash_reports (on conflict update summary if status=pending)
+    → return report
     ↓
-React Query invalidates:  ["statement", customerId]  +  ["admin-debt-stats"]
+Admin reviews summary card → clicks "Confirm"
     ↓
-UI re-renders with updated badge
+PUT /admin/reports/daily-cash/{id}/confirm
+    → set confirmed_by, confirmed_at, status="confirmed"
+    → confirmed report is immutable (upsert guard on status check)
 ```
 
-### Flow 3: Offline Check Payment (No Image/OCR)
+### Purchase from Customer (WAC update)
 
 ```
-User fills check form fields manually (offline — no camera capture)
+PurchaseFlow (submit)
     ↓
-handleSubmit() → isOnline = false
+[offline] → syncQueue.push("purchase", payload)
+[online]  → salesApi.createPurchase(payload)
     ↓
-syncQueue.push("payment", payload)  →  IndexedDB
+POST /purchases
     ↓
-connectivity resumes → useOfflineSync drains queue
+PurchaseService.create_purchase() — single DB transaction:
+    for each line_item:
+        product = await session.get(Product, id, with_for_update=True)
+        new_stock = product.stock_qty + qty
+        new_wac = (product.stock_qty * product.purchase_price + qty * item_price) / new_stock
+        product.stock_qty = new_stock
+        product.purchase_price = new_wac
+    total = sum(qty * item_price for each item)
+    transaction = Transaction(type=Purchase, amount=-total, data=line_items_snapshot)
+    customer.balance += -total   # reduces balance (negative amount)
     ↓
-salesApi.createPayment(payload)  →  POST /payments
-    ↓ (same as online flow from here)
+React Query invalidate ["products"], ["customer", id], ["statement", id]
 ```
 
-Note: Check image upload and OCR require network — these features degrade gracefully when offline. The form fields remain fully manual-enterable. Image capture is disabled with a tooltip when offline.
+### Offline Catalog Hydration
+
+```
+App boots (online)
+    ↓
+useQuery(["catalog"]) fires → salesApi.getOfflineSnapshot() → GET /products/offline-snapshot
+    ↓ (cached in Redis 30min; returns full catalog)
+onSuccess callback → offlineCache.saveCatalog(data) → writes to IndexedDB catalog_cache
+    ↓
+Next app boot (offline)
+    ↓
+useQuery(["catalog"]) fires → network fails
+    ↓
+placeholderData → offlineCache.loadCatalog() → reads from IndexedDB catalog_cache
+    → products available for OrderFlow and PurchaseFlow
+```
+
+### Statement PDF Export
+
+```
+User taps "Download PDF" in StatementView
+    ↓
+[if offline] → show toast "PDF requires connection"; return
+[if online]  →
+salesApi.downloadStatementPdf(customerId, { start_date, end_date })
+    ↓
+GET /customers/{id}/statement/pdf?start_date=&end_date=
+    ↓
+StatementService.generate_pdf()
+    → query transactions in range (same logic as existing statement endpoint)
+    → render Jinja2 HTML template with Noto Arabic font
+    → weasyprint.HTML(string=html).write_pdf()
+    → return Response(content=pdf_bytes, media_type="application/pdf")
+    ↓
+Frontend: blob URL → anchor click → browser download dialog
+```
+
+---
+
+## Recommended Project Structure Changes
+
+```
+backend/app/
+├── api/endpoints/
+│   ├── expenses.py          NEW — expense CRUD + admin confirmation
+│   └── purchases.py         NEW — purchase-from-customer
+│   └── admin.py             EXTEND — daily cash report endpoints
+├── models/
+│   ├── expense.py           NEW — Expense + ExpenseCategory
+│   ├── daily_cash_report.py NEW — DailyCashReport
+│   └── transaction.py       EXTEND — add Purchase to TransactionType enum
+├── services/
+│   ├── expense_service.py   NEW
+│   ├── purchase_service.py  NEW — WAC logic, stock update, atomic transaction
+│   └── admin_service.py     EXTEND — daily cash report generation/upsert
+├── schemas/
+│   ├── expense.py           NEW — ExpenseCreate, ExpenseOut
+│   └── purchase.py          NEW — PurchaseCreate, PurchaseItemIn, PurchaseOut
+└── repositories/
+    └── expense_repository.py NEW
+
+backend/alembic/versions/
+    ├── XXXX_add_missing_transaction_indexes.py
+    ├── XXXX_add_purchase_to_transactiontype.py
+    ├── XXXX_add_expenses_table.py
+    └── XXXX_add_daily_cash_reports_table.py
+
+frontend/src/
+├── components/
+│   ├── Sales/
+│   │   ├── ExpenseForm.tsx       NEW
+│   │   ├── ExpensesView.tsx      NEW
+│   │   └── PurchaseFlow.tsx      NEW
+│   └── Admin/
+│       └── DailyCashReport.tsx   NEW
+├── lib/
+│   └── offlineCache.ts           NEW — catalog + route IndexedDB cache (bumps DB to version 3)
+└── services/
+    ├── salesApi.ts               EXTEND — expense, purchase, PDF download, offline snapshot
+    └── adminApi.ts               EXTEND — daily cash report endpoints
+```
+
+---
+
+## Architectural Patterns
+
+### Pattern 1: Atomic WAC Update with Row Lock
+
+**What:** Wrap stock update + WAC recalculation + transaction insert in a single `async with session.begin()` block with `SELECT FOR UPDATE` on each product row.
+
+**When to use:** Any operation where partial success leaves the system in an invalid state. A purchase that updates stock but fails to create the transaction record would corrupt inventory data.
+
+**Trade-offs:** `SELECT FOR UPDATE` serializes concurrent purchases of the same product. At this scale (one business, <10 reps), contention is negligible. Do not use for read-heavy endpoints.
+
+```python
+async def create_purchase(self, body: PurchaseCreate, creator_id: uuid.UUID):
+    async with self._session.begin():
+        total = Decimal(0)
+        line_items = []
+        for item in body.items:
+            product = await self._session.get(
+                Product, item.product_id, with_for_update=True
+            )
+            if product is None:
+                raise HorizonException(404, f"Product {item.product_id} not found")
+            current_stock = product.stock_qty or 0
+            current_price = product.purchase_price or item.price
+            new_stock = current_stock + item.qty
+            new_wac = (current_stock * current_price + item.qty * item.price) / new_stock
+            product.stock_qty = new_stock
+            product.purchase_price = new_wac
+            item_total = item.qty * item.price
+            total += item_total
+            line_items.append({
+                "product_id": str(item.product_id),
+                "qty": item.qty,
+                "price": str(item.price),
+                "new_wac": str(new_wac),
+            })
+        txn = Transaction(
+            customer_id=body.customer_id,
+            created_by=creator_id,
+            type=TransactionType.Purchase,
+            amount=-total,
+            currency=body.currency,
+            data={"items": line_items},
+        )
+        self._session.add(txn)
+        customer = await self._customers.get_by_id(body.customer_id)
+        customer.balance += -total
+```
+
+### Pattern 2: JSONB Snapshot for Audit Records
+
+**What:** When generating `DailyCashReport`, aggregate live data from transactions and expenses into a JSONB snapshot column. Once confirmed, the snapshot is immutable.
+
+**When to use:** Admin-facing audit records that must remain stable even if source data changes. The JSONB snapshot captures reality at point of confirmation.
+
+**Trade-offs:** Data duplication. Acceptable here because reports are audit artifacts, not the source of truth for balances. The upsert guard (`WHERE status = 'pending'`) prevents re-computing a confirmed report.
+
+```python
+async def get_or_generate_report(self, date: date, rep_id: uuid.UUID):
+    existing = await self._repo.get_by_date_and_rep(date, rep_id)
+    if existing and existing.status != "pending":
+        return existing  # confirmed/flagged — return as-is
+
+    # Aggregate fresh
+    payments = await self._transaction_repo.get_payments_for_rep_on_date(rep_id, date)
+    expenses = await self._expense_repo.get_expenses_for_rep_on_date(rep_id, date)
+    summary = self._build_summary(payments, expenses)
+
+    if existing:
+        existing.summary = summary
+        return await self._repo.update(existing)
+    return await self._repo.create(DailyCashReport(
+        report_date=date, sales_rep_id=rep_id, summary=summary
+    ))
+```
+
+### Pattern 3: IndexedDB Version Bump for New Stores
+
+**What:** Increment `VERSION` constant and register new stores in `onupgradeneeded`.
+
+**When to use:** Required whenever new IndexedDB object stores are added. Browsers call `onupgradeneeded` only when the version number increases.
+
+**Trade-offs:** All open tabs must close for the upgrade to proceed. The existing `onblocked` handler warns the user. This is a one-time event per user device.
+
+```typescript
+// lib/offlineCache.ts
+const DB_NAME = "alofok_offline";
+const VERSION = 3; // bumped from 2
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = (e.target as IDBOpenDBRequest).result;
+      // Existing stores from version 2 are preserved automatically
+      if (!db.objectStoreNames.contains("catalog_cache")) {
+        db.createObjectStore("catalog_cache", { keyPath: "key" });
+      }
+      if (!db.objectStoreNames.contains("route_cache")) {
+        db.createObjectStore("route_cache", { keyPath: "key" });
+      }
+    };
+    req.onblocked = () => {
+      console.warn("[offlineCache] IndexedDB upgrade blocked — close other tabs");
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+```
+
+**Note:** `syncQueue.ts` must be updated to use the same `VERSION = 3` and `openDB()` — or better, both modules share a single `openDB()` from `offlineCache.ts`.
+
+### Pattern 4: Offline Queue Type Extension for Purchases
+
+**What:** Extend `QueueItem.type` union and add a flush branch in `useOfflineSync.ts`.
+
+**When to use:** Any Sales Rep mutation that must survive offline.
+
+**Trade-offs:** Purchases modify stock and WAC server-side. Queued purchases flush sequentially (existing behaviour) so WAC calculations are always sequential. Stock conflict between a queued purchase and concurrent in-flight orders is out of scope for v1.2.
+
+```typescript
+// lib/syncQueue.ts
+export interface QueueItem {
+  id?: number;
+  type: "order" | "payment" | "purchase";  // "purchase" added
+  payload: unknown;
+  created_at: string;
+}
+
+// hooks/useOfflineSync.ts — add branch in flush()
+if (item.type === "purchase") {
+  await salesApi.createPurchase(item.payload as PurchaseCreate);
+}
+```
+
+### Pattern 5: Server-Side PDF with weasyprint
+
+**What:** Backend endpoint generates PDF from a Jinja2 HTML template, rendered by `weasyprint`. Returns binary `application/pdf` response.
+
+**When to use:** Arabic RTL text in PDFs. `weasyprint` uses CSS for layout and respects `direction: rtl` — the same CSS skills used throughout the app. `reportlab` requires separate Arabic reshaping libraries and is harder to style.
+
+**Trade-offs:** `weasyprint` requires system packages in the Docker image (`libpango`, fonts). Adds ~80MB to the Docker image. Acceptable for a self-hosted single-business app.
+
+```dockerfile
+# backend/Dockerfile addition
+RUN apt-get install -y \
+    fonts-noto-core \
+    libpango-1.0-0 \
+    libpangoft2-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libffi-dev \
+    shared-mime-info
+```
+
+```python
+# backend/services/statement_service.py (extend existing)
+from weasyprint import HTML
+
+async def generate_statement_pdf(
+    self, customer_id: uuid.UUID, start_date: date, end_date: date
+) -> bytes:
+    transactions = await self._transactions.get_statement(customer_id, start_date, end_date)
+    html_content = render_template("statement.html", transactions=transactions, ...)
+    return HTML(string=html_content).write_pdf()
+```
 
 ---
 
 ## Integration Points
 
-### Backend Integration Points
+### New vs Modified: Complete Matrix
 
-| Point | Type | What Changes |
-|-------|------|--------------|
-| `POST /payments` | MODIFIED | `PaymentCreate.data` accepts `CheckData` model with 6 fields; validation updated to require only `bank` as mandatory for checks |
-| `PUT /payments/checks/{id}/status` | MODIFIED | Now accepts any valid `TransactionStatus` (not just Returned); service routes Returned through existing `return_check()` |
-| `POST /payments/checks/upload-image` | NEW | `UploadFile` → writes to `static/checks/`, returns URL; same auth as payments |
-| `POST /payments/checks/ocr` | NEW | `UploadFile` → pytesseract → returns `{raw_text}` |
-| `app/schemas/transaction.py` | MODIFIED | Add `CheckData` Pydantic model; replace `data: dict | None` with `data: CheckData | None` in `PaymentCreate` |
-| `PaymentService.update_check_status()` | NEW METHOD | Handles Deposited and Cleared transitions; delegates Returned to existing `return_check()` |
-| `Dockerfile` | MODIFIED | Add `tesseract-ocr` + `python-pytesseract` + `Pillow` to image |
-| Admin overdue query in `admin_service.py` | REVIEW | Raw SQL extracts `t.data->>'bank'` — will continue to work; optionally extend to surface new fields |
+| Component | Status | What Changes |
+|-----------|--------|--------------|
+| `models/expense.py` | NEW | Expense model + ExpenseCategory enum |
+| `models/daily_cash_report.py` | NEW | DailyCashReport model with UniqueConstraint |
+| `models/transaction.py` | MODIFIED | Add `Purchase` to `TransactionType` enum |
+| `schemas/expense.py` | NEW | ExpenseCreate, ExpenseOut Pydantic models |
+| `schemas/purchase.py` | NEW | PurchaseCreate, PurchaseItemIn, PurchaseOut |
+| `services/expense_service.py` | NEW | create, list, confirm, reject |
+| `services/purchase_service.py` | NEW | create_purchase with WAC + atomic transaction |
+| `services/admin_service.py` | MODIFIED | Add report generation, confirmation, flagging |
+| `api/endpoints/expenses.py` | NEW | Sales + admin expense endpoints |
+| `api/endpoints/purchases.py` | NEW | POST /purchases |
+| `api/endpoints/admin.py` | MODIFIED | Daily cash report endpoints |
+| `api/endpoints/products.py` | MODIFIED | Add GET /products/offline-snapshot |
+| `api/endpoints/customers.py` | MODIFIED | Add GET /customers/{id}/statement/pdf |
+| `repositories/expense_repository.py` | NEW | CRUD + filtered list queries |
+| `Dockerfile` | MODIFIED | Add weasyprint system deps + Noto fonts |
+| Alembic migrations | NEW (4 files) | indexes, Purchase enum, expenses table, daily_cash_reports table |
+| `lib/offlineCache.ts` | NEW | IndexedDB version 3, catalog_cache + route_cache stores |
+| `lib/syncQueue.ts` | MODIFIED | Version bump to 3 (share openDB with offlineCache), add "purchase" type |
+| `hooks/useOfflineSync.ts` | MODIFIED | Add purchase flush branch |
+| `services/salesApi.ts` | MODIFIED | Add createExpense, createPurchase, getOfflineSnapshot, downloadStatementPdf |
+| `services/adminApi.ts` | MODIFIED | Add daily cash report CRUD |
+| `components/Sales/ExpenseForm.tsx` | NEW | Log field expense |
+| `components/Sales/ExpensesView.tsx` | NEW | List own expenses |
+| `components/Sales/PurchaseFlow.tsx` | NEW | Reverse order flow |
+| `components/Sales/StatementView.tsx` | MODIFIED | Add custom date preset + PDF download button |
+| `components/Admin/DailyCashReport.tsx` | NEW | Daily cash reconciliation UI |
+| `locales/en.json` + `ar.json` | MODIFIED | New keys for all new features |
 
-### Frontend Integration Points
+### Internal Boundaries
 
-| Point | Type | What Changes |
-|-------|------|--------------|
-| `Sales/PaymentFlow.tsx` — check tab | MODIFIED | Add: branch_number, account_number, holder_name fields; BankAutocomplete; camera button; OCR trigger; CheckPreview render |
-| `services/salesApi.ts` | MODIFIED | Expand `PaymentCreate.data` type; add `uploadCheckImage()`, `ocrCheckImage()`, `updateCheckStatus()` |
-| `services/adminApi.ts` | MODIFIED | Add `updateCheckStatus()` for Admin check management |
-| `Sales/StatementView.tsx` | MODIFIED | Check transaction rows render expanded data fields; add status transition buttons for Pending/Deposited checks |
-| `ui/CheckPreview.tsx` | NEW | Inline SVG component; props-only, no side effects |
-| `ui/BankAutocomplete.tsx` | NEW | Combobox + localStorage history; uses existing `Input` + `dropdown-menu` patterns |
-| `hooks/useCheckOCR.ts` | NEW | Wraps OCR mutation, handles loading state, returns field candidates |
-| `locales/en.json` + `ar.json` | MODIFIED | New keys: `payment.branchNumber`, `payment.accountNumber`, `payment.holderName`, `payment.captureCheck`, `payment.ocrAutoFill`, `payment.checkPreview`, `payment.checkStatus.*`, `actions.deposit`, `actions.clear` |
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| ExpenseService ↔ TransactionRepo | None — no shared state | Expenses are fully independent of transaction balance logic |
+| PurchaseService ↔ ProductModel | Direct async SA write with row lock | No cache invalidation in service — endpoint handles React Query invalidation signal |
+| PurchaseService ↔ CustomerRepo | Shared — updates `customer.balance` | Same repo.update() pattern as OrderService |
+| AdminService ↔ ExpenseRepo | Read-only — includes expenses in daily cash summary | One-way dependency: admin service reads expenses but does not write them |
+| offlineCache ↔ syncQueue | Same IndexedDB database, different stores | Must share VERSION constant and coordinate `onupgradeneeded` |
+| StatementService ↔ weasyprint | In-process library call | PDF rendered synchronously in the endpoint; acceptable at low volume |
 
 ---
 
-## Build Order (Dependency-First)
+## Build Order (Dependency Graph)
 
-This order ensures each phase can be tested without waiting for later phases:
+Dependencies run top to bottom. Independent tracks can be parallelized.
 
-**1. Backend: JSONB schema expansion + status transitions** (no frontend dependency)
-- Update `CheckData` Pydantic model in `schemas/transaction.py`
-- Update `PaymentService.update_check_status()` with state machine
-- Modify `PUT /payments/checks/{id}/status` to use new service method
-- Test: POST check with extended data; PUT status through all transitions
-- No Alembic migration needed
+```
+Track A (DB foundation — must ship first, unblocks everything)
+    1. Alembic: add missing transaction indexes      (no code change, immediate perf win)
+    2. Alembic: add Purchase to TransactionType enum (unblocks purchase service)
+    3. Alembic: add expenses table                   (unblocks expense endpoints)
+    4. Alembic: add daily_cash_reports table         (unblocks cash report endpoints)
 
-**2. Backend: Image upload + OCR endpoints** (depends on #1 for context; independent of frontend)
-- Add `POST /payments/checks/upload-image` (copy avatar upload pattern)
-- Add pytesseract + Pillow to Docker image
-- Add `POST /payments/checks/ocr`
-- Test: Upload image, verify URL in static; upload image, verify raw_text returned
+Track B (Expense feature — after step 3)
+    5. Expense model + schemas
+    6. ExpenseService + ExpenseRepository
+    7. expense.py endpoints (Sales + Admin)
+    8. Sales: ExpenseForm.tsx + ExpensesView.tsx
+    9. Admin: DailyCashReport.tsx (reads expenses as part of summary)
 
-**3. Frontend: API types + service layer** (depends on #1, #2 complete)
-- Update `PaymentCreate.data` type in `salesApi.ts`
-- Add `uploadCheckImage()`, `ocrCheckImage()`, `updateCheckStatus()` to `salesApi.ts`
-- Update `adminApi.ts` with check status action
-- Update locale files (en.json + ar.json) with all new keys
+Track C (Purchase feature — after step 2)
+    10. PurchaseService (WAC logic)
+    11. purchases.py endpoint
+    12. Extend syncQueue.ts + useOfflineSync.ts for "purchase" type
+    13. Sales: PurchaseFlow.tsx
 
-**4. Frontend: CheckPreview SVG component** (no backend dependency; pure UI)
-- Build `ui/CheckPreview.tsx` as pure presentational component
-- Use Storybook-style isolation: render with dummy props to calibrate coordinates
-- This can be built in parallel with step 3
+Track D (Offline caching — independent of B and C)
+    14. products.py: GET /products/offline-snapshot
+    15. offlineCache.ts (IndexedDB version 3, new stores)
+    16. Integrate placeholderData in catalog/route queries
 
-**5. Frontend: BankAutocomplete component** (no backend dependency; localStorage only)
-- Build `ui/BankAutocomplete.tsx`
-- Can be built in parallel with steps 3 and 4
+Track E (Statement enhancements — independent of all tracks)
+    17. StatementView.tsx: add custom date preset (no backend change)
+    18. Dockerfile: weasyprint system deps + Noto fonts
+    19. StatementService: generate_pdf()
+    20. customers.py: GET /customers/{id}/statement/pdf
+    21. StatementView.tsx: PDF download button
 
-**6. Frontend: PaymentFlow enhancement** (depends on #3, #4, #5)
-- Extend check tab with 4 new fields
-- Integrate BankAutocomplete for bank field
-- Add CheckPreview below the form fields
-- Add camera capture button (`<input capture="environment">`)
-- Wire useCheckOCR hook: image → OCR → auto-fill
+Track F (Daily cash report — after B + step 1)
+    22. AdminService extension: report generation + confirmation
+    23. admin.py: daily cash report endpoints
+    24. Admin: DailyCashReport.tsx (depends on B step 9 if expense totals are included)
+```
 
-**7. Frontend: Check lifecycle UI in StatementView** (depends on #3)
-- Render expanded `data` fields on check transaction cards
-- Add Deposit/Clear/Return action buttons conditional on status
-- React Query invalidation on success
-
-**8. Admin check management** (depends on #3, #7)
-- Admin panel check list with lifecycle actions (Deposit/Clear/Return)
-- Extends existing overdue check list in Overview.tsx
+Suggested sprint order if one developer: A → B (5-9) → C (10-13) → D (14-16) → E (17-21) → F (22-24). Tracks B and C can be parallelized by two developers after Track A ships.
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Storing Bank History in the Database
+### Anti-Pattern 1: Adding Expenses to the Transactions Table
 
-**What people do:** Create a `GET /payments/checks/banks` endpoint that queries `SELECT DISTINCT data->>'bank' FROM transactions` to power the autocomplete.
+**What people do:** Add `type=Expense` to `TransactionType`, reuse the transactions table.
 
-**Why it's wrong:** Adds a network round-trip and a new endpoint for something that can be solved with localStorage. The rep's personal bank history (5-15 banks) fits easily in localStorage. A database query returns all reps' banks — creating noise rather than relevance.
+**Why it's wrong:** `transactions.customer_id` is NOT NULL. Expenses have no customer. All balance calculations (`SELECT SUM(amount) FROM transactions WHERE customer_id = X`) would need `WHERE type != 'Expense'` guards added everywhere — a pervasive correctness risk.
 
-**Do this instead:** localStorage with per-device history capped at 20 entries. If cross-device sync is needed in a future milestone, the PostgreSQL JSONB distinct-query endpoint is a 10-line addition at that point.
+**Do this instead:** Separate `expenses` table with its own model, service, and endpoints.
 
----
+### Anti-Pattern 2: Client-Side WAC Calculation
 
-### Anti-Pattern 2: Client-Side Tesseract.js for OCR
+**What people do:** Compute WAC in the frontend and display it as the result, trusting the frontend calculation.
 
-**What people do:** Import `tesseract.js` in the frontend and run OCR in the browser to avoid a new backend endpoint.
+**Why it's wrong:** If two reps submit purchases of the same product concurrently, both read the same `stock_qty` before either updates it. The result is two incorrect WAC values being written. WAC must be calculated with `SELECT FOR UPDATE` server-side.
 
-**Why it's wrong:** Tesseract.js loads a ~20MB WebAssembly bundle. On mobile networks, this is a 30-60 second first-load penalty. The app is offline-first and targets field sales reps on mobile — the bundle cost is unacceptable. Browser-side OCR also has lower accuracy on Arabic text vs server-side Tesseract with `lang="ara"`.
+**Do this instead:** Show a WAC preview in the UI (estimated, clearly labelled), but authoritative WAC is always written by the backend inside a locked transaction.
 
-**Do this instead:** Server-side pytesseract endpoint. Adds ~50MB to the Docker image (one-time build cost, not per-request). OCR only triggers when online — clearly communicated in the UI.
+### Anti-Pattern 3: Not Versioning the IndexedDB Schema
 
----
+**What people do:** Add new object stores without incrementing the database version.
 
-### Anti-Pattern 3: Multipart Check Submission (Image + Payment in One Request)
+**Why it's wrong:** Browsers only call `onupgradeneeded` when the version number increases. Without a bump, the new stores are never created; `offlineCache.saveCatalog()` throws `DOMException: The specified object store was not found`.
 
-**What people do:** Restructure `POST /payments` to accept `multipart/form-data` so image and payment data submit together in one request.
+**Do this instead:** Every time a new IndexedDB store is added, increment `VERSION` and handle creation in `onupgradeneeded`. The existing `onblocked` handler already addresses the "close other tabs" UX.
 
-**Why it's wrong:** Requires restructuring the payment creation endpoint, breaking the existing `PaymentCreate` JSON schema that the offline sync queue serializes. The sync queue stores plain JSON — binary image data cannot be queued in IndexedDB without complex Blob serialization.
+### Anti-Pattern 4: Client-Side PDF Generation
 
-**Do this instead:** Two-step: upload image first (online-only action), get `image_url`, include in payment payload. If offline, disable image capture and require manual field entry. Keep the payment endpoint as JSON.
+**What people do:** Use `jsPDF` or `html2canvas` to generate the statement PDF in the browser.
 
----
+**Why it's wrong:** Arabic RTL text shaping in `jsPDF` is unreliable without significant extra work. `html2canvas` captures visual output (not print-quality). Both approaches produce inconsistent results across devices and browsers.
 
-### Anti-Pattern 4: Check Status Transitions Without State Machine Validation
+**Do this instead:** `weasyprint` server-side with the Noto Arabic font. The HTML template uses the same CSS RTL layout as the app. Output is consistent and printable.
 
-**What people do:** Accept any status value in the update endpoint and write it directly to the database without checking current state.
+### Anti-Pattern 5: Pagination on the Offline Snapshot Endpoint
 
-**Why it's wrong:** Allows impossible transitions (Cleared → Pending). Creates data integrity bugs that are hard to detect and corrects. The `TransactionStatus` enum already has the right values — the missing piece is the transition table.
+**What people do:** Reuse the paginated catalog endpoint for offline hydration, fetching page by page.
 
-**Do this instead:** Explicit `_ALLOWED_TRANSITIONS` dict in the service layer. Raises `409 Conflict` for invalid transitions. Terminal states (Returned, Cleared) have empty allowed sets.
+**Why it's wrong:** Offline hydration requires the complete catalog in a single IndexedDB write. Multiple paginated requests introduce partial failure risk — if page 3 fails, the catalog is incomplete. The Sales Rep then sees truncated product lists offline.
 
----
-
-### Anti-Pattern 5: RTL Check Preview
-
-**What people do:** Render the SVG check preview in RTL because the app is Arabic-first.
-
-**Why it's wrong:** Bank checks are a globally standardized LTR document format regardless of the surrounding UI language. An RTL check preview would be unrecognizable as a check and confuse users. PROJECT.md explicitly calls out "LTR check layout — standard check format, universal numerals."
-
-**Do this instead:** `direction="ltr"` on the SVG root. `unicode-bidi="embed"` on text elements if needed. The surrounding UI stays RTL; the check card is isolated.
+**Do this instead:** Dedicated `GET /products/offline-snapshot` that returns the full catalog in one request. Cache it in Redis at a longer TTL (30 min). Size is bounded by the catalog size (~200-500 products for a painting tools business — well within HTTP response limits).
 
 ---
 
 ## Scaling Considerations
 
-This milestone adds no architectural changes that affect scale. The check domain is low-volume (tens per day per rep). The main concern is practical:
+| Scale | Considerations |
+|-------|---------------|
+| Current (1 business, <10 reps) | All patterns above are appropriate. Monolith is correct. |
+| 10-50 businesses | Add `tenant_id` to expenses and daily_cash_reports. Partition transactions table if it exceeds 10M rows. |
+| 50+ businesses | Separate read replicas for reporting (daily cash, statement PDF). Offload PDF generation to a background task queue (Celery/ARQ) if response times exceed 5s. |
 
-| Concern | Current Scale | Consideration |
-|---------|---------------|---------------|
-| Static check images | Per rep: ~5/day | `/static/checks/` dir grows indefinitely — add periodic cleanup or S3 migration in a future milestone |
-| OCR endpoint load | Sporadic, not cached | Synchronous pytesseract is fine at this scale; async subprocess if it blocks event loop |
-| JSONB query performance | Admin overdue check SQL uses `data->>'bank'` | Add GIN index on `transactions.data` if query time degrades: `CREATE INDEX ON transactions USING GIN (data)` |
+First bottleneck at current scale: the `transactions` table growing without indexes. This is why the index migration is build step 1 — it must ship before the rest of v1.2.
+
+Second bottleneck: weasyprint PDF generation is synchronous and may block a FastAPI worker for 0.5-2s per request. Acceptable at current volume (<5 PDFs/day). Use `asyncio.to_thread(HTML(...).write_pdf)` to avoid blocking the event loop.
 
 ---
 
 ## Sources
 
-- Direct codebase analysis: `backend/app/models/transaction.py`, `services/payment_service.py`, `api/endpoints/payments.py`, `schemas/transaction.py`
-- Direct codebase analysis: `frontend/src/components/Sales/PaymentFlow.tsx`, `StatementView.tsx`
-- Direct codebase analysis: `frontend/src/services/salesApi.ts`, `lib/syncQueue.ts`, `lib/image.ts`
-- Direct codebase analysis: `backend/app/services/admin_service.py` (overdue check query pattern)
-- [Tesseract.js GitHub](https://github.com/naptha/tesseract.js) — browser OCR, v6.0.0 WASM bundle size
-- [MDN: HTML capture attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/capture) — camera capture on mobile, confirmed July 2025
-- [FastAPI Partial Updates](https://fastapi.tiangolo.com/tutorial/body-updates/) — `exclude_unset` pattern for PATCH/JSONB
-- [SQLAlchemy JSONB partial update](https://www.geeksforgeeks.org/partial-json-update-using-sqlalchemy-expression/) — JSONB merge operator
-- [pytesseract PyPI](https://pypi.org/project/pytesseract/) — Python Tesseract wrapper for backend OCR
+- Direct inspection: `backend/app/models/transaction.py`, `product.py`
+- Direct inspection: `backend/app/api/endpoints/admin.py`, `payments.py`
+- Direct inspection: `backend/app/services/order_service.py` (WAC pattern template)
+- Direct inspection: `frontend/src/lib/syncQueue.ts`, `hooks/useOfflineSync.ts`
+- Direct inspection: `frontend/src/components/Sales/StatementView.tsx`
+- Project context: `.planning/PROJECT.md`
+- weasyprint Arabic RTL: MEDIUM confidence — CSS-based layout, works with system Noto fonts; tested pattern in Python PDF generation community
+- `SELECT FOR UPDATE` with async SQLAlchemy: HIGH confidence — standard SQLAlchemy pattern, `with_for_update=True` on `session.get()`
+- IndexedDB version upgrade behaviour: HIGH confidence — MDN Web Docs specification
 
 ---
 
-*Architecture research for: Check Enhancement Integration (Alofok v1.1)*
-*Researched: 2026-03-04*
+*Architecture research for: Alofok v1.2 Business Operations*
+*Researched: 2026-03-05*
