@@ -1,58 +1,76 @@
-# Requirements: Alofok v1.1 — Check Enhancement
+# Requirements: Alofok
 
-**Defined:** 2026-03-04
-**Core Value:** Sales Reps can capture complete check data with visual confirmation, and Admins can manage check lifecycle from pending to cleared.
+**Defined:** 2026-03-05
+**Core Value:** Sales Reps can visit customers, take orders, collect payments, and resolve balance disputes — even with no internet connectivity.
 
-## v1.1 Requirements
+## v1.2 Requirements
 
-Requirements for this milestone. Each maps to roadmap phases.
+Requirements for v1.2 Business Operations milestone. Each maps to roadmap phases.
 
-### Check Data
+### Database Performance
 
-- [x] **CHK-01**: User can enter bank number (required for check payments)
-- [x] **CHK-02**: User can enter branch number (required for check payments)
-- [x] **CHK-03**: User can enter account number (required for check payments)
-- [x] **CHK-04**: User can enter holder name (optional)
-- [x] **CHK-05**: User can select bank name from dropdown of previously used banks or type a new one
-- [x] **CHK-06**: Existing check records (pre-v1.1) load without errors through all read paths
-- [x] **CHK-07**: Backend validates check data via typed CheckData model (not raw dict)
+- [ ] **DB-01**: System has indexes on transactions.created_by, type, status, and compound index on (created_by, type, created_at)
 
-### Check Preview
+### Expense Tracking
 
-- [x] **PRV-01**: User sees a realistic LTR bank check SVG that updates live as they type
-- [x] **PRV-02**: Check SVG shows bank name (top left), holder name (top right), date + amount + currency (center), MICR strip `#check# #branch#extra# #account#` (bottom)
-- [x] **PRV-03**: Amount is displayed both as digits and written-out words (English)
-- [x] **PRV-04**: Check SVG renders correctly when app language is Arabic (no RTL mirroring)
-- [x] **PRV-05**: Check SVG input updates are performant on mid-range Android (no input lag)
+- [ ] **EXP-01**: Sales rep can log a field expense with amount, currency, category, date, and notes
+- [ ] **EXP-02**: Admin can log a business expense with amount, currency, category, date, and notes
+- [ ] **EXP-03**: Admin can view all expenses filterable by rep, date range, and status
+- [ ] **EXP-04**: Sales rep can view their own submitted expenses
+- [ ] **EXP-05**: Admin can confirm or flag an expense with optional notes
 
-### Check Lifecycle
+### Daily Cash Report
 
-- [x] **LCY-01**: Admin can mark a Pending check as Deposited
-- [x] **LCY-02**: Admin can mark a Pending or Deposited check as Returned (creates Check_Return debit transaction)
-- [x] **LCY-03**: Backend enforces valid transitions only (rejects invalid ones with 409)
-- [x] **LCY-04**: Invalid transition buttons are disabled/hidden in the UI
-- [x] **LCY-05**: Check status is visible in customer statement and admin views
+- [ ] **CASH-01**: Admin can view a daily cash report showing all incoming payments (cash + checks) and all outgoing expenses across all salesmen and admin
+- [ ] **CASH-02**: Admin can traverse dates (prev/next day) to view different days' reports
+- [ ] **CASH-03**: Admin can confirm receiving a salesman's daily cash handover
+- [ ] **CASH-04**: Admin can flag a discrepancy in a salesman's handover with notes
+- [ ] **CASH-05**: Discrepancies (>5% difference) are visually highlighted in the report
 
-### Check Image
+### Offline Caching
 
-- [x] **IMG-01**: User can take a photo of a check using device camera
-- [x] **IMG-02**: User can select a check photo from device gallery
-- [x] **IMG-03**: Check photo is uploaded to server and URL stored with check data
-- [x] **IMG-04**: Check photo works across iOS, Android Chrome, and desktop browsers
-- [x] **IMG-05**: Offline check payments queue the image separately (no base64 bloat in sync queue)
+- [ ] **OFFL-01**: Product catalog is cached in IndexedDB and available when offline
+- [ ] **OFFL-02**: Route data (customers, today's orders) is cached and available offline
+- [ ] **OFFL-03**: Stale cached data shows a "last updated" freshness indicator
 
-### OCR
+### Purchase from Customer
 
-- [x] **OCR-01**: User can trigger OCR scan from a captured check photo
-- [x] **OCR-02**: OCR pre-fills form fields (bank number, branch number, account number, amount, holder name)
-- [x] **OCR-03**: OCR results show confidence indicators (high/medium/low per field)
-- [x] **OCR-04**: OCR never auto-submits — user must review and confirm
-- [x] **OCR-05**: OCR works offline (client-side Tesseract.js, language packs cached after first load)
-- [x] **OCR-06**: OCR gracefully handles failure (shows error state, form remains usable)
+- [ ] **PURCH-01**: Sales rep can create a purchase from a customer by selecting products, quantities, and prices
+- [ ] **PURCH-02**: Purchase transaction credits the customer's balance (reduces what they owe)
+- [ ] **PURCH-03**: Purchase increases product stock_qty by the purchased quantity
+- [ ] **PURCH-04**: Product purchase_price is recalculated using weighted-average cost formula
+- [ ] **PURCH-05**: Purchase transactions appear in customer statement with distinct label
+
+### Statement Enhancements
+
+- [ ] **STMT-01**: User can select a custom date range (from/to) for customer statements
+- [ ] **STMT-02**: User can export the current statement view as a PDF document
+- [ ] **STMT-03**: PDF supports Arabic text and RTL layout
+
+## v1.1 Requirements (Complete)
+
+All v1.1 Check Enhancement requirements shipped — 28/28 complete. See MILESTONES.md for details.
 
 ## Future Requirements
 
-Deferred to future milestone. Tracked but not in current roadmap.
+Deferred to future release. Tracked but not in current roadmap.
+
+### Notifications
+
+- **NOTF-01**: Admin receives in-app notifications for key events
+- **NOTF-02**: Sales rep receives in-app notifications for key events
+
+### Offline Expenses
+
+- **OFFL-04**: Sales rep can submit expenses while offline (queued and synced)
+
+### Expense Receipt Photos
+
+- **EXP-06**: Sales rep can attach a receipt photo to an expense
+
+### Cash Report Enhancements
+
+- **CASH-06**: Admin can export daily cash report as CSV
 
 ### Check Management
 
@@ -60,21 +78,22 @@ Deferred to future milestone. Tracked but not in current roadmap.
 - **CMGT-02**: Admin can batch-select checks for deposit
 - **CMGT-03**: Check reconciliation view against bank statements
 
-### Check Automation
-
-- **CAUT-01**: Notification when check due date is approaching
-- **CAUT-02**: Automatic reminders for overdue checks
-
 ## Out of Scope
+
+Explicitly excluded. Documented to prevent scope creep.
 
 | Feature | Reason |
 |---------|--------|
-| MICR magnetic ink decoding | Mobile cameras cannot read MICR magnetic encoding — manual entry with visual preview is sufficient |
-| Automatic check status progression (cron) | Business rules vary by bank; auto-advancing without human confirmation creates false accounting state |
-| Server-side OCR | Breaks offline-first requirement; client-side Tesseract.js works in Web Worker |
-| Full auto-OCR without review | 60-85% accuracy on mobile check photos; financial data errors cost more than typing |
-| Check batching/reconciliation | Beyond current needs; overdue checks table is sufficient |
-| Cleared status | User chose Deposit + Return only for this milestone |
+| Capacitor mobile wrapper | Defer to future milestone |
+| Notification system | Deferred from v1.2, not critical yet |
+| Check batching/reconciliation | Beyond current needs |
+| Expense approval multi-level workflow | Overkill for small office — simple confirm/flag sufficient |
+| Server-side PDF generation | Breaks offline-first; client already has data |
+| jsPDF for statements | Arabic RTL rendering issues; @react-pdf/renderer is superior |
+| Automatic WAC on product edit | Would corrupt manually set purchase prices |
+| Real-time cash report sync | EOD reconciliation doesn't need WebSocket; page refresh sufficient |
+| Supplier/purchase order management | Different domain from customer buy-back |
+| Expense receipt photo upload | Not needed per user — no receipt image capture |
 
 ## Traceability
 
@@ -82,40 +101,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CHK-01 | Phase 6 | Complete |
-| CHK-02 | Phase 6 | Complete |
-| CHK-03 | Phase 6 | Complete |
-| CHK-04 | Phase 6 | Complete |
-| CHK-05 | Phase 6 | Complete |
-| CHK-06 | Phase 6 | Complete |
-| CHK-07 | Phase 6 | Complete |
-| PRV-01 | Phase 7 | Complete |
-| PRV-02 | Phase 7 | Complete |
-| PRV-03 | Phase 7 | Complete |
-| PRV-04 | Phase 7 | Complete |
-| PRV-05 | Phase 7 | Complete |
-| LCY-01 | Phase 8 | Complete |
-| LCY-02 | Phase 8 | Complete |
-| LCY-03 | Phase 8 | Complete |
-| LCY-04 | Phase 8 | Complete |
-| LCY-05 | Phase 8 | Complete |
-| IMG-01 | Phase 9 | Complete |
-| IMG-02 | Phase 9 | Complete |
-| IMG-03 | Phase 9 | Complete (09-01) |
-| IMG-04 | Phase 9 | Complete |
-| IMG-05 | Phase 9 | Complete (09-01) |
-| OCR-01 | Phase 9 | Complete |
-| OCR-02 | Phase 9 | Complete |
-| OCR-03 | Phase 9 | Complete |
-| OCR-04 | Phase 9 | Complete |
-| OCR-05 | Phase 9 | Complete |
-| OCR-06 | Phase 9 | Complete |
+| DB-01 | — | Pending |
+| EXP-01 | — | Pending |
+| EXP-02 | — | Pending |
+| EXP-03 | — | Pending |
+| EXP-04 | — | Pending |
+| EXP-05 | — | Pending |
+| CASH-01 | — | Pending |
+| CASH-02 | — | Pending |
+| CASH-03 | — | Pending |
+| CASH-04 | — | Pending |
+| CASH-05 | — | Pending |
+| OFFL-01 | — | Pending |
+| OFFL-02 | — | Pending |
+| OFFL-03 | — | Pending |
+| PURCH-01 | — | Pending |
+| PURCH-02 | — | Pending |
+| PURCH-03 | — | Pending |
+| PURCH-04 | — | Pending |
+| PURCH-05 | — | Pending |
+| STMT-01 | — | Pending |
+| STMT-02 | — | Pending |
+| STMT-03 | — | Pending |
 
 **Coverage:**
-- v1.1 requirements: 28 total
-- Mapped to phases: 28
-- Unmapped: 0
+- v1.2 requirements: 22 total
+- Mapped to phases: 0
+- Unmapped: 22 ⚠️
 
 ---
-*Requirements defined: 2026-03-04*
-*Last updated: 2026-03-04 after roadmap creation*
+*Requirements defined: 2026-03-05*
+*Last updated: 2026-03-05 after initial definition*
