@@ -501,6 +501,9 @@
     "incoming": "Incoming",
     "outgoing": "Outgoing",
     "repHandovers": "Rep Handovers",
+    "selectRep": "Select Representative",
+    "paymentType": "Payment Type",
+    "paymentTime": "Time",
     "statCardLabel": "Today's Cash",
     "pendingStatus": "Pending",
     "confirmedStatus": "Confirmed",
@@ -509,6 +512,10 @@
     "expensesList": "Expenses",
     "confirmedAt": "Confirmed at",
     "confirmedBy": "by"
+  },
+  "payment": {
+    "cash": "Cash",
+    "check": "Check"
   },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",

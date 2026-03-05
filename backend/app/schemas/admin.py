@@ -99,6 +99,22 @@ class DailyCashReportOut(BaseModel):
     reps: list[RepCashSummaryOut]
 
 
+class RepPaymentDetail(BaseModel):
+    transaction_id: uuid.UUID
+    customer_id: uuid.UUID
+    customer_name: str
+    type: str  # Payment_Cash or Payment_Check
+    amount: Decimal
+    created_at: datetime
+
+
+class RepPaymentsOut(BaseModel):
+    rep_id: uuid.UUID
+    rep_name: str
+    report_date: str
+    payments: list[RepPaymentDetail]
+
+
 class ConfirmHandoverIn(BaseModel):
     rep_id: uuid.UUID
     report_date: date

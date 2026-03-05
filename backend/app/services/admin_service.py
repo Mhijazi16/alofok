@@ -25,6 +25,8 @@ from app.schemas.admin import (
     OverdueCheckOut,
     RepCashSummaryOut,
     RepConfirmationOut,
+    RepPaymentDetail,
+    RepPaymentsOut,
     SalesRepStatsOut,
     SalesStatsOut,
 )
@@ -414,6 +416,55 @@ class AdminService:
         )
         await self.db.execute(stmt)
         await self.db.commit()
+
+    async def get_rep_payment_details(
+        self, rep_id: uuid.UUID, report_date: date
+    ) -> RepPaymentsOut:
+        # Get rep name
+        rep_row = await self.db.execute(
+            text("SELECT username FROM users WHERE id = :rep_id"),
+            {"rep_id": rep_id},
+        )
+        rep = rep_row.first()
+        rep_name = rep.username if rep else "Unknown"
+
+        # Get individual payment transactions with customer names
+        rows = await self.db.execute(
+            text("""
+                SELECT
+                    t.id            AS transaction_id,
+                    t.customer_id,
+                    c.name          AS customer_name,
+                    t.type,
+                    ABS(t.amount)   AS amount,
+                    t.created_at
+                FROM transactions t
+                JOIN customers c ON c.id = t.customer_id
+                WHERE t.created_by = :rep_id
+                  AND t.is_deleted = false
+                  AND t.created_at::date = :report_date
+                  AND t.type IN ('Payment_Cash', 'Payment_Check')
+                ORDER BY t.created_at DESC
+            """),
+            {"rep_id": rep_id, "report_date": report_date},
+        )
+        payments = [
+            RepPaymentDetail(
+                transaction_id=r.transaction_id,
+                customer_id=r.customer_id,
+                customer_name=r.customer_name,
+                type=r.type,
+                amount=Decimal(r.amount),
+                created_at=r.created_at,
+            )
+            for r in rows
+        ]
+        return RepPaymentsOut(
+            rep_id=rep_id,
+            rep_name=rep_name,
+            report_date=report_date.isoformat(),
+            payments=payments,
+        )
 
     # ── Customer import ──────────────────────────────────────────────────────
 

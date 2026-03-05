@@ -12,6 +12,7 @@ from app.schemas.admin import (
     DebtStatsOut,
     FlagHandoverIn,
     ImportResult,
+    RepPaymentsOut,
     SalesStatsOut,
 )
 from app.schemas.customer import (
@@ -162,3 +163,16 @@ async def flag_cash_handover(
         uuid.UUID(current_user["sub"]),
     )
     return {"status": "flagged"}
+
+
+@router.get(
+    "/cash-report/rep-details",
+    response_model=RepPaymentsOut,
+    dependencies=[require_admin],
+)
+async def get_rep_payment_details(
+    rep_id: uuid.UUID,
+    report_date: date,
+    service: AdminSvc,
+) -> RepPaymentsOut:
+    return await service.get_rep_payment_details(rep_id, report_date)

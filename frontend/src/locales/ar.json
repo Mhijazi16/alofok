@@ -501,6 +501,9 @@
     "incoming": "الوارد",
     "outgoing": "الصادر",
     "repHandovers": "تسليم المندوبين",
+    "selectRep": "اختر المندوب",
+    "paymentType": "نوع الدفع",
+    "paymentTime": "الوقت",
     "statCardLabel": "نقدية اليوم",
     "pendingStatus": "معلّق",
     "confirmedStatus": "مؤكّد",
@@ -509,6 +512,10 @@
     "expensesList": "المصاريف",
     "confirmedAt": "تم التأكيد في",
     "confirmedBy": "بواسطة"
+  },
+  "payment": {
+    "cash": "نقدي",
+    "check": "شيك"
   },
   "errors": {
     "generic": "حدث خطأ غير متوقع. يرجى المحاولة مجدداً.",

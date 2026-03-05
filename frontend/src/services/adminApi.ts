@@ -45,6 +45,22 @@ export interface FlagHandoverPayload {
   flag_notes: string;
 }
 
+export interface RepPaymentDetail {
+  transaction_id: string;
+  customer_id: string;
+  customer_name: string;
+  type: "Payment_Cash" | "Payment_Check";
+  amount: number;
+  created_at: string;
+}
+
+export interface RepPaymentsResponse {
+  rep_id: string;
+  rep_name: string;
+  report_date: string;
+  payments: RepPaymentDetail[];
+}
+
 export interface SalesRepStats {
   user_id: string;
   username: string;
@@ -179,4 +195,11 @@ export const adminApi = {
 
   flagHandover: (payload: FlagHandoverPayload) =>
     api.post("/admin/cash-report/flag", payload).then((r) => r.data),
+
+  getRepPaymentDetails: (repId: string, reportDate: string) =>
+    api
+      .get<RepPaymentsResponse>("/admin/cash-report/rep-details", {
+        params: { rep_id: repId, report_date: reportDate },
+      })
+      .then((r) => r.data),
 };
