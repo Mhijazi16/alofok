@@ -44,7 +44,9 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
   2. Expense rows can be persisted without errors (expenses table exists with all required columns)
   3. Daily cash report rows can be persisted without errors (daily_cash_reports table exists)
   4. The Purchase enum value exists on TransactionType and can be written to a transaction row
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 10-01-PLAN.md — Transaction indexes, Purchase enum, Expense + DailyCashConfirmation models and migrations
 
 ### Phase 11: Daily Cash Report
 **Goal**: Admin can see every day's incoming payments and outgoing expenses across all salesmen and confirm or flag each rep's cash handover
@@ -110,7 +112,7 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
 | 7. SVG Check Preview | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 8. Check Lifecycle Management | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 9. Image Capture and OCR | v1.1 | 4/4 | Complete | 2026-03-04 |
-| 10. DB Foundation | v1.2 | 0/TBD | Not started | - |
+| 10. DB Foundation | v1.2 | 0/1 | Not started | - |
 | 11. Daily Cash Report | v1.2 | 0/TBD | Not started | - |
 | 12. Expense Tracking | v1.2 | 0/TBD | Not started | - |
 | 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
