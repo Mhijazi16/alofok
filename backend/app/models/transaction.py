@@ -24,6 +24,7 @@ class TransactionType(str, enum.Enum):
     Payment_Check = "Payment_Check"
     Check_Return = "Check_Return"
     Opening_Balance = "Opening_Balance"
+    Purchase = "Purchase"  # Purchase from customer — added in Phase 10
 
 
 class TransactionStatus(str, enum.Enum):
