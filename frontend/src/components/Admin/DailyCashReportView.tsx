@@ -165,7 +165,7 @@ export function DailyCashReportView() {
   const totalOutgoing = report ? report.grand_expenses : 0;
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto">
+    <div className="space-y-5 max-w-2xl mx-auto" dir={isAr ? "rtl" : "ltr"}>
 
       {/* Date navigation — arrows always Left=prev Right=next regardless of RTL */}
       <div className="flex items-center justify-center gap-3">

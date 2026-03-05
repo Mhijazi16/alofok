@@ -6,11 +6,11 @@ import { AdminChecksView } from "./AdminChecksView";
 import { DailyCashReportView } from "./DailyCashReportView";
 
 export function FinanceView() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <PageContainer>
-      <div className="space-y-4">
+      <div className="space-y-4" dir={i18n.language === "ar" ? "rtl" : "ltr"}>
         <h1 className="text-h2 font-bold text-foreground">{t("nav.finance")}</h1>
 
         <Tabs defaultValue="cashReport">
