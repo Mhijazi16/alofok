@@ -5,7 +5,15 @@ from fastapi import APIRouter, File, UploadFile
 
 from app.api.deps import AdminSvc, CurrentUser, CustomerSvc, UserRepo, require_admin
 from app.models.transaction import TransactionStatus
-from app.schemas.admin import CheckOut, DebtStatsOut, ImportResult, SalesStatsOut
+from app.schemas.admin import (
+    CheckOut,
+    ConfirmHandoverIn,
+    DailyCashReportOut,
+    DebtStatsOut,
+    FlagHandoverIn,
+    ImportResult,
+    SalesStatsOut,
+)
 from app.schemas.customer import (
     AdminCustomerCreate,
     CustomerOut,
@@ -113,3 +121,44 @@ async def list_checks(
     status: TransactionStatus | None = None,
 ) -> list[CheckOut]:
     return await service.get_all_checks(status)
+
+
+@router.get(
+    "/cash-report", response_model=DailyCashReportOut, dependencies=[require_admin]
+)
+async def get_cash_report(
+    report_date: date,
+    service: AdminSvc,
+) -> DailyCashReportOut:
+    return await service.get_daily_cash_report(report_date)
+
+
+@router.post("/cash-report/confirm", dependencies=[require_admin])
+async def confirm_cash_handover(
+    body: ConfirmHandoverIn,
+    current_user: CurrentUser,
+    service: AdminSvc,
+) -> dict:
+    await service.confirm_handover(
+        body.rep_id,
+        body.report_date,
+        body.handed_over_amount,
+        uuid.UUID(current_user["sub"]),
+    )
+    return {"status": "confirmed"}
+
+
+@router.post("/cash-report/flag", dependencies=[require_admin])
+async def flag_cash_handover(
+    body: FlagHandoverIn,
+    current_user: CurrentUser,
+    service: AdminSvc,
+) -> dict:
+    await service.flag_handover(
+        body.rep_id,
+        body.report_date,
+        body.handed_over_amount,
+        body.flag_notes,
+        uuid.UUID(current_user["sub"]),
+    )
+    return {"status": "flagged"}
