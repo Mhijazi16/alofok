@@ -101,34 +101,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DB-01 | — | Pending |
-| EXP-01 | — | Pending |
-| EXP-02 | — | Pending |
-| EXP-03 | — | Pending |
-| EXP-04 | — | Pending |
-| EXP-05 | — | Pending |
-| CASH-01 | — | Pending |
-| CASH-02 | — | Pending |
-| CASH-03 | — | Pending |
-| CASH-04 | — | Pending |
-| CASH-05 | — | Pending |
-| OFFL-01 | — | Pending |
-| OFFL-02 | — | Pending |
-| OFFL-03 | — | Pending |
-| PURCH-01 | — | Pending |
-| PURCH-02 | — | Pending |
-| PURCH-03 | — | Pending |
-| PURCH-04 | — | Pending |
-| PURCH-05 | — | Pending |
-| STMT-01 | — | Pending |
-| STMT-02 | — | Pending |
-| STMT-03 | — | Pending |
+| DB-01 | Phase 10 | Pending |
+| EXP-01 | Phase 12 | Pending |
+| EXP-02 | Phase 12 | Pending |
+| EXP-03 | Phase 12 | Pending |
+| EXP-04 | Phase 12 | Pending |
+| EXP-05 | Phase 12 | Pending |
+| CASH-01 | Phase 11 | Pending |
+| CASH-02 | Phase 11 | Pending |
+| CASH-03 | Phase 11 | Pending |
+| CASH-04 | Phase 11 | Pending |
+| CASH-05 | Phase 11 | Pending |
+| OFFL-01 | Phase 13 | Pending |
+| OFFL-02 | Phase 13 | Pending |
+| OFFL-03 | Phase 13 | Pending |
+| PURCH-01 | Phase 14 | Pending |
+| PURCH-02 | Phase 14 | Pending |
+| PURCH-03 | Phase 14 | Pending |
+| PURCH-04 | Phase 14 | Pending |
+| PURCH-05 | Phase 14 | Pending |
+| STMT-01 | Phase 15 | Pending |
+| STMT-02 | Phase 15 | Pending |
+| STMT-03 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22 ⚠️
+- Mapped to phases: 22
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-05*
-*Last updated: 2026-03-05 after initial definition*
+*Last updated: 2026-03-05 after roadmap creation — all 22 requirements mapped to phases 10-15*

@@ -3,7 +3,8 @@
 ## Milestones
 
 - [x] **v1.0 Core Trading Platform** - Phases 1-5 (shipped 2026-03-04)
-- [ ] **v1.1 Check Enhancement** - Phases 6-9 (in progress)
+- [x] **v1.1 Check Enhancement** - Phases 6-9 (shipped 2026-03-04)
+- [ ] **v1.2 Business Operations** - Phases 10-15 (in progress)
 
 ## Phases
 
@@ -14,80 +15,104 @@ Phases 1-5 were pre-GSD tracked via Feature.json. Shipped all 22 original PRD fe
 
 </details>
 
-### v1.1 Check Enhancement (In Progress)
+<details>
+<summary>v1.1 Check Enhancement (Phases 6-9) - SHIPPED 2026-03-04</summary>
 
-**Milestone Goal:** Transform the basic check payment form into a rich, realistic check capture experience with full lifecycle management and OCR auto-fill.
+Enhanced check data capture (CheckData model, bank/branch/account fields), live SVG check preview, check lifecycle management (Pending → Deposited → Returned), and camera/OCR image capture.
 
-- [x] **Phase 6: Check Data Foundation** - Expand check schema to full typed model, extend the payment form with bank/branch/account/holder fields (completed 2026-03-04)
-- [x] **Phase 7: SVG Check Preview** - Live LTR bank check preview that mirrors a real check and updates as the user types (completed 2026-03-04)
-- [x] **Phase 8: Check Lifecycle Management** - Admin can advance checks from Pending to Deposited or Returned with server-enforced state transitions (completed 2026-03-04)
-- [x] **Phase 9: Image Capture and OCR** - Camera/gallery capture with offline-safe upload, plus optional OCR auto-fill from check photos (completed 2026-03-04)
+</details>
+
+### v1.2 Business Operations (In Progress)
+
+**Milestone Goal:** Add expense tracking, daily cash reconciliation, offline catalog and route caching, customer purchase buy-back with weighted-average costing, and customer statement enhancements.
+
+- [ ] **Phase 10: DB Foundation** - Performance indexes on the transactions table and new DB schema for expenses, cash reports, and purchases
+- [ ] **Phase 11: Daily Cash Report** - Admin can view, navigate, and reconcile daily incoming payments and outgoing expenses across all reps
+- [ ] **Phase 12: Expense Tracking** - Sales reps log field expenses; Admin logs business expenses and confirms or flags them
+- [ ] **Phase 13: Offline Caching** - Product catalog and route data cached in IndexedDB and available when the device has no connectivity
+- [ ] **Phase 14: Purchase from Customer** - Sales rep buys products back from a customer, crediting their balance and updating inventory with weighted-average costing
+- [ ] **Phase 15: Statement Enhancements** - Custom date range picker and Arabic PDF export for customer statements
 
 ## Phase Details
 
-### Phase 6: Check Data Foundation
-**Goal**: Sales Reps can enter complete check data (bank number, branch, account, holder name) and existing check records load correctly everywhere
-**Depends on**: Phase 5 (v1.0 complete)
-**Requirements**: CHK-01, CHK-02, CHK-03, CHK-04, CHK-05, CHK-06, CHK-07
+### Phase 10: DB Foundation
+**Goal**: The database has the indexes and schema required for all v1.2 features to operate correctly and performantly
+**Depends on**: Phase 9 (v1.1 complete)
+**Requirements**: DB-01
 **Success Criteria** (what must be TRUE):
-  1. User can enter bank number, branch number, and account number when creating a check payment
-  2. User can select a bank name from previously used banks or type a new one
-  3. All existing check payment records load without errors across statement, admin, and sales views
-  4. Backend rejects malformed check payloads and validates check fields via typed schema
-**Plans**: 2 plans
-  - [ ] 06-01-PLAN.md -- Backend CheckData schema, service validation, data migration, frontend types, locales
-  - [ ] 06-02-PLAN.md -- BankAutocomplete component, PaymentFlow form expansion, logout cleanup
+  1. Transactions table has indexes on created_by, type, status, and compound (created_by, type, created_at) — query plans show index scans on reporting queries
+  2. Expense rows can be persisted without errors (expenses table exists with all required columns)
+  3. Daily cash report rows can be persisted without errors (daily_cash_reports table exists)
+  4. The Purchase enum value exists on TransactionType and can be written to a transaction row
+**Plans**: TBD
 
-### Phase 7: SVG Check Preview
-**Goal**: User sees a live, realistic bank check SVG beside the form that reflects exactly what they have entered
-**Depends on**: Phase 6
-**Requirements**: PRV-01, PRV-02, PRV-03, PRV-04, PRV-05
+### Phase 11: Daily Cash Report
+**Goal**: Admin can see every day's incoming payments and outgoing expenses across all salesmen and confirm or flag each rep's cash handover
+**Depends on**: Phase 10
+**Requirements**: CASH-01, CASH-02, CASH-03, CASH-04, CASH-05
 **Success Criteria** (what must be TRUE):
-  1. A check preview SVG appears in the payment form showing bank name, holder name, date, amount, and MICR strip as the user types
-  2. The amount displays as both digits and written-out English words on the check face
-  3. The check SVG remains left-to-right when the app is in Arabic mode
-  4. Typing in the form fields does not cause perceptible lag on a mid-range Android device
-**Plans**: 2 plans
-  - [ ] 07-01-PLAN.md -- Install to-words, create amountToWords.ts utility, add MICR font and @font-face
-  - [ ] 07-02-PLAN.md -- Create CheckPreview SVG component, integrate into PaymentFlow with focusedField tracking
+  1. Admin can open a daily cash report page showing all incoming cash and check payments and all outgoing expenses grouped by rep for any given day
+  2. Admin can navigate backward and forward one day at a time to view different days' reports without a page reload
+  3. Admin can confirm a salesman's cash handover for a given day, and that confirmation persists on refresh
+  4. Admin can flag a discrepancy in a handover with a free-text note, and the flag is visible on the report
+  5. Rep rows where the handed-over amount differs from the computed total by more than 5% are visually highlighted (distinct color or icon) without requiring any admin action
+**Plans**: TBD
 
-### Phase 8: Check Lifecycle Management
-**Goal**: Admin can advance check status from Pending to Deposited, and mark any non-terminal check as Returned, with the UI preventing invalid transitions
-**Depends on**: Phase 6
-**Requirements**: LCY-01, LCY-02, LCY-03, LCY-04, LCY-05
+### Phase 12: Expense Tracking
+**Goal**: Sales reps can record field expenses, Admin can record business expenses, and Admin can review and act on all submitted expenses
+**Depends on**: Phase 10
+**Requirements**: EXP-01, EXP-02, EXP-03, EXP-04, EXP-05
 **Success Criteria** (what must be TRUE):
-  1. Admin can mark a Pending check as Deposited from the admin panel
-  2. Admin can mark a Pending or Deposited check as Returned, which re-debits the customer balance
-  3. Invalid transition buttons (e.g., depositing a Returned check) are absent or disabled in the UI
-  4. The backend rejects an invalid transition request with a 409 response even if sent directly
-  5. Check status (Pending / Deposited / Returned) is visible in the customer statement view and admin check list
-**Plans**: 2 plans
-  - [ ] 08-01-PLAN.md -- Backend: deposit_check service method, return_check notes parameter, RBAC endpoints, CheckOut schema, admin check list endpoint
-  - [ ] 08-02-PLAN.md -- Frontend: AdminChecksView component with filter pills and deposit/return dialogs, AdminPanel integration, StatementView status badges, locale keys
+  1. A Sales rep can submit a field expense with amount, currency, category, date, and optional notes from their mobile view
+  2. An Admin can submit a business expense with the same fields from the admin panel
+  3. Admin can see a list of all expenses filterable by rep, date range, and status (pending / confirmed / flagged)
+  4. A Sales rep can see their own submitted expenses and their current status
+  5. Admin can confirm or flag any expense with an optional note, and the status updates immediately in both the admin list and the rep's view
+**Plans**: TBD
 
-### Phase 9: Image Capture and OCR
-**Goal**: User can photograph or upload a check image that is stored against the payment, and optionally trigger OCR to pre-fill form fields
-**Depends on**: Phase 6, Phase 8
-**Requirements**: IMG-01, IMG-02, IMG-03, IMG-04, IMG-05, OCR-01, OCR-02, OCR-03, OCR-04, OCR-05, OCR-06
+### Phase 13: Offline Caching
+**Goal**: A Sales rep visiting a customer with no internet connection can still browse the full product catalog and see their assigned route and today's orders
+**Depends on**: Phase 10
+**Requirements**: OFFL-01, OFFL-02, OFFL-03
 **Success Criteria** (what must be TRUE):
-  1. User can take a check photo with the device camera or choose one from the gallery from within the payment form
-  2. The check photo uploads to the server and its URL is stored with the check data
-  3. Offline check payments queue the image separately and upload it on reconnection without bloating the sync payload
-  4. User can trigger OCR on a captured photo and see pre-filled form fields with per-field confidence indicators
-  5. OCR results are never auto-submitted — the user must review and confirm each field
-  6. If OCR fails or is unavailable, the form remains fully usable and shows a clear error state
-**Plans**: 4 plans
-Plans:
-- [x] 09-01-PLAN.md -- Backend upload endpoint, IndexedDB V2 upgrade, checkImageQueue, imageCompression, salesApi upload
-- [ ] 09-02-PLAN.md -- CheckCapture component with camera/gallery, PaymentFlow integration, offline blob queueing
-- [ ] 09-03-PLAN.md -- useOcr hook (Tesseract.js), OCR field extraction, confidence borders, error handling
-- [ ] 09-04-PLAN.md -- CheckPhotoThumbnail component, photo display in Admin/Sales/Customer views
+  1. With connectivity, the app silently caches the product catalog in IndexedDB; after switching to airplane mode, the Sales catalog still loads and shows all products
+  2. With connectivity, the app caches the rep's route customers and today's orders; after switching to airplane mode, the route view loads and shows today's customers and orders
+  3. Cached data displays a "last updated" timestamp so the rep knows how fresh the offline data is
+**Plans**: TBD
+
+### Phase 14: Purchase from Customer
+**Goal**: A Sales rep can record buying products back from a customer, which credits the customer's balance, increases stock, and updates the product's weighted-average purchase price
+**Depends on**: Phase 10, Phase 13
+**Requirements**: PURCH-01, PURCH-02, PURCH-03, PURCH-04, PURCH-05
+**Success Criteria** (what must be TRUE):
+  1. A Sales rep can open a "Purchase from Customer" flow, select one or more products with quantities and unit prices, and submit the purchase
+  2. After a purchase, the customer's outstanding balance decreases by the purchase total (or goes negative if they are owed money)
+  3. After a purchase, each purchased product's stock_qty in the catalog increases by the purchased quantity
+  4. After a purchase, each product's purchase_price reflects the weighted-average of the old stock at old price and the new stock at the purchase price
+  5. The purchase appears in the customer's statement as a distinct "Purchase" line item, visually differentiated from orders and payments
+**Plans**: TBD
+
+### Phase 15: Statement Enhancements
+**Goal**: Users can filter a customer statement by any custom date range and download that statement as a properly rendered Arabic PDF
+**Depends on**: Phase 14
+**Requirements**: STMT-01, STMT-02, STMT-03
+**Success Criteria** (what must be TRUE):
+  1. User can select an arbitrary "from" and "to" date on the customer statement page and see only transactions in that range, with the running balance recalculated correctly
+  2. User can click a download button and receive a PDF of the currently displayed statement
+  3. The downloaded PDF renders Arabic customer names, Arabic column headers, and mixed Arabic/numeric amounts correctly in RTL layout
+**Plans**: TBD
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 6. Check Data Foundation | 2/2 | Complete   | 2026-03-04 | - |
-| 7. SVG Check Preview | 2/2 | Complete   | 2026-03-04 | - |
-| 8. Check Lifecycle Management | 2/2 | Complete   | 2026-03-04 | - |
-| 9. Image Capture and OCR | 4/4 | Complete   | 2026-03-04 | - |
+| 6. Check Data Foundation | v1.1 | 2/2 | Complete | 2026-03-04 |
+| 7. SVG Check Preview | v1.1 | 2/2 | Complete | 2026-03-04 |
+| 8. Check Lifecycle Management | v1.1 | 2/2 | Complete | 2026-03-04 |
+| 9. Image Capture and OCR | v1.1 | 4/4 | Complete | 2026-03-04 |
+| 10. DB Foundation | v1.2 | 0/TBD | Not started | - |
+| 11. Daily Cash Report | v1.2 | 0/TBD | Not started | - |
+| 12. Expense Tracking | v1.2 | 0/TBD | Not started | - |
+| 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
+| 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
+| 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
