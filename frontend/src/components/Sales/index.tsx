@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin,
   Package,
@@ -15,7 +15,11 @@ import {
   Plus,
   Minus,
   Trash2,
+  ChevronDown,
+  Check,
 } from "lucide-react";
+import { Avatar } from "@/components/ui/avatar";
+import { SearchInput } from "@/components/ui/search-input";
 import { AppShell } from "@/components/layout/app-shell";
 import { TopBar } from "@/components/ui/top-bar";
 import { BottomNav } from "@/components/ui/bottom-nav";
@@ -40,6 +44,7 @@ import { salesApi, type Customer, type Product, type OrderItem, type CartItem, t
 import { cartKey, optionsPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
 import { getCoverImage } from "@/lib/image";
+import { toLocalDateStr } from "@/lib/utils";
 import { OptionPickerDialog } from "@/components/ui/option-picker-dialog";
 
 import { ProductDetail } from "@/components/ui/product-detail";
@@ -67,6 +72,117 @@ type View =
   | "productDetail";
 
 /* ------------------------------------------------------------------ */
+/*  CustomerSelector — dropdown card for picking order customer         */
+/* ------------------------------------------------------------------ */
+function CustomerSelector({
+  customers,
+  selected,
+  onSelect,
+}: {
+  customers: Customer[];
+  selected: Customer | null;
+  onSelect: (c: Customer) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return customers;
+    const q = search.toLowerCase();
+    return customers.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.city.toLowerCase().includes(q)
+    );
+  }, [customers, search]);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${
+          selected
+            ? "border-primary/50 bg-primary/5"
+            : "border-border/50 bg-card/50"
+        }`}
+      >
+        {selected ? (
+          <>
+            <Avatar name={selected.name} size="sm" />
+            <div className="flex-1 min-w-0 text-start">
+              <p className="text-body-sm font-semibold text-foreground truncate">
+                {selected.name}
+              </p>
+              <p className="text-caption text-muted-foreground">{selected.city}</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <User className="h-4 w-4 text-muted-foreground" />
+            <span className="flex-1 text-start text-body-sm text-muted-foreground">
+              {t("cart.selectCustomer")}
+            </span>
+          </>
+        )}
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <Card
+          variant="glass"
+          className="absolute inset-x-0 top-full mt-1 z-50 max-h-64 overflow-hidden flex flex-col shadow-xl border border-border"
+        >
+          <div className="p-2 border-b border-border/50">
+            <SearchInput
+              placeholder={t("customer.searchCustomers")}
+              onSearch={setSearch}
+              autoFocus
+            />
+          </div>
+          <div className="overflow-y-auto flex-1">
+            {filtered.length === 0 ? (
+              <p className="text-center text-caption text-muted-foreground py-4">
+                {t("customer.noCustomers")}
+              </p>
+            ) : (
+              filtered.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    onSelect(c);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50 ${
+                    selected?.id === c.id ? "bg-primary/10" : ""
+                  }`}
+                >
+                  <Avatar name={c.name} size="sm" />
+                  <div className="flex-1 min-w-0 text-start">
+                    <p className="text-body-sm font-medium text-foreground truncate">
+                      {c.name}
+                    </p>
+                    <p className="text-caption text-muted-foreground">{c.city}</p>
+                  </div>
+                  {selected?.id === c.id && (
+                    <Check className="h-4 w-4 text-primary shrink-0" />
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  CartView — full-page cart                                          */
 /* ------------------------------------------------------------------ */
 interface CartViewProps {
@@ -77,7 +193,9 @@ interface CartViewProps {
   cartTotal: number;
   onPlaceOrder: () => void;
   onBrowse: () => void;
-  customerName: string | null;
+  selectedCustomer: Customer | null;
+  customers: Customer[];
+  onSelectCustomer: (customer: Customer) => void;
 }
 
 function CartView({
@@ -88,7 +206,9 @@ function CartView({
   cartTotal,
   onPlaceOrder,
   onBrowse,
-  customerName,
+  selectedCustomer,
+  customers,
+  onSelectCustomer,
 }: CartViewProps) {
   const { t, i18n } = useTranslation();
 
@@ -131,13 +251,12 @@ function CartView({
       />
 
       <div className="space-y-3 p-4">
-        {/* Customer context */}
-        {customerName && (
-          <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-card/50 px-3 py-2">
-            <User className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-body-sm text-muted-foreground">{customerName}</span>
-          </div>
-        )}
+        {/* Customer selector */}
+        <CustomerSelector
+          customers={customers}
+          selected={selectedCustomer}
+          onSelect={onSelectCustomer}
+        />
 
         {/* Cart items */}
         <div className="space-y-2">
@@ -306,6 +425,8 @@ export default function SalesRoot() {
   const { isOnline, isSyncing, pendingCount } = useOfflineSync();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const productName = (p: Product) =>
+    i18n.language === "ar" ? p.name_ar : p.name_en;
   const userId = useAppSelector((s) => s.auth.userId);
   const role = useAppSelector((s) => s.auth.role);
 
@@ -328,6 +449,11 @@ export default function SalesRoot() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [prevViewBeforeProduct, setPrevViewBeforeProduct] = useState<View>("catalog");
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
+
+  const { data: allCustomers = [] } = useQuery({
+    queryKey: ["my-customers"],
+    queryFn: salesApi.getMyCustomers,
+  });
 
   /* ---- Cart state — lifted from OrderFlow for persistence ---- */
   const [cart, setCart] = useState<Map<string, CartItem>>(() => {
@@ -430,6 +556,8 @@ export default function SalesRoot() {
 
     const items: OrderItem[] = Array.from(cart.values()).map((ci) => ({
       product_id: ci.product.id,
+      name: productName(ci.product),
+      image_url: ci.product.image_urls?.[0] ?? null,
       quantity: ci.quantity,
       unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),
       selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
@@ -439,7 +567,7 @@ export default function SalesRoot() {
       customer_id: selectedCustomer.id,
       items,
       delivery_date: deliveryDate
-        ? deliveryDate.toISOString().split("T")[0]
+        ? toLocalDateStr(deliveryDate)
         : null,
     };
 
@@ -512,8 +640,10 @@ export default function SalesRoot() {
   }, [clearCart]);
 
   const handlePaymentDone = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["collections"] });
+    queryClient.invalidateQueries({ queryKey: ["route-day"] });
     setView("customer");
-  }, []);
+  }, [queryClient]);
 
   const navigateToProduct = useCallback((product: Product) => {
     setSelectedProduct(product);
@@ -598,7 +728,9 @@ export default function SalesRoot() {
             cartTotal={cartTotal}
             onPlaceOrder={handlePlaceOrder}
             onBrowse={() => setView("catalog")}
-            customerName={selectedCustomer?.name ?? null}
+            selectedCustomer={selectedCustomer}
+            customers={allCustomers}
+            onSelectCustomer={setSelectedCustomer}
           />
         );
 

@@ -1,13 +1,16 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronLeft } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
+import type { CheckOut } from "@/services/adminApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
+import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
 import type { CheckData } from "@/services/salesApi";
 
 interface ReturnedChecksViewProps {
@@ -17,6 +20,7 @@ interface ReturnedChecksViewProps {
 
 export function ReturnedChecksView({ customer, onBack }: ReturnedChecksViewProps) {
   const { t, i18n } = useTranslation();
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const { data: checks, isLoading } = useQuery({
     queryKey: ["returned-checks", customer.id],
@@ -35,6 +39,9 @@ export function ReturnedChecksView({ customer, onBack }: ReturnedChecksViewProps
       month: "short",
       day: "numeric",
     });
+
+  const selectedCheck: CheckOut | null =
+    checks && selectedIndex !== null ? checks[selectedIndex] ?? null : null;
 
   return (
     <div className="animate-fade-in">
@@ -60,30 +67,44 @@ export function ReturnedChecksView({ customer, onBack }: ReturnedChecksViewProps
             <p className="text-body-sm text-muted-foreground">
               {checks.length} {t("returnedChecks.count")}
             </p>
-            {checks.map((check) => {
+            {checks.map((check, index) => {
               const data = check.data as CheckData | null;
               return (
-                <Card key={check.id} variant="glass">
+                <Card
+                  key={check.id}
+                  variant="glass"
+                  className="cursor-pointer transition-colors hover:bg-white/[0.06] active:bg-white/[0.08]"
+                  onClick={() => setSelectedIndex(index)}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0 space-y-1.5">
+                        {/* Amount prominent */}
                         <div className="flex items-center gap-2">
-                          <span className="text-body-sm font-semibold text-foreground">
+                          <span className="text-body font-bold text-foreground">
                             {formatCurrency(Math.abs(check.amount), check.currency)}
                           </span>
                           <Badge variant="destructive" className="text-[10px]">
                             {t("checkStatus.Returned")}
                           </Badge>
                         </div>
+                        {/* Holder name */}
+                        {data?.holder_name && (
+                          <p className="text-body-sm text-foreground/80 font-medium">
+                            {data.holder_name}
+                          </p>
+                        )}
+                        {/* Bank + bank number */}
                         {data?.bank && (
                           <p className="text-caption text-muted-foreground">
                             {data.bank}
-                            {data.branch_number && ` · ${t("branchNumber")}: ${data.branch_number}`}
+                            {data.bank_number && ` · #${data.bank_number}`}
                           </p>
                         )}
-                        {data?.account_number && (
+                        {/* Due date */}
+                        {data?.due_date && (
                           <p className="text-caption text-muted-foreground">
-                            {t("accountNumber")}: {data.account_number}
+                            {t("checks.dueDate")}: {data.due_date}
                           </p>
                         )}
                         {check.notes && (
@@ -95,7 +116,10 @@ export function ReturnedChecksView({ customer, onBack }: ReturnedChecksViewProps
                           {formatDate(check.created_at)}
                         </p>
                       </div>
-                      <CheckPhotoThumbnail imageUrl={data?.image_url} />
+                      <div className="flex items-center gap-2">
+                        <CheckPhotoThumbnail imageUrl={data?.image_url} />
+                        <ChevronLeft className="h-4 w-4 text-muted-foreground/40 shrink-0 rtl:rotate-0 ltr:rotate-180" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -104,6 +128,28 @@ export function ReturnedChecksView({ customer, onBack }: ReturnedChecksViewProps
           </>
         )}
       </div>
+
+      {/* Check Detail Dialog — read-only (no action callbacks) */}
+      <CheckDetailDialog
+        check={selectedCheck}
+        open={selectedIndex !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedIndex(null);
+        }}
+        navigation={
+          checks && checks.length > 1 && selectedIndex !== null
+            ? {
+                current: selectedIndex + 1,
+                total: checks.length,
+                onPrev: selectedIndex > 0 ? () => setSelectedIndex(selectedIndex - 1) : undefined,
+                onNext:
+                  selectedIndex < checks.length - 1
+                    ? () => setSelectedIndex(selectedIndex + 1)
+                    : undefined,
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }

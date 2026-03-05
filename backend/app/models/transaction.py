@@ -23,6 +23,7 @@ class TransactionType(str, enum.Enum):
     Payment_Cash = "Payment_Cash"
     Payment_Check = "Payment_Check"
     Check_Return = "Check_Return"
+    Opening_Balance = "Opening_Balance"
 
 
 class TransactionStatus(str, enum.Enum):

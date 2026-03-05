@@ -30,6 +30,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useToast } from "@/hooks/useToast";
+import { toLocalDateStr } from "@/lib/utils";
 import { OrderModal } from "./OrderModal";
 
 interface RouteViewProps {
@@ -43,7 +44,7 @@ function getDayCode(date: Date): string {
 }
 
 function toDateStr(date: Date): string {
-  return date.toISOString().split("T")[0];
+  return toLocalDateStr(date);
 }
 
 function generateDateRange(): Date[] {
@@ -255,13 +256,10 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     () => customers?.reduce((sum, c) => sum + Number(c.balance), 0) ?? 0,
     [customers]
   );
-  const estimatedCollections = useMemo(
-    () =>
-      customers
-        ?.filter((c) => Number(c.balance) > 0)
-        .reduce((sum, c) => sum + Math.min(Number(c.balance) * 0.3, Number(c.balance)), 0) ?? 0,
-    [customers]
-  );
+  const { data: todayCollections } = useQuery({
+    queryKey: ["collections", selectedDate],
+    queryFn: () => salesApi.getCollections(selectedDate),
+  });
 
   const todayLabel = new Date().toLocaleDateString(
     isRTL ? "ar-EG" : "en-US",
@@ -343,7 +341,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
           />
           <StatCard
             variant="glass"
-            value={customersLoading ? "..." : formatCurrency(estimatedCollections)}
+            value={formatCurrency(todayCollections ?? 0)}
             label={t("customer.todayCollections")}
             icon={Wallet}
           />
@@ -434,7 +432,134 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
           )}
         </div>
 
-        {/* ── Creative Separator ── */}
+        {/* ── Bonus Orders (shown first when no today orders) ── */}
+        {!ordersLoading && (!orders || orders.length === 0) && (bonusOrders?.length ?? 0) > 0 && (
+          <>
+            <div className="relative flex items-center gap-3 py-2">
+              <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />
+              <div className="flex items-center gap-2 rounded-full border border-border/50 bg-card/80 px-4 py-1.5 shadow-sm backdrop-blur-sm">
+                <ShoppingBag className="h-3.5 w-3.5 text-primary" />
+                <span className="text-caption font-medium text-muted-foreground whitespace-nowrap">
+                  {t("customer.bonusOrders")}
+                </span>
+                <Badge variant="default" size="sm">
+                  {bonusOrders!.length}
+                </Badge>
+              </div>
+              <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />
+            </div>
+            <div className="space-y-2">
+              {bonusOrders!.map((order, idx) => {
+                const itemCount = (order.data as any)?.items
+                  ? ((order.data as any).items as unknown[]).length
+                  : 0;
+                const isDelivered = !!(order as any).delivered_date;
+                const isSelected = selectedOrderIds.has(order.id);
+                return (
+                  <Card
+                    key={order.id}
+                    variant="glass"
+                    className={`animate-slide-up overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                  >
+                    <div className="flex">
+                      <div className={`w-1 shrink-0 rounded-s-xl ${isDelivered ? "bg-emerald-500" : "bg-amber-500/60"}`} />
+                      <div className="flex-1 p-3">
+                        <div
+                          className="flex items-center justify-between gap-3 cursor-pointer select-none"
+                          onPointerDown={() => startLongPress(order.id)}
+                          onPointerUp={cancelLongPress}
+                          onPointerCancel={cancelLongPress}
+                          onPointerLeave={cancelLongPress}
+                          onClick={() => {
+                            if (selectionMode) {
+                              toggleSelection(order.id);
+                            } else {
+                              setSelectedOrder(order);
+                              setOrderModalOpen(true);
+                            }
+                          }}
+                        >
+                          {selectionMode && (
+                            <div className="shrink-0 animate-fade-in">
+                              {isSelected ? (
+                                <CheckSquare className="h-5 w-5 text-primary" />
+                              ) : (
+                                <Square className="h-5 w-5 text-muted-foreground" />
+                              )}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-body-sm font-semibold text-foreground truncate">
+                              {order.customer_name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                              <span className="text-caption text-muted-foreground">
+                                {formatTime(order.created_at, i18n.language)}
+                              </span>
+                              {itemCount > 0 && (
+                                <>
+                                  <span className="text-caption text-muted-foreground">·</span>
+                                  <span className="text-caption text-muted-foreground">
+                                    {itemCount} {t("catalog.itemCount")}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Badge variant="warning" className="font-mono tabular-nums">
+                              {formatCurrency(order.amount)}
+                            </Badge>
+                            {isDelivered && (
+                              <Badge variant="success" className="flex items-center gap-1">
+                                <Check className="h-3 w-3" />
+                                {t("order.delivered")}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        {!selectionMode && (
+                          !isDelivered ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full mt-3"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleConfirmDelivery(order);
+                              }}
+                              isLoading={deliveryMutation.isPending}
+                            >
+                              {t("order.confirmDelivery")}
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full mt-3"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUndeliver(order);
+                              }}
+                              isLoading={undeliverMutation.isPending}
+                            >
+                              <Undo2 className="h-3.5 w-3.5" />
+                              {t("order.undeliver")}
+                            </Button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* ── Creative Separator (Today Orders) ── */}
         <>
             <div className="relative flex items-center gap-3 py-2">
               <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />
@@ -584,8 +709,8 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
               )}
             </div>
 
-            {/* ── Bonus Orders Section ── */}
-            {(bonusOrders?.length ?? 0) > 0 && (
+            {/* ── Bonus Orders Section (only when today orders exist, otherwise shown above) ── */}
+            {orders && orders.length > 0 && (bonusOrders?.length ?? 0) > 0 && (
               <>
                 <div className="relative flex items-center gap-3 py-2">
                   <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />

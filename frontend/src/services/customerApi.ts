@@ -40,6 +40,8 @@ export interface CustomerStatement {
 
 export interface DraftOrderItem {
   product_id: string;
+  name: string;
+  image_url?: string | null;
   quantity: number;
   unit_price: number;
   selected_options?: { name: string; value: string; price_modifier: number }[] | null;

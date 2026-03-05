@@ -45,6 +45,8 @@ export function AllCustomersView({
     mutationFn: archiveFn!,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["my-route"] });
+      queryClient.invalidateQueries({ queryKey: ["route-day"] });
       toast({ title: t("customer.archiveSuccess"), variant: "success" });
       setArchiveTarget(null);
     },

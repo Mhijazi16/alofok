@@ -126,6 +126,19 @@ async def delivery_orders(
     )
 
 
+@router.get(
+    "/collections",
+    dependencies=[require_sales],
+)
+async def collections(
+    current_user: CurrentUser,
+    service: CustomerSvc,
+    date: date = Query(...),
+) -> dict:
+    total = await service.get_collections_for_date(UUID(current_user["sub"]), date)
+    return {"total": total}
+
+
 @router.get("/{customer_id}/insights", response_model=CustomerInsightsOut)
 async def customer_insights(
     customer_id: uuid.UUID, service: CustomerSvc

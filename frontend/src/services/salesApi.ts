@@ -120,6 +120,8 @@ export interface SelectedOption {
 
 export interface OrderItem {
   product_id: string;
+  name: string;
+  image_url?: string | null;
   quantity: number;
   unit_price: number;
   selected_options?: SelectedOption[] | null;
@@ -193,6 +195,9 @@ export const salesApi = {
 
   getDeliveryOrders: (date: string, assignedDay: string) =>
     api.get<OrderWithCustomer[]>("/customers/delivery-orders", { params: { delivery_date: date, assigned_day: assignedDay } }).then((r) => r.data),
+
+  getCollections: (date: string) =>
+    api.get<{ total: number }>("/customers/collections", { params: { date } }).then((r) => r.data.total),
 
   getInsights: (customerId: string) =>
     api

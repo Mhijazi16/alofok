@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { ShoppingCart, Banknote } from "lucide-react";
+import { toLocalDateStr } from "@/lib/utils";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { StatCard } from "@/components/ui/stat-card";
@@ -20,7 +21,7 @@ type Period = "week" | "month" | "year";
 
 function getDateRange(period: Period): { start: string; end: string } {
   const now = new Date();
-  const end = now.toISOString().split("T")[0];
+  const end = toLocalDateStr(now);
   const startDate = new Date(now);
 
   switch (period) {
@@ -35,7 +36,7 @@ function getDateRange(period: Period): { start: string; end: string } {
       break;
   }
 
-  const start = startDate.toISOString().split("T")[0];
+  const start = toLocalDateStr(startDate);
   return { start, end };
 }
 

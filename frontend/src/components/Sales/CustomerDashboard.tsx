@@ -94,9 +94,9 @@ export function CustomerDashboard({
   const recentEntries = recentStatement?.entries.slice(-3).reverse() ?? [];
 
   const formatCurrency = (val: number) =>
-    Math.abs(val).toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+    val.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
 
   const formatDate = (dateStr: string | null) => {
@@ -250,13 +250,13 @@ export function CustomerDashboard({
                 <DollarSign className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-caption text-muted-foreground">{t("customer.totalDebt")}</p>
+                <p className="text-caption text-muted-foreground">{t("customer.balance")}</p>
                 <p className="text-lg font-bold text-foreground tabular-nums">
-                  {formatCurrency(insights?.total_debt ?? customer.balance)}
+                  {formatCurrency(Number(insights?.total_debt ?? customer.balance))}
                 </p>
               </div>
-              <Badge variant={(insights?.total_debt ?? customer.balance) > 0 ? "danger" : "success"} size="sm">
-                {(insights?.total_debt ?? customer.balance) > 0 ? t("customer.riskHigh") : t("customer.riskLow")}
+              <Badge variant={Number(insights?.total_debt ?? customer.balance) > 0 ? "danger" : "success"} size="sm">
+                {Number(insights?.total_debt ?? customer.balance) > 0 ? t("customer.riskHigh") : t("customer.riskLow")}
               </Badge>
             </div>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, Banknote, RotateCcw, X } from "lucide-react";
+import { getImageUrl } from "@/lib/image";
 import {
   Dialog,
   DialogContent,
@@ -48,6 +49,7 @@ export function CheckDetailDialog({
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const [zoomed, setZoomed] = useState(false);
+  const [photoZoomed, setPhotoZoomed] = useState(false);
 
   if (!check) return null;
 
@@ -110,6 +112,45 @@ export function CheckDetailDialog({
                 dueDate={data?.due_date ?? ""}
               />
             </div>
+          </div>
+        )}
+
+        {/* Check Photo */}
+        {data?.image_url && getImageUrl(data.image_url) && (
+          <div className="space-y-1.5">
+            <p className="text-caption text-muted-foreground font-medium">
+              {t("checkDetail.photo")}
+            </p>
+            <div
+              className="rounded-lg border border-border/50 overflow-hidden cursor-zoom-in"
+              onClick={() => setPhotoZoomed(true)}
+            >
+              <img
+                src={getImageUrl(data.image_url)!}
+                alt={t("checkDetail.photo")}
+                className="w-full h-auto object-contain max-h-48"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Check Photo Zoom Overlay */}
+        {photoZoomed && data?.image_url && getImageUrl(data.image_url) && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm cursor-zoom-out"
+            onClick={() => setPhotoZoomed(false)}
+          >
+            <button
+              className="absolute top-4 end-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+              onClick={() => setPhotoZoomed(false)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <img
+              src={getImageUrl(data.image_url)!}
+              alt={t("checkDetail.photo")}
+              className="max-w-[95vw] max-h-[90vh] object-contain rounded-lg"
+            />
           </div>
         )}
 

@@ -63,13 +63,17 @@ class TransactionRepository:
         start: datetime | None = None,
         end: datetime | None = None,
     ) -> list[Transaction]:
+        from app.models.customer import Customer
+
         query = (
             select(Transaction)
+            .join(Customer, Transaction.customer_id == Customer.id)
             .where(
                 Transaction.created_by == rep_id,
                 Transaction.type == TransactionType.Order,
                 Transaction.is_deleted.is_(False),
                 Transaction.is_draft.is_(False),
+                Customer.is_deleted.is_(False),
             )
             .order_by(Transaction.created_at.desc())
         )
@@ -99,6 +103,7 @@ class TransactionRepository:
                 Transaction.delivery_date == delivery,
                 Transaction.is_deleted.is_(False),
                 Transaction.is_draft.is_(False),
+                Customer.is_deleted.is_(False),
             )
             .order_by(Transaction.created_at.desc())
         )
@@ -156,6 +161,29 @@ class TransactionRepository:
             .order_by(Transaction.created_at.desc())
         )
         return list(result.scalars().all())
+
+    async def get_collections_total(
+        self,
+        rep_id: uuid.UUID,
+        start: datetime,
+        end: datetime,
+    ) -> float:
+        """Return the total absolute amount of payments created by a rep in the date range."""
+        from sqlalchemy import func
+
+        result = await self._db.execute(
+            select(func.coalesce(func.sum(func.abs(Transaction.amount)), 0))
+            .where(
+                Transaction.created_by == rep_id,
+                Transaction.type.in_(
+                    [TransactionType.Payment_Cash, TransactionType.Payment_Check]
+                ),
+                Transaction.is_deleted.is_(False),
+                Transaction.created_at >= start,
+                Transaction.created_at < end,
+            )
+        )
+        return float(result.scalar())
 
     async def update(self, txn: Transaction) -> Transaction:
         await self._db.commit()

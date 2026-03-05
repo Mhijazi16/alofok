@@ -174,7 +174,8 @@
       "Order": "طلب",
       "Payment_Cash": "دفع نقدي",
       "Payment_Check": "شيك",
-      "Check_Return": "شيك مرتجع"
+      "Check_Return": "شيك مرتجع",
+      "Opening_Balance": "رصيد افتتاحي"
     }
   },
   "product": {
@@ -410,7 +411,9 @@
     "bulkUndeliver": "التراجع عن التسليم",
     "bulkDeleteMessage": "حذف {{count}} طلبات؟ سيتم عكس أرصدة العملاء.",
     "bulkDeliverMessage": "تحديد {{count}} طلبات كمسلّمة؟",
-    "bulkUndeliverMessage": "إرجاع {{count}} طلبات إلى غير مسلّمة؟"
+    "bulkUndeliverMessage": "إرجاع {{count}} طلبات إلى غير مسلّمة؟",
+    "total": "الإجمالي",
+    "products": "المنتجات"
   },
   "filter": {
     "all": "الكل"

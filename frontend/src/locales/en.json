@@ -174,7 +174,8 @@
       "Order": "Order",
       "Payment_Cash": "Cash Payment",
       "Payment_Check": "Check",
-      "Check_Return": "Returned Check"
+      "Check_Return": "Returned Check",
+      "Opening_Balance": "Opening Balance"
     }
   },
   "product": {
@@ -410,7 +411,9 @@
     "bulkUndeliver": "Undo Delivery",
     "bulkDeleteMessage": "Delete {{count}} orders? Customer balances will be reversed.",
     "bulkDeliverMessage": "Mark {{count}} orders as delivered?",
-    "bulkUndeliverMessage": "Revert {{count}} orders to undelivered?"
+    "bulkUndeliverMessage": "Revert {{count}} orders to undelivered?",
+    "total": "Total",
+    "products": "Products"
   },
   "filter": {
     "all": "All"

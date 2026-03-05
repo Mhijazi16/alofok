@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import { customerApi } from "@/services/customerApi";
+import { toLocalDateStr } from "@/lib/utils";
 import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
 import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
@@ -33,17 +34,17 @@ export function CustomerStatementView() {
       case "week": {
         const d = new Date(now);
         d.setDate(d.getDate() - 7);
-        return { start_date: d.toISOString().split("T")[0] };
+        return { start_date: toLocalDateStr(d) };
       }
       case "month": {
         const d = new Date(now);
         d.setMonth(d.getMonth() - 1);
-        return { start_date: d.toISOString().split("T")[0] };
+        return { start_date: toLocalDateStr(d) };
       }
       case "year": {
         const d = new Date(now);
         d.setFullYear(d.getFullYear() - 1);
-        return { start_date: d.toISOString().split("T")[0] };
+        return { start_date: toLocalDateStr(d) };
       }
     }
   }, [preset]);

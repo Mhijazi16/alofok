@@ -5,6 +5,7 @@ from decimal import Decimal
 from app.core.errors import HorizonException
 from app.core.security import hash_password
 from app.models.customer import AssignedDay
+from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_auth_repository import CustomerAuthRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
@@ -53,7 +54,18 @@ class CustomerService:
         customer = await self._customers.create(customer_dict)
 
         if initial_balance is not None and initial_balance != 0:
-            await self._customers.update(customer.id, {"balance": initial_balance})
+            txn = Transaction(
+                customer_id=customer.id,
+                created_by=user_id,
+                type=TransactionType.Opening_Balance,
+                currency=Currency.ILS,
+                amount=Decimal(str(initial_balance)),
+                notes="Opening balance",
+            )
+            await self._transactions.create(txn)
+            customer = await self._customers.update(
+                customer.id, {"balance": initial_balance}
+            )
 
         if portal_password and customer_dict.get("phone"):
             await self._auth.create(
@@ -159,6 +171,11 @@ class CustomerService:
         )
         return out
 
+    async def get_collections_for_date(self, user_id: uuid.UUID, d: date) -> float:
+        start = datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
+        end = start + timedelta(days=1)
+        return await self._transactions.get_collections_total(user_id, start, end)
+
     async def get_insights(self, customer_id: uuid.UUID) -> CustomerInsightsOut:
         cache_key = f"insights:{customer_id}"
         cached = await self._cache.get(cache_key)
@@ -168,6 +185,17 @@ class CustomerService:
         customer = await self._customers.get_by_id(customer_id)
         if customer is None:
             raise HorizonException(404, "Customer not found")
+
+        # Compute total_debt from actual transaction sum (source of truth)
+        all_txns = await self._transactions.get_for_customer(customer_id)
+        computed_balance = sum((t.amount for t in all_txns), Decimal("0"))
+
+        # Self-heal: reconcile customer.balance if it drifted
+        if customer.balance != computed_balance:
+            await self._customers.update(
+                customer_id, {"balance": computed_balance}
+            )
+            await self._cache.invalidate_prefix("route:")
 
         payments = await self._transactions.get_payments_for_customer(customer_id)
 
@@ -188,11 +216,11 @@ class CustomerService:
                 avg_interval = sum(intervals) / len(intervals)
 
         out = CustomerInsightsOut(
-            total_debt=customer.balance,
+            total_debt=computed_balance,
             last_payment_date=last_payment_date,
             last_payment_amount=last_payment_amount,
             avg_payment_interval_days=avg_interval,
-            risk_score=_compute_risk(customer.balance, last_payment_date),
+            risk_score=_compute_risk(computed_balance, last_payment_date),
         )
         await self._cache.set(cache_key, out.model_dump(mode="json"), ttl=TTL_INSIGHTS)
         return out
@@ -270,7 +298,18 @@ class CustomerService:
         payload = data.model_dump(exclude={"initial_balance"})
         customer = await self._customers.create(payload)
         if initial_balance is not None and initial_balance != 0:
-            customer = await self._customers.update(customer.id, {"balance": initial_balance})
+            txn = Transaction(
+                customer_id=customer.id,
+                created_by=None,
+                type=TransactionType.Opening_Balance,
+                currency=Currency.ILS,
+                amount=Decimal(str(initial_balance)),
+                notes="Opening balance",
+            )
+            await self._transactions.create(txn)
+            customer = await self._customers.update(
+                customer.id, {"balance": initial_balance}
+            )
         await self._cache.invalidate_prefix("route:")
         return CustomerOut.model_validate(customer)
 

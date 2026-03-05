@@ -110,6 +110,8 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
     mutationFn: salesApi.createCustomer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-route"] });
+      queryClient.invalidateQueries({ queryKey: ["route-day"] });
+      queryClient.invalidateQueries({ queryKey: ["my-customers"] });
       toast({ title: t("customer.savedSuccess"), variant: "success" });
       onDone();
     },
@@ -123,6 +125,8 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
       salesApi.updateCustomer(customer!.id, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-route"] });
+      queryClient.invalidateQueries({ queryKey: ["route-day"] });
+      queryClient.invalidateQueries({ queryKey: ["my-customers"] });
       toast({ title: t("customer.savedSuccess"), variant: "success" });
       onDone();
     },

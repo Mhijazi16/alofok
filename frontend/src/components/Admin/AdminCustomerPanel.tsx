@@ -51,6 +51,8 @@ export function AdminCustomerPanel() {
     mutationFn: adminApi.archiveCustomer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-customers"] });
+      queryClient.invalidateQueries({ queryKey: ["my-route"] });
+      queryClient.invalidateQueries({ queryKey: ["route-day"] });
       toast({ title: t("customer.archiveSuccess"), variant: "success" });
       setArchiveTarget(null);
     },

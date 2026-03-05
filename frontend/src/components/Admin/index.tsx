@@ -47,6 +47,7 @@ import { adminApi } from "@/services/adminApi";
 import { salesApi, type Customer, type Product as SalesProduct, type OrderItem, type CartItem, type SelectedOption } from "@/services/salesApi";
 import { cartKey, optionsPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
+import { toLocalDateStr } from "@/lib/utils";
 
 type AdminView =
   | "overview" | "sales" | "debt"
@@ -142,7 +143,7 @@ export default function AdminPanel() {
     }));
     const payload = {
       customer_id: selectedCustomer.id, items,
-      delivery_date: deliveryDate ? deliveryDate.toISOString().split("T")[0] : null,
+      delivery_date: deliveryDate ? toLocalDateStr(deliveryDate) : null,
     };
     if (isOnline) { orderMutation.mutate(payload); }
     else {

@@ -18,13 +18,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { adminApi } from "@/services/adminApi";
 import type { SalesStatsOut, DebtStatsOut, SalesRepStats } from "@/services/adminApi";
+import { toLocalDateStr } from "@/lib/utils";
 
 function getWeekRange(): { start: string; end: string } {
   const now = new Date();
-  const end = now.toISOString().split("T")[0];
+  const end = toLocalDateStr(now);
   const startDate = new Date(now);
   startDate.setDate(startDate.getDate() - 6);
-  const start = startDate.toISOString().split("T")[0];
+  const start = toLocalDateStr(startDate);
   return { start, end };
 }
 

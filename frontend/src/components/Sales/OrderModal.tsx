@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/useToast";
 import { salesApi, type OrderWithCustomer } from "@/services/salesApi";
 import { getImageUrl } from "@/lib/image";
+import { toLocalDateStr } from "@/lib/utils";
 
 interface OrderModalProps {
   order: OrderWithCustomer | null;
@@ -50,7 +51,7 @@ export function OrderModal({
     if (open && order) {
       setEditCustomerId(order.customer_id);
       setEditItems((order.data as any)?.items || []);
-      setEditDeliveryDate(order.delivery_date ? new Date(order.delivery_date) : undefined);
+      setEditDeliveryDate(order.delivery_date ? new Date(order.delivery_date + "T00:00:00") : undefined);
       setEditNotes(order.notes || "");
     }
   }, [open, order]);
@@ -117,7 +118,7 @@ export function OrderModal({
       customer_id: editCustomerId ?? undefined,
       items: editItems,
       delivery_date: editDeliveryDate
-        ? editDeliveryDate.toISOString().split("T")[0]
+        ? toLocalDateStr(editDeliveryDate)
         : null,
       notes: editNotes || undefined,
     };
@@ -188,7 +189,7 @@ export function OrderModal({
               </div>
             )}
             <div className="border-t pt-3 flex justify-between">
-              <p className="font-semibold">{t("cart.total")}</p>
+              <p className="font-semibold">{t("order.total")}</p>
               <p className="font-semibold">{formatCurrency(total)}</p>
             </div>
           </TabsContent>
@@ -227,7 +228,7 @@ export function OrderModal({
                   />
                 </FormField>
 
-                <FormField label={t("catalog.items")}>
+                <FormField label={t("order.products")}>
                   <div className="space-y-2">
                     {editItems.map((item, idx) => (
                       <Card key={idx} variant="glass" className="p-3">
