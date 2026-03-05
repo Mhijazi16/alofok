@@ -584,6 +584,7 @@ export default function SalesRoot() {
             queryFn={salesApi.getMyCustomers}
             onSelectCustomer={navigateToCustomer}
             onAddCustomer={navigateToAddCustomer}
+            archiveFn={salesApi.archiveCustomer}
           />
         );
 

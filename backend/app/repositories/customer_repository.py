@@ -130,5 +130,18 @@ class CustomerRepository:
         )
         return {row.customer_id: row.cnt for row in result.all()}
 
+    async def archive(self, customer_id: uuid.UUID) -> Customer | None:
+        stmt = select(Customer).where(
+            Customer.id == customer_id, Customer.is_deleted.is_(False)
+        )
+        result = await self._db.execute(stmt)
+        customer = result.scalar_one_or_none()
+        if not customer:
+            return None
+        customer.is_deleted = True
+        await self._db.commit()
+        await self._db.refresh(customer)
+        return customer
+
     async def update_balance(self, customer: Customer) -> None:
         await self._db.flush()  # persist balance change within the current transaction

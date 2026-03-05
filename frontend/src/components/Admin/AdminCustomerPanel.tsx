@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Upload } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Plus, Upload, Archive } from "lucide-react";
 
 import { adminApi } from "@/services/adminApi";
 import type { Customer } from "@/services/salesApi";
+import { useToast } from "@/hooks/useToast";
 import { TopBar } from "@/components/ui/top-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { SearchInput } from "@/components/ui/search-input";
 import { PageContainer } from "@/components/layout/page-container";
 import { Spinner } from "@/components/ui/spinner";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CustomerForm } from "@/components/Sales/CustomerForm";
 import { CustomerImport } from "./CustomerImport";
 
@@ -36,12 +38,26 @@ const ASSIGNED_DAY_VALUES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"];
 
 export function AdminCustomerPanel() {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [mode, setMode] = useState<Mode>("list");
   const [csvOpen, setCsvOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDay, setSelectedDay] = useState<string>("All");
+  const [archiveTarget, setArchiveTarget] = useState<Customer | null>(null);
+
+  const archiveMutation = useMutation({
+    mutationFn: adminApi.archiveCustomer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-customers"] });
+      toast({ title: t("customer.archiveSuccess"), variant: "success" });
+      setArchiveTarget(null);
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
 
   const { data: customers, isLoading } = useQuery({
     queryKey: ["admin-customers"],
@@ -195,6 +211,12 @@ export function AdminCustomerPanel() {
                                 )}
                               </div>
                             </div>
+                            <button
+                              onClick={() => setArchiveTarget(customer)}
+                              className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                            >
+                              <Archive className="h-3.5 w-3.5" />
+                            </button>
                           </CardContent>
                         </Card>
                       ))}
@@ -206,6 +228,18 @@ export function AdminCustomerPanel() {
           )}
         </div>
       </PageContainer>
+
+      <ConfirmationDialog
+        open={!!archiveTarget}
+        onOpenChange={(open) => !open && setArchiveTarget(null)}
+        title={t("customer.archiveConfirmTitle")}
+        description={t("customer.archiveConfirmDesc", { name: archiveTarget?.name })}
+        confirmLabel={t("customer.archive")}
+        cancelLabel={t("actions.cancel")}
+        variant="destructive"
+        isLoading={archiveMutation.isPending}
+        onConfirm={() => archiveTarget && archiveMutation.mutate(archiveTarget.id)}
+      />
 
       {/* FAB - Add Customer */}
       <button

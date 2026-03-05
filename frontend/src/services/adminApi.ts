@@ -108,6 +108,9 @@ export const adminApi = {
   updateCustomer: (id: string, body: Partial<AdminCustomerCreate>) =>
     api.put<Customer>(`/admin/customers/${id}`, body).then((r) => r.data),
 
+  archiveCustomer: (id: string) =>
+    api.patch(`/admin/customers/${id}/archive`).then((r) => r.data),
+
   getChecks: (status?: "Pending" | "Deposited" | "Returned") =>
     api
       .get<CheckOut[]>("/admin/checks", { params: status ? { status } : {} })

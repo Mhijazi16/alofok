@@ -247,6 +247,9 @@ export const salesApi = {
   updateCustomer: (id: string, body: CustomerUpdate) =>
     api.put<Customer>(`/customers/${id}`, body).then((r) => r.data),
 
+  archiveCustomer: (id: string) =>
+    api.patch(`/customers/${id}/archive`).then((r) => r.data),
+
   uploadAvatar: (file: File) => {
     const form = new FormData();
     form.append("file", file);

@@ -252,6 +252,19 @@ class CustomerService:
         customers = await self._customers.get_all()
         return await self._enrich_with_returned_checks(customers)
 
+    async def archive_customer(
+        self, customer_id: uuid.UUID, user_id: uuid.UUID, role: str
+    ) -> None:
+        if role == "Sales":
+            customer = await self._customers.get_by_id(customer_id)
+            if not customer or customer.assigned_to != user_id:
+                raise HorizonException(403, "Cannot archive this customer")
+        archived = await self._customers.archive(customer_id)
+        if not archived:
+            raise HorizonException(404, "Customer not found")
+        await self._cache.invalidate_prefix("route:")
+        await self._cache.invalidate_prefix("insights:")
+
     async def create_customer_for_rep(self, data: AdminCustomerCreate) -> CustomerOut:
         initial_balance = data.initial_balance
         payload = data.model_dump(exclude={"initial_balance"})

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Users, UserPlus } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, Users, UserPlus, Archive } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { useToast } from "@/hooks/useToast";
 import type { Customer } from "@/services/salesApi";
 
 const DAYS_LIST = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -20,6 +22,7 @@ interface AllCustomersViewProps {
   onSelectCustomer: (customer: Customer) => void;
   onAddCustomer: () => void;
   showInteractive?: boolean;
+  archiveFn?: (id: string) => Promise<unknown>;
 }
 
 export function AllCustomersView({
@@ -28,11 +31,27 @@ export function AllCustomersView({
   onSelectCustomer,
   onAddCustomer,
   showInteractive = true,
+  archiveFn,
 }: AllCustomersViewProps) {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const isRTL = i18n.language === "ar";
   const [search, setSearch] = useState("");
   const [dayFilter, setDayFilter] = useState("all");
+  const [archiveTarget, setArchiveTarget] = useState<Customer | null>(null);
+
+  const archiveMutation = useMutation({
+    mutationFn: archiveFn!,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: t("customer.archiveSuccess"), variant: "success" });
+      setArchiveTarget(null);
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
 
   const { data: customers, isLoading } = useQuery({
     queryKey,
@@ -116,6 +135,14 @@ export function AllCustomersView({
             <Badge variant={balanceVariant} dot size="sm">
               {formatCurrency(customer.balance)}
             </Badge>
+            {archiveFn && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setArchiveTarget(customer); }}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Archive className="h-3.5 w-3.5" />
+              </button>
+            )}
             {showInteractive && <ChevronIcon className="h-4 w-4 text-muted-foreground" />}
           </div>
         </div>
@@ -211,6 +238,19 @@ export function AllCustomersView({
         )}
       </div>
 
+      {archiveFn && (
+        <ConfirmationDialog
+          open={!!archiveTarget}
+          onOpenChange={(open) => !open && setArchiveTarget(null)}
+          title={t("customer.archiveConfirmTitle")}
+          description={t("customer.archiveConfirmDesc", { name: archiveTarget?.name })}
+          confirmLabel={t("customer.archive")}
+          cancelLabel={t("actions.cancel")}
+          variant="destructive"
+          isLoading={archiveMutation.isPending}
+          onConfirm={() => archiveTarget && archiveMutation.mutate(archiveTarget.id)}
+        />
+      )}
     </div>
   );
 }

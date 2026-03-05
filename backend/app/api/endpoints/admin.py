@@ -84,6 +84,21 @@ async def update_customer(
     )
 
 
+@router.patch(
+    "/customers/{customer_id}/archive",
+    status_code=204,
+    dependencies=[require_admin],
+)
+async def archive_customer(
+    customer_id: uuid.UUID,
+    current_user: CurrentUser,
+    service: CustomerSvc,
+):
+    await service.archive_customer(
+        customer_id, uuid.UUID(current_user["sub"]), current_user["role"]
+    )
+
+
 @router.get(
     "/users/sales-reps", response_model=list[SalesRepOut], dependencies=[require_admin]
 )
