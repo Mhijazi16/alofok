@@ -52,6 +52,7 @@
     "location": "Location",
     "avatar": "Photo",
     "notes": "Notes",
+    "initialBalance": "Initial Balance",
     "addNew": "Add Customer",
     "editCustomer": "Edit Customer",
     "tapToSetLocation": "Tap map to set location",

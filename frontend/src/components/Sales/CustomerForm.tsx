@@ -101,6 +101,7 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
       : null
   );
   const [assignedDay, setAssignedDay] = useState(customer?.assigned_day ?? "");
+  const [initialBalance, setInitialBalance] = useState("");
   const [portalEnabled, setPortalEnabled] = useState(false);
   const [portalPassword, setPortalPassword] = useState("");
   const [selectedRepId, setSelectedRepId] = useState<string>(customer?.assigned_to ?? "");
@@ -159,6 +160,7 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
           ...payload,
           assigned_day: assignedDay,
           assigned_to: selectedRepId,
+          initial_balance: initialBalance ? parseFloat(initialBalance) : null,
         });
         toast({ title: t("customer.savedSuccess"), variant: "success" });
         onDone();
@@ -172,6 +174,7 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
         ...payload,
         assigned_day: assignedDay,
         portal_password: portalEnabled && portalPassword.trim() ? portalPassword.trim() : null,
+        initial_balance: initialBalance ? parseFloat(initialBalance) : null,
       });
     }
   };
@@ -280,6 +283,19 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
             autoResize
           />
         </FormField>
+
+        {/* Initial Balance (create only) */}
+        {!isEdit && (
+          <FormField label={t("customer.initialBalance")}>
+            <Input
+              type="number"
+              inputMode="decimal"
+              value={initialBalance}
+              onChange={(e) => setInitialBalance(e.target.value)}
+              placeholder="0"
+            />
+          </FormField>
+        )}
 
         {/* Portal Account (create only) */}
         {!isEdit && (

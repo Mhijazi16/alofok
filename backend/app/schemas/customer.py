@@ -67,6 +67,7 @@ class CustomerCreate(BaseModel):
     avatar_url: str | None = None
     notes: str | None = None
     portal_password: str | None = None
+    initial_balance: Decimal | None = None
 
     @field_validator("assigned_day", mode="before")
     @classmethod

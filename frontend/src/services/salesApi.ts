@@ -64,6 +64,7 @@ export interface CustomerCreate {
   avatar_url?: string | null;
   notes?: string | null;
   portal_password?: string | null;
+  initial_balance?: number | null;
 }
 
 export interface CustomerUpdate {

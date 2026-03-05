@@ -52,6 +52,7 @@
     "location": "الموقع",
     "avatar": "الصورة",
     "notes": "ملاحظات",
+    "initialBalance": "الرصيد الابتدائي",
     "addNew": "إضافة عميل",
     "editCustomer": "تعديل العميل",
     "tapToSetLocation": "اضغط على الخريطة لتحديد الموقع",

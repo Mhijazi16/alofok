@@ -45,9 +45,15 @@ class CustomerService:
         portal_password = (
             data.portal_password if hasattr(data, "portal_password") else None
         )
-        customer_dict = data.model_dump(exclude={"portal_password"})
+        initial_balance = (
+            data.initial_balance if hasattr(data, "initial_balance") else None
+        )
+        customer_dict = data.model_dump(exclude={"portal_password", "initial_balance"})
         customer_dict["assigned_to"] = user_id
         customer = await self._customers.create(customer_dict)
+
+        if initial_balance is not None and initial_balance != 0:
+            await self._customers.update(customer.id, {"balance": initial_balance})
 
         if portal_password and customer_dict.get("phone"):
             await self._auth.create(
@@ -247,8 +253,11 @@ class CustomerService:
         return await self._enrich_with_returned_checks(customers)
 
     async def create_customer_for_rep(self, data: AdminCustomerCreate) -> CustomerOut:
-        payload = data.model_dump()
+        initial_balance = data.initial_balance
+        payload = data.model_dump(exclude={"initial_balance"})
         customer = await self._customers.create(payload)
+        if initial_balance is not None and initial_balance != 0:
+            customer = await self._customers.update(customer.id, {"balance": initial_balance})
         await self._cache.invalidate_prefix("route:")
         return CustomerOut.model_validate(customer)
 
