@@ -47,3 +47,10 @@ from app.models.transaction import (  # noqa: E402, F401
     Currency,
 )
 from app.models.customer_auth import CustomerAuth  # noqa: E402, F401
+from app.models.expense import (
+    Expense,
+    ExpenseType,
+    ExpenseCategory,
+    ExpenseStatus,
+)  # noqa: E402, F401
+from app.models.daily_cash_confirmation import DailyCashConfirmation  # noqa: E402, F401
