@@ -32,6 +32,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 
 import { Overview } from "./Overview";
+import { DailyCashReportView } from "./DailyCashReportView";
 import { AdminChecksView } from "./AdminChecksView";
 import { SalesStats } from "./SalesStats";
 import { DebtStats } from "./DebtStats";
@@ -55,6 +56,7 @@ type AdminView =
   | "customers" | "addCustomer" | "customerDetail" | "editCustomer"
   | "order" | "payment" | "statement"
   | "products" | "addProduct"
+  | "cashReport"
   | "profile";
 
 export default function AdminPanel() {
@@ -178,7 +180,9 @@ export default function AdminPanel() {
   const renderView = () => {
     switch (activeView) {
       case "overview":
-        return <Overview />;
+        return <Overview onNavigate={(v) => setActiveView(v as AdminView)} />;
+      case "cashReport":
+        return <DailyCashReportView onBack={() => setActiveView("overview")} />;
       case "sales":
         return <SalesStats />;
       case "debt":
@@ -370,14 +374,14 @@ export default function AdminPanel() {
           </PageContainer>
         );
       default:
-        return <Overview />;
+        return <Overview onNavigate={(v) => setActiveView(v as AdminView)} />;
     }
   };
 
   const isMainView = ["overview", "customers", "products", "addProduct", "checks", "profile"].includes(activeView);
 
   const bottomNavActiveValue =
-    activeView === "sales" || activeView === "debt" ? "overview"
+    activeView === "sales" || activeView === "debt" || activeView === "cashReport" ? "overview"
     : ["customerDetail", "addCustomer", "editCustomer", "order", "payment", "statement"].includes(activeView) ? "customers"
     : activeView === "addProduct" ? "products"
     : activeView;

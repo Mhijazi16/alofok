@@ -3,6 +3,48 @@ import type { Customer, CustomerCreate, CheckData } from "./salesApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export interface RepConfirmation {
+  handed_over_amount: number;
+  confirmed_at: string | null;
+  confirmer_name: string | null;
+  is_flagged: boolean;
+  flag_notes: string | null;
+}
+
+export interface RepCashSummary {
+  rep_id: string;
+  rep_name: string;
+  cash_total: number;
+  check_total: number;
+  expense_total: number;
+  computed_net: number;
+  payment_count: number;
+  expense_count: number;
+  confirmation: RepConfirmation | null;
+}
+
+export interface DailyCashReport {
+  report_date: string;
+  grand_cash: number;
+  grand_checks: number;
+  grand_expenses: number;
+  grand_net: number;
+  reps: RepCashSummary[];
+}
+
+export interface ConfirmHandoverPayload {
+  rep_id: string;
+  report_date: string;
+  handed_over_amount: number;
+}
+
+export interface FlagHandoverPayload {
+  rep_id: string;
+  report_date: string;
+  handed_over_amount: number;
+  flag_notes: string;
+}
+
 export interface SalesRepStats {
   user_id: string;
   username: string;
@@ -126,4 +168,15 @@ export const adminApi = {
     api
       .put<CheckOut>(`/payments/checks/${checkId}/return`, { notes: notes || null })
       .then((r) => r.data),
+
+  getDailyCashReport: (reportDate: string) =>
+    api
+      .get<DailyCashReport>("/admin/cash-report", { params: { report_date: reportDate } })
+      .then((r) => r.data),
+
+  confirmHandover: (payload: ConfirmHandoverPayload) =>
+    api.post("/admin/cash-report/confirm", payload).then((r) => r.data),
+
+  flagHandover: (payload: FlagHandoverPayload) =>
+    api.post("/admin/cash-report/flag", payload).then((r) => r.data),
 };

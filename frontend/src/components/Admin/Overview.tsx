@@ -6,6 +6,7 @@ import {
   TrendingDown,
   Users,
   AlertCircle,
+  Banknote,
 } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
@@ -29,7 +30,7 @@ function getWeekRange(): { start: string; end: string } {
   return { start, end };
 }
 
-export function Overview() {
+export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }) {
   const { t } = useTranslation();
   const weekRange = useMemo(() => getWeekRange(), []);
 
@@ -109,8 +110,8 @@ export function Overview() {
     return (
       <PageContainer>
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} variant="card" className="h-28" />
             ))}
           </div>
@@ -133,7 +134,7 @@ export function Overview() {
         </h1>
 
         {/* KPI row */}
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
           <StatCard
             variant="glass"
             icon={DollarSign}
@@ -157,6 +158,14 @@ export function Overview() {
             icon={AlertCircle}
             value={debtStats?.overdue_checks.length ?? 0}
             label={t("admin.overdueChecks")}
+          />
+          <StatCard
+            variant="glass"
+            icon={Banknote}
+            value={t("cash.title")}
+            label={t("cash.statCardLabel")}
+            onClick={() => onNavigate?.("cashReport")}
+            className="cursor-pointer hover:ring-1 hover:ring-primary transition-all"
           />
         </div>
 
