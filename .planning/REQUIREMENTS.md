@@ -9,7 +9,7 @@ Requirements for v1.2 Business Operations milestone. Each maps to roadmap phases
 
 ### Database Performance
 
-- [ ] **DB-01**: System has indexes on transactions.created_by, type, status, and compound index on (created_by, type, created_at)
+- [x] **DB-01**: System has indexes on transactions.created_by, type, status, and compound index on (created_by, type, created_at)
 
 ### Expense Tracking
 
@@ -101,7 +101,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DB-01 | Phase 10 | Pending |
+| DB-01 | Phase 10 | Complete |
 | EXP-01 | Phase 12 | Pending |
 | EXP-02 | Phase 12 | Pending |
 | EXP-03 | Phase 12 | Pending |

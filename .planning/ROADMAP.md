@@ -26,7 +26,7 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
 
 **Milestone Goal:** Add expense tracking, daily cash reconciliation, offline catalog and route caching, customer purchase buy-back with weighted-average costing, and customer statement enhancements.
 
-- [ ] **Phase 10: DB Foundation** - Performance indexes on the transactions table and new DB schema for expenses, cash reports, and purchases
+- [x] **Phase 10: DB Foundation** - Performance indexes on the transactions table and new DB schema for expenses, cash reports, and purchases (completed 2026-03-05)
 - [ ] **Phase 11: Daily Cash Report** - Admin can view, navigate, and reconcile daily incoming payments and outgoing expenses across all reps
 - [ ] **Phase 12: Expense Tracking** - Sales reps log field expenses; Admin logs business expenses and confirms or flags them
 - [ ] **Phase 13: Offline Caching** - Product catalog and route data cached in IndexedDB and available when the device has no connectivity
@@ -44,7 +44,7 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
   2. Expense rows can be persisted without errors (expenses table exists with all required columns)
   3. Daily cash report rows can be persisted without errors (daily_cash_reports table exists)
   4. The Purchase enum value exists on TransactionType and can be written to a transaction row
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 10-01-PLAN.md — Transaction indexes, Purchase enum, Expense + DailyCashConfirmation models and migrations
 
@@ -112,7 +112,7 @@ Plans:
 | 7. SVG Check Preview | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 8. Check Lifecycle Management | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 9. Image Capture and OCR | v1.1 | 4/4 | Complete | 2026-03-04 |
-| 10. DB Foundation | v1.2 | 0/1 | Not started | - |
+| 10. DB Foundation | 1/1 | Complete   | 2026-03-05 | - |
 | 11. Daily Cash Report | v1.2 | 0/TBD | Not started | - |
 | 12. Expense Tracking | v1.2 | 0/TBD | Not started | - |
 | 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
