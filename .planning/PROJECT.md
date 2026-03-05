@@ -43,34 +43,45 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 - ✓ Bonus orders (unassigned orders), green accent for delivered — v1.0
 - ✓ Long-press multi-select for order cards — v1.0
 
+- ✓ Enhanced check data capture (bank/branch/account numbers, holder name) — v1.1
+- ✓ Live realistic check SVG preview (LTR layout, updates as user types) — v1.1
+- ✓ Check lifecycle management UI (Pending → Deposited → Returned) — v1.1
+- ✓ Check image capture (camera/upload, compression, IndexedDB blob store) — v1.1
+- ✓ OCR auto-fill from check photo (Tesseract.js, client-side) — v1.1
+
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Enhanced check data capture (bank/branch/account numbers, holder name)
-- [ ] Live realistic check SVG preview (LTR layout, updates as user types)
-- [ ] Check lifecycle management UI (Pending → Deposited → Cleared / Returned)
-- [ ] Check image capture (camera/upload, wire up image_url)
-- [ ] OCR auto-fill from check photo
+- [ ] Database performance indexes (created_by, type, status on transactions)
+- [ ] Expense tracking (salesman field expenses + admin business expenses)
+- [ ] Daily cash report with payment confirmation (admin confirms/flags receipt from salesmen)
+- [ ] Offline catalog caching (products available offline)
+- [ ] Offline route data (customers, orders cached for daily route)
+- [ ] Purchase from customer (reverse order, weighted-average purchase price, stock increase)
+- [ ] Custom date intervals in customer statements
+- [ ] Customer statement PDF export
 
 ### Out of Scope
 
 <!-- Explicit boundaries. -->
 
 - Capacitor mobile wrapper — defer to future milestone
-- Notification system — not related to check enhancement
+- Notification system — deferred from v1.2, not critical yet
 - Check batching/reconciliation — beyond current needs
+- Check Cleared status — Deposit + Return sufficient for now
 
-## Current Milestone: v1.1 Check Enhancement
+## Current Milestone: v1.2 Business Operations
 
-**Goal:** Transform the basic check payment form into a rich, realistic check capture experience with full lifecycle management and OCR.
+**Goal:** Add expense tracking, daily cash reconciliation for admin, offline data caching, customer purchases, and statement enhancements.
 
 **Target features:**
-- Enhanced check form with bank/branch/account numbers and holder name
-- Live SVG check preview that mirrors a real bank check
-- Full check status lifecycle UI (Pending → Deposited → Cleared / Returned)
-- Check photo capture with image storage
-- OCR auto-fill from check photos
+- Database indexes for query performance
+- Expense logging for salesmen (field) and admin (business)
+- Admin daily cash report with date traversal, payment confirmation/flagging
+- Offline catalog and route data caching
+- Purchase from customer with inventory and purchase price updates
+- Custom date range picker and PDF export for customer statements
 
 ## Context
 
@@ -82,8 +93,10 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 - All 22 original PRD features shipped and functional
 - Customer portal added post-PRD with separate auth
 - Delivery date routing and bonus orders added post-PRD
-- Current check data in JSONB: {bank, due_date, image_url} — needs expansion
-- Check status enum exists (Pending/Deposited/Returned/Cleared) but only Return has UI
+- Check data enhanced in v1.1: full CheckData model, SVG preview, lifecycle UI, OCR
+- Transactions table missing indexes on created_by, type, status (identified pre-v1.2)
+- No expense tracking exists — new model needed
+- Offline sync exists for orders/payments queue but catalog not cached for offline
 
 ## Constraints
 
@@ -103,7 +116,8 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 | delivery_date on Transaction | Decouple delivery scheduling from order creation | ✓ Good |
 
 | Check data in JSONB column | Flexible schema, easy to extend without migrations | ✓ Good |
-| LTR check layout | Standard check format, universal numerals | — Pending |
+| LTR check layout | Standard check format, universal numerals | ✓ Good |
+| Single transactions table (STI) | Simple statements, balance calc; proper indexes needed | ✓ Good |
 
 ---
-*Last updated: 2026-03-04 after milestone v1.1 started*
+*Last updated: 2026-03-05 after milestone v1.2 started*
