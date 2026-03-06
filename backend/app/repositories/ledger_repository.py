@@ -65,9 +65,7 @@ class LedgerRepository:
         await self._db.commit()
         return result.rowcount > 0
 
-    async def bulk_update_status(
-        self, ids: list[uuid.UUID], values: dict
-    ) -> int:
+    async def bulk_update_status(self, ids: list[uuid.UUID], values: dict) -> int:
         result = await self._db.execute(
             update(CompanyLedger)
             .where(CompanyLedger.id.in_(ids), CompanyLedger.is_deleted.is_(False))
