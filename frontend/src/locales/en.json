@@ -528,6 +528,25 @@
     "selectCategory": "Select Category",
     "submit": "Submit"
   },
+  "sync": {
+    "title": "Data Sync",
+    "catalog": "Catalog",
+    "customers": "Customers",
+    "orders": "Orders",
+    "statements": "Statements",
+    "syncNow": "Sync Now",
+    "syncing": "Syncing...",
+    "lastSynced": "Last synced",
+    "never": "Never",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "pending": "{{count}} pending",
+    "cacheSize": "Cache size",
+    "syncComplete": "Sync complete",
+    "syncFailed": "Some items failed to sync"
+  },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",
     "offline": "You are offline. Data will sync when connection resumes.",

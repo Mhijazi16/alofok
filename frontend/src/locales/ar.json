@@ -528,6 +528,25 @@
     "selectCategory": "اختر الفئة",
     "submit": "إرسال"
   },
+  "sync": {
+    "title": "مزامنة البيانات",
+    "catalog": "المنتجات",
+    "customers": "الزبائن",
+    "orders": "الطلبات",
+    "statements": "كشوفات الحساب",
+    "syncNow": "مزامنة الآن",
+    "syncing": "جاري المزامنة...",
+    "lastSynced": "آخر مزامنة",
+    "never": "لم تتم",
+    "justNow": "الآن",
+    "minutesAgo": "قبل {{count}} دقيقة",
+    "hoursAgo": "قبل {{count}} ساعة",
+    "daysAgo": "قبل {{count}} يوم",
+    "pending": "{{count}} قيد الانتظار",
+    "cacheSize": "حجم التخزين",
+    "syncComplete": "تمت المزامنة",
+    "syncFailed": "فشلت مزامنة بعض العناصر"
+  },
   "errors": {
     "generic": "حدث خطأ غير متوقع. يرجى المحاولة مجدداً.",
     "offline": "أنت غير متصل بالإنترنت. سيتم مزامنة البيانات عند عودة الاتصال.",
