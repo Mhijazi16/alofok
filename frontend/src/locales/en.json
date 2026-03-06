@@ -503,9 +503,30 @@
     "paymentTime": "Time",
     "notes": "Notes"
   },
-  "payment": {
-    "cash": "Cash",
-    "check": "Check"
+  "expense": {
+    "title": "Expenses",
+    "addExpense": "Add Expense",
+    "amount": "Amount",
+    "date": "Date",
+    "notes": "Notes",
+    "category": {
+      "Food": "Food",
+      "Fuel": "Fuel",
+      "Gifts": "Gifts",
+      "CarWash": "Car Wash",
+      "Other": "Other",
+      "Electricity": "Electricity",
+      "Internet": "Internet",
+      "CarRepair": "Car Repair",
+      "Salaries": "Salaries"
+    },
+    "noExpenses": "No expenses for this day",
+    "total": "Total",
+    "deleteConfirm": "Delete this expense?",
+    "added": "Expense added",
+    "deleted": "Expense deleted",
+    "selectCategory": "Select Category",
+    "submit": "Submit"
   },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",

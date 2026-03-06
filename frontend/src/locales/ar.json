@@ -503,9 +503,30 @@
     "paymentTime": "الوقت",
     "notes": "ملاحظات"
   },
-  "payment": {
-    "cash": "نقدي",
-    "check": "شيك"
+  "expense": {
+    "title": "المصاريف",
+    "addExpense": "إضافة مصروف",
+    "amount": "المبلغ",
+    "date": "التاريخ",
+    "notes": "ملاحظات",
+    "category": {
+      "Food": "طعام",
+      "Fuel": "وقود",
+      "Gifts": "هدايا",
+      "CarWash": "غسيل سيارة",
+      "Other": "أخرى",
+      "Electricity": "كهرباء",
+      "Internet": "إنترنت",
+      "CarRepair": "صيانة سيارة",
+      "Salaries": "رواتب"
+    },
+    "noExpenses": "لا مصاريف لهذا اليوم",
+    "total": "المجموع",
+    "deleteConfirm": "حذف هذا المصروف؟",
+    "added": "تمت إضافة المصروف",
+    "deleted": "تم حذف المصروف",
+    "selectCategory": "اختر الفئة",
+    "submit": "إرسال"
   },
   "errors": {
     "generic": "حدث خطأ غير متوقع. يرجى المحاولة مجدداً.",

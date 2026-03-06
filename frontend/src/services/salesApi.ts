@@ -1,4 +1,5 @@
 import api from "./api";
+import type { LedgerEntry } from "./adminApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -293,4 +294,14 @@ export const salesApi = {
       .post<{ url: string }>("/payments/checks/upload-image", form)
       .then((r) => r.data);
   },
+
+  // ── Expenses ──────────────────────────────────────────────────────────────
+  createExpense: (data: { amount: number; category: string; date: string; notes?: string }) =>
+    api.post<{ id: string }>("/ledger/expenses", data).then((r) => r.data),
+
+  getMyExpenses: (date: string) =>
+    api.get<LedgerEntry[]>(`/ledger/my-expenses?date=${date}`).then((r) => r.data),
+
+  deleteExpense: (id: string) =>
+    api.delete<{ deleted: boolean }>(`/ledger/expenses/${id}`).then((r) => r.data),
 };
