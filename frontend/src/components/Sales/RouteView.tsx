@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useToast } from "@/hooks/useToast";
 import { toLocalDateStr } from "@/lib/utils";
+import { ExpenseCard, REP_CATEGORIES } from "@/components/shared/ExpenseCard";
 import { OrderModal } from "./OrderModal";
 
 interface RouteViewProps {
@@ -346,6 +347,9 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
             icon={Wallet}
           />
         </div>
+
+        {/* ── Expense Card ── */}
+        <ExpenseCard categories={REP_CATEGORIES} date={toDateStr(dateRange[selectedIdx])} />
 
         {/* ── Search ── */}
         <SearchInput

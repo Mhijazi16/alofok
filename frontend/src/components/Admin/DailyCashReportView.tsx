@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { subDays, addDays } from "date-fns";
@@ -30,11 +30,16 @@ import {
 } from "@/components/ui/dialog";
 import { SwipeableCard } from "@/components/ui/swipeable-card";
 import { useToast } from "@/hooks/useToast";
+import { ExpenseCard, ADMIN_CATEGORIES } from "@/components/shared/ExpenseCard";
 import { adminApi } from "@/services/adminApi";
 import type { LedgerEntry, RepLedgerGroup } from "@/services/adminApi";
 import { toLocalDateStr } from "@/lib/utils";
 
-export function DailyCashReportView() {
+interface DailyCashReportViewProps {
+  onSelectionChange?: (selecting: boolean) => void;
+}
+
+export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewProps) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -43,13 +48,17 @@ export function DailyCashReportView() {
   // ── State ──────────────────────────────────────────────────────────────────
   const [reportDate, setReportDate] = useState<Date>(new Date());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [flagDialogOpen, setFlagDialogOpen] = useState(false);
   const [flagNotes, setFlagNotes] = useState("");
   const [pendingFlagIds, setPendingFlagIds] = useState<string[]>([]);
 
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectionMode = selectedIds.size > 0;
+
+  useEffect(() => {
+    onSelectionChange?.(selectionMode);
+  }, [selectionMode, onSelectionChange]);
 
   const dateStr = toLocalDateStr(reportDate);
   const isToday = dateStr === toLocalDateStr(new Date());
@@ -83,13 +92,14 @@ export function DailyCashReportView() {
         toast({ title: t("cash.undone"), variant: "default" });
       }
       setSelectedIds(new Set());
+      setOpenCardId(null);
     },
     onError: () => toast({ title: t("toast.error"), variant: "error" }),
   });
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const fmt = (value: number) =>
-    `₪${value.toLocaleString(isAr ? "ar-SA" : "en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    `₪${value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 
   const fmtTime = (iso: string) =>
     new Date(iso).toLocaleTimeString(isAr ? "ar-SA" : "en-US", {
@@ -135,6 +145,7 @@ export function DailyCashReportView() {
     (id: string) => {
       longPressTimer.current = setTimeout(() => {
         setSelectedIds((prev) => new Set(prev).add(id));
+        setOpenCardId(null);
       }, 500);
     },
     [],
@@ -155,17 +166,6 @@ export function DailyCashReportView() {
       return next;
     });
   }, []);
-
-  const handleCardClick = useCallback(
-    (id: string) => {
-      if (selectionMode) {
-        toggleSelection(id);
-      } else {
-        setExpandedId((prev) => (prev === id ? null : id));
-      }
-    },
-    [selectionMode, toggleSelection],
-  );
 
   // ── Swipe actions per status ───────────────────────────────────────────────
   const getSwipeActions = (entry: LedgerEntry) => {
@@ -203,54 +203,65 @@ export function DailyCashReportView() {
   // ── Render helpers ─────────────────────────────────────────────────────────
   const renderLedgerCard = (entry: LedgerEntry) => {
     const isCash = entry.payment_method === "cash";
-    const isExpanded = expandedId === entry.id;
     const isSelected = selectedIds.has(entry.id);
+    const isOpen = openCardId === entry.id;
 
     return (
       <SwipeableCard
         key={entry.id}
         rightActions={getSwipeActions(entry)}
         disabled={selectionMode}
+        open={isOpen}
+        className={isSelected ? "ring-2 ring-primary" : ""}
+        onToggle={() => setOpenCardId(isOpen ? null : entry.id)}
+        onTapDisabled={() => toggleSelection(entry.id)}
       >
         <Card
-          className={`cursor-pointer transition-all ${
-            isSelected ? "ring-2 ring-primary" : ""
-          } ${isCash ? "border-emerald-500/20" : "border-blue-500/20"}`}
+          className={`cursor-pointer transition-all ${isCash ? "border-emerald-500/20" : "border-blue-500/20"}`}
           onPointerDown={() => startLongPress(entry.id)}
           onPointerUp={cancelLongPress}
           onPointerCancel={cancelLongPress}
           onPointerLeave={cancelLongPress}
-          onClick={() => handleCardClick(entry.id)}
         >
-          <CardContent className="p-3">
+          <CardContent className="p-4">
             {/* Main row */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {selectionMode && (
                 isSelected
-                  ? <CheckSquare className="h-4 w-4 text-primary shrink-0" />
-                  : <Square className="h-4 w-4 text-muted-foreground shrink-0" />
+                  ? <CheckSquare className="h-5 w-5 text-primary shrink-0" />
+                  : <Square className="h-5 w-5 text-muted-foreground shrink-0" />
               )}
 
-              {isCash ? (
-                <Banknote className="h-4 w-4 text-emerald-400 shrink-0" />
-              ) : (
-                <CreditCard className="h-4 w-4 text-blue-400 shrink-0" />
-              )}
+              <div className={`flex items-center justify-center h-9 w-9 rounded-full shrink-0 ${
+                isCash ? "bg-emerald-500/10" : "bg-blue-500/10"
+              }`}>
+                {isCash ? (
+                  <Banknote className="h-5 w-5 text-emerald-400" />
+                ) : (
+                  <CreditCard className="h-5 w-5 text-blue-400" />
+                )}
+              </div>
 
-              <span className="text-body-sm font-medium text-foreground flex-1 truncate">
-                {entry.customer_name || entry.category || "—"}
-              </span>
-
-              {/* Status indicator */}
-              {entry.status === "confirmed" && (
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-              )}
-              {entry.status === "flagged" && (
-                <Flag className="h-4 w-4 text-red-400 shrink-0" />
-              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-body-sm font-medium text-foreground truncate">
+                    {entry.customer_name || entry.category || "—"}
+                  </span>
+                  {entry.status === "confirmed" && (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  )}
+                  {entry.status === "flagged" && (
+                    <Flag className="h-4 w-4 text-red-400 shrink-0" />
+                  )}
+                </div>
+                <span className="text-caption text-muted-foreground">
+                  {fmtTime(entry.created_at)}
+                  {entry.notes && ` · ${entry.notes}`}
+                </span>
+              </div>
 
               <span
-                className={`text-body-sm font-bold tabular-nums ${
+                className={`text-body font-bold tabular-nums ${
                   isCash ? "text-emerald-400" : "text-blue-400"
                 }`}
               >
@@ -258,25 +269,11 @@ export function DailyCashReportView() {
               </span>
             </div>
 
-            {/* Expanded details */}
-            {isExpanded && !selectionMode && (
-              <div className="mt-2 pt-2 border-t border-border/50 space-y-1 text-caption text-muted-foreground">
-                <div className="flex justify-between">
-                  <span>{t("cash.paymentTime")}</span>
-                  <span className="text-foreground">{fmtTime(entry.created_at)}</span>
-                </div>
-                {entry.notes && (
-                  <div className="flex justify-between">
-                    <span>{t("cash.notes")}</span>
-                    <span className="text-foreground">{entry.notes}</span>
-                  </div>
-                )}
-                {entry.flag_notes && (
-                  <div className="flex justify-between">
-                    <span>{t("cash.flagNotes")}</span>
-                    <span className="text-red-400">{entry.flag_notes}</span>
-                  </div>
-                )}
+            {/* Flag notes if any */}
+            {entry.flag_notes && (
+              <div className="mt-2 pt-2 border-t border-border/50 flex items-start gap-2">
+                <Flag className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
+                <span className="text-caption text-red-400">{entry.flag_notes}</span>
               </div>
             )}
           </CardContent>
@@ -307,7 +304,7 @@ export function DailyCashReportView() {
 
   const hasIncoming = report && report.incoming.length > 0;
   const hasOutgoing = report && report.outgoing.length > 0;
-  const hasData = hasIncoming || hasOutgoing;
+  const hasData = hasIncoming || hasOutgoing || true; // Always show for ExpenseCard
 
   return (
     <div className="space-y-5 max-w-2xl mx-auto" dir={isAr ? "rtl" : "ltr"}>
@@ -342,7 +339,7 @@ export function DailyCashReportView() {
 
       {/* ── Empty state ── */}
       {!hasData && (
-        <EmptyState preset="no-data" title={t("cash.noActivity")} className="py-12" />
+        <EmptyState preset="no-data" title={t("cash.noActivity")} description={t("empty.noDataDesc")} className="py-12" />
       )}
 
       {hasData && (
@@ -360,27 +357,19 @@ export function DailyCashReportView() {
             </div>
           )}
 
-          {hasIncoming && hasOutgoing && <Separator />}
+          {hasIncoming && <Separator />}
 
           {/* ── Outgoing Section ── */}
-          {hasOutgoing && (
-            <div className="space-y-3">
+          <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ArrowUpCircle className="h-5 w-5 text-red-400" />
                 <h2 className="text-body font-bold text-foreground">
                   {t("cash.outgoing")}
                 </h2>
               </div>
-              {report!.outgoing.map(renderRepGroup)}
+              <ExpenseCard categories={ADMIN_CATEGORIES} date={toLocalDateStr(reportDate)} isAdmin />
+              {hasOutgoing && report!.outgoing.map(renderRepGroup)}
             </div>
-          )}
-
-          {/* ── Swipe hint ── */}
-          {!selectionMode && (
-            <p className="text-center text-caption text-muted-foreground">
-              {t("cash.swipeToAct")}
-            </p>
-          )}
         </>
       )}
 
