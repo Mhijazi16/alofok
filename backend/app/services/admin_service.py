@@ -1,32 +1,21 @@
 import csv
 import io
-import uuid
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time
 from decimal import Decimal
 
 from sqlalchemy import func, select, text
-from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import AssignedDay, Customer
-from app.models.daily_cash_confirmation import DailyCashConfirmation
-from app.models.expense import Expense
 from app.models.transaction import Transaction, TransactionStatus, TransactionType
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.admin import (
     CheckOut,
     CityDebtOut,
-    ConfirmHandoverIn,
-    DailyCashReportOut,
     DebtStatsOut,
-    FlagHandoverIn,
     ImportResult,
     OverdueCheckOut,
-    RepCashSummaryOut,
-    RepConfirmationOut,
-    RepPaymentDetail,
-    RepPaymentsOut,
     SalesRepStatsOut,
     SalesStatsOut,
 )
@@ -225,246 +214,6 @@ class AdminService:
             )
             for row in rows
         ]
-
-    # ── Daily cash report ────────────────────────────────────────────────────
-
-    async def get_daily_cash_report(self, report_date: date) -> DailyCashReportOut:
-        # Query 1: All active Sales reps with their cash/check totals for the day
-        payment_rows = await self.db.execute(
-            text("""
-                SELECT
-                    u.id                  AS rep_id,
-                    u.username            AS rep_name,
-                    COALESCE(SUM(CASE WHEN t.type = 'Payment_Cash'
-                                      THEN ABS(t.amount) ELSE 0 END), 0)
-                                          AS cash_total,
-                    COALESCE(SUM(CASE WHEN t.type = 'Payment_Check'
-                                      THEN ABS(t.amount) ELSE 0 END), 0)
-                                          AS check_total,
-                    COUNT(CASE WHEN t.type IN ('Payment_Cash', 'Payment_Check')
-                               THEN 1 END)
-                                          AS payment_count
-                FROM users u
-                LEFT JOIN transactions t
-                    ON t.created_by = u.id
-                    AND t.is_deleted = false
-                    AND t.created_at::date = :report_date
-                    AND t.type IN ('Payment_Cash', 'Payment_Check')
-                WHERE u.role = 'Sales'
-                  AND u.is_deleted = false
-                GROUP BY u.id, u.username
-                ORDER BY u.username
-            """),
-            {"report_date": report_date},
-        )
-        payment_map: dict[uuid.UUID, dict] = {}
-        for r in payment_rows:
-            payment_map[r.rep_id] = {
-                "rep_name": r.rep_name,
-                "cash_total": Decimal(r.cash_total),
-                "check_total": Decimal(r.check_total),
-                "payment_count": int(r.payment_count),
-            }
-
-        # Query 2: Expense totals per rep for the day
-        expense_rows = await self.db.execute(
-            text("""
-                SELECT
-                    created_by            AS rep_id,
-                    COALESCE(SUM(amount), 0) AS expense_total,
-                    COUNT(id)             AS expense_count
-                FROM expenses
-                WHERE is_deleted = false
-                  AND date = :report_date
-                GROUP BY created_by
-            """),
-            {"report_date": report_date},
-        )
-        expense_map: dict[uuid.UUID, dict] = {}
-        for r in expense_rows:
-            expense_map[r.rep_id] = {
-                "expense_total": Decimal(r.expense_total),
-                "expense_count": int(r.expense_count),
-            }
-
-        # Query 3: Confirmation records with confirmer names
-        confirmation_rows = await self.db.execute(
-            text("""
-                SELECT
-                    dc.rep_id,
-                    dc.handed_over_amount,
-                    dc.confirmed_at,
-                    dc.is_flagged,
-                    dc.flag_notes,
-                    u.username            AS confirmer_name
-                FROM daily_cash_confirmations dc
-                LEFT JOIN users u ON dc.confirmed_by = u.id
-                WHERE dc.date = :report_date
-                  AND dc.is_deleted = false
-            """),
-            {"report_date": report_date},
-        )
-        confirmation_map: dict[uuid.UUID, RepConfirmationOut] = {}
-        for r in confirmation_rows:
-            confirmation_map[r.rep_id] = RepConfirmationOut(
-                handed_over_amount=Decimal(r.handed_over_amount),
-                confirmed_at=r.confirmed_at,
-                confirmer_name=r.confirmer_name,
-                is_flagged=r.is_flagged,
-                flag_notes=r.flag_notes,
-            )
-
-        # Merge by rep_id
-        reps: list[RepCashSummaryOut] = []
-        for rep_id, p in payment_map.items():
-            exp = expense_map.get(
-                rep_id, {"expense_total": Decimal(0), "expense_count": 0}
-            )
-            cash_total = p["cash_total"]
-            expense_total = exp["expense_total"]
-            reps.append(
-                RepCashSummaryOut(
-                    rep_id=rep_id,
-                    rep_name=p["rep_name"],
-                    cash_total=cash_total,
-                    check_total=p["check_total"],
-                    expense_total=expense_total,
-                    computed_net=cash_total - expense_total,
-                    payment_count=p["payment_count"],
-                    expense_count=exp["expense_count"],
-                    confirmation=confirmation_map.get(rep_id),
-                )
-            )
-
-        grand_cash = sum(r.cash_total for r in reps) or Decimal(0)
-        grand_checks = sum(r.check_total for r in reps) or Decimal(0)
-        grand_expenses = sum(r.expense_total for r in reps) or Decimal(0)
-        grand_net = grand_cash - grand_expenses
-
-        return DailyCashReportOut(
-            report_date=report_date.isoformat(),
-            grand_cash=grand_cash,
-            grand_checks=grand_checks,
-            grand_expenses=grand_expenses,
-            grand_net=grand_net,
-            reps=reps,
-        )
-
-    async def confirm_handover(
-        self,
-        rep_id: uuid.UUID,
-        report_date: date,
-        handed_over_amount: Decimal,
-        confirmer_id: uuid.UUID,
-    ) -> None:
-        stmt = (
-            pg_insert(DailyCashConfirmation)
-            .values(
-                rep_id=rep_id,
-                date=report_date,
-                handed_over_amount=handed_over_amount,
-                confirmed_by=confirmer_id,
-                confirmed_at=datetime.now(timezone.utc),
-                is_flagged=False,
-                flag_notes=None,
-            )
-            .on_conflict_do_update(
-                constraint="uq_daily_cash_rep_date",
-                set_={
-                    "handed_over_amount": handed_over_amount,
-                    "confirmed_by": confirmer_id,
-                    "confirmed_at": datetime.now(timezone.utc),
-                    "is_flagged": False,
-                    "flag_notes": None,
-                    "updated_at": datetime.now(timezone.utc),
-                },
-            )
-        )
-        await self.db.execute(stmt)
-        await self.db.commit()
-
-    async def flag_handover(
-        self,
-        rep_id: uuid.UUID,
-        report_date: date,
-        handed_over_amount: Decimal,
-        flag_notes: str,
-        confirmer_id: uuid.UUID,
-    ) -> None:
-        stmt = (
-            pg_insert(DailyCashConfirmation)
-            .values(
-                rep_id=rep_id,
-                date=report_date,
-                handed_over_amount=handed_over_amount,
-                confirmed_by=confirmer_id,
-                confirmed_at=datetime.now(timezone.utc),
-                is_flagged=True,
-                flag_notes=flag_notes,
-            )
-            .on_conflict_do_update(
-                constraint="uq_daily_cash_rep_date",
-                set_={
-                    "handed_over_amount": handed_over_amount,
-                    "confirmed_by": confirmer_id,
-                    "confirmed_at": datetime.now(timezone.utc),
-                    "is_flagged": True,
-                    "flag_notes": flag_notes,
-                    "updated_at": datetime.now(timezone.utc),
-                },
-            )
-        )
-        await self.db.execute(stmt)
-        await self.db.commit()
-
-    async def get_rep_payment_details(
-        self, rep_id: uuid.UUID, report_date: date
-    ) -> RepPaymentsOut:
-        # Get rep name
-        rep_row = await self.db.execute(
-            text("SELECT username FROM users WHERE id = :rep_id"),
-            {"rep_id": rep_id},
-        )
-        rep = rep_row.first()
-        rep_name = rep.username if rep else "Unknown"
-
-        # Get individual payment transactions with customer names
-        rows = await self.db.execute(
-            text("""
-                SELECT
-                    t.id            AS transaction_id,
-                    t.customer_id,
-                    c.name          AS customer_name,
-                    t.type,
-                    ABS(t.amount)   AS amount,
-                    t.created_at
-                FROM transactions t
-                JOIN customers c ON c.id = t.customer_id
-                WHERE t.created_by = :rep_id
-                  AND t.is_deleted = false
-                  AND t.created_at::date = :report_date
-                  AND t.type IN ('Payment_Cash', 'Payment_Check')
-                ORDER BY t.created_at DESC
-            """),
-            {"rep_id": rep_id, "report_date": report_date},
-        )
-        payments = [
-            RepPaymentDetail(
-                transaction_id=r.transaction_id,
-                customer_id=r.customer_id,
-                customer_name=r.customer_name,
-                type=r.type,
-                amount=Decimal(r.amount),
-                created_at=r.created_at,
-            )
-            for r in rows
-        ]
-        return RepPaymentsOut(
-            rep_id=rep_id,
-            rep_name=rep_name,
-            report_date=report_date.isoformat(),
-            payments=payments,
-        )
 
     # ── Customer import ──────────────────────────────────────────────────────
 
