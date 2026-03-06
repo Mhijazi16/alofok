@@ -73,7 +73,7 @@ Plans:
   3. Admin can see a list of all expenses filterable by rep, date range, and status (pending / confirmed / flagged)
   4. A Sales rep can see their own submitted expenses and their current status
   5. Admin can confirm or flag any expense with an optional note, and the status updates immediately in both the admin list and the rep's view
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 12-01-PLAN.md — Backend: expense CRUD endpoints on ledger router (POST, GET, DELETE)
 - [ ] 12-02-PLAN.md — Frontend: shared ExpenseCard component, RouteView + DailyCashReportView wiring, locale keys
@@ -129,7 +129,7 @@ Plans:
 | 9. Image Capture and OCR | v1.1 | 4/4 | Complete | 2026-03-04 |
 | 10. DB Foundation | 1/1 | Complete    | 2026-03-05 | - |
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
-| 12. Expense Tracking | v1.2 | 0/2 | Planned | - |
+| 12. Expense Tracking | 1/2 | In Progress|  | - |
 | 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
 | 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |

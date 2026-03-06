@@ -13,11 +13,11 @@ Requirements for v1.2 Business Operations milestone. Each maps to roadmap phases
 
 ### Expense Tracking
 
-- [ ] **EXP-01**: Sales rep can log a field expense with amount, currency, category, date, and notes
-- [ ] **EXP-02**: Admin can log a business expense with amount, currency, category, date, and notes
+- [x] **EXP-01**: Sales rep can log a field expense with amount, currency, category, date, and notes
+- [x] **EXP-02**: Admin can log a business expense with amount, currency, category, date, and notes
 - [ ] **EXP-03**: Admin can view all expenses filterable by rep, date range, and status
-- [ ] **EXP-04**: Sales rep can view their own submitted expenses
-- [ ] **EXP-05**: Admin can confirm or flag an expense with optional notes
+- [x] **EXP-04**: Sales rep can view their own submitted expenses
+- [x] **EXP-05**: Admin can confirm or flag an expense with optional notes
 
 ### Daily Cash Report
 
@@ -102,11 +102,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DB-01 | Phase 10 | Complete |
-| EXP-01 | Phase 12 | Pending |
-| EXP-02 | Phase 12 | Pending |
+| EXP-01 | Phase 12 | Complete |
+| EXP-02 | Phase 12 | Complete |
 | EXP-03 | Phase 12 | Pending |
-| EXP-04 | Phase 12 | Pending |
-| EXP-05 | Phase 12 | Pending |
+| EXP-04 | Phase 12 | Complete |
+| EXP-05 | Phase 12 | Complete |
 | CASH-01 | Phase 11 | Complete |
 | CASH-02 | Phase 11 | Complete |
 | CASH-03 | Phase 11 | Complete |
