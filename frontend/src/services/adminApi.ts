@@ -122,6 +122,45 @@ export interface CheckOut {
   related_transaction_id: string | null;
 }
 
+// ── Ledger types ──
+
+export interface LedgerEntry {
+  id: string;
+  direction: "incoming" | "outgoing";
+  payment_method: "cash" | "check";
+  amount: number;
+  category: string | null;
+  notes: string | null;
+  rep_id: string;
+  rep_name: string | null;
+  customer_id: string | null;
+  customer_name: string | null;
+  source_transaction_id: string | null;
+  status: "pending" | "confirmed" | "flagged";
+  confirmed_at: string | null;
+  flag_notes: string | null;
+  date: string;
+  created_at: string;
+}
+
+export interface RepLedgerGroup {
+  rep_id: string;
+  rep_name: string;
+  entries: LedgerEntry[];
+}
+
+export interface DailyLedgerReport {
+  report_date: string;
+  incoming: RepLedgerGroup[];
+  outgoing: RepLedgerGroup[];
+}
+
+export interface LedgerStatusPayload {
+  ids: string[];
+  status: "pending" | "confirmed" | "flagged";
+  flag_notes?: string;
+}
+
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
 export const adminApi = {
@@ -202,4 +241,10 @@ export const adminApi = {
         params: { rep_id: repId, report_date: reportDate },
       })
       .then((r) => r.data),
+
+  getDailyLedger: (reportDate: string) =>
+    api.get<DailyLedgerReport>(`/ledger/daily?date=${reportDate}`).then((r) => r.data),
+
+  updateLedgerStatus: (payload: LedgerStatusPayload) =>
+    api.patch<{ updated: number }>("/ledger/status", payload).then((r) => r.data),
 };
