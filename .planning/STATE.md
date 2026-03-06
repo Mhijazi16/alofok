@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Business Operations
 status: executing
-stopped_at: Phase 13 context gathered
-last_updated: "2026-03-06T15:28:16.377Z"
-last_activity: "2026-03-06 — 12-02 Expense frontend: shared ExpenseCard component, salesApi expense functions, RouteView + DailyCashReportView integration"
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-06T15:44:19Z"
+last_activity: "2026-03-06 — 13-01 Offline cache persistence: IDB persister, image blob cache, useCacheSync hook, PersistQueryClientProvider"
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
   percent: 50
 ---
 
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-05)
 
 ## Current Position
 
-Phase: 12 of 15 (Expense Tracking)
-Plan: 02 of 02 complete, ready for Phase 13
+Phase: 13 of 15 (Offline Caching)
+Plan: 01 of 01 complete, ready for Phase 14
 Status: In progress
-Last activity: 2026-03-06 — 12-02 Expense frontend: shared ExpenseCard component, salesApi expense functions, RouteView + DailyCashReportView integration
+Last activity: 2026-03-06 — 13-01 Offline cache persistence: IDB persister, image blob cache, useCacheSync hook, PersistQueryClientProvider
 
-Progress: [█████░░░░░] 50%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress: [█████░░░░░] 50%
 | Phase 11-daily-cash-report P02 | 30 | 3 tasks | 7 files |
 | Phase 12 P01 | 2 | 2 tasks | 4 files |
 | Phase 12 P02 | 3 | 2 tasks | 6 files |
+| Phase 13 P01 | 3 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 11-daily-cash-report]: Incoming/Outgoing color split: green/blue for incoming cash+checks, red for outgoing expenses, yellow for net amounts
 - [Phase 12]: Role-based category restriction at endpoint level, not schema level
 - [Phase 12]: Admin expenses auto-confirmed, Sales expenses start pending
+- [Phase 13]: Separate idb-keyval stores per concern -- default for RQ cache, alofok-images for blobs, alofok_offline for sync queue
+- [Phase 13]: PERSIST_QUERY_KEYS exported as module-level const so main.tsx can import without using the hook
+- [Phase 13]: gcTime and maxAge both 24h (not Infinity) per research anti-pattern guidance
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-06T15:28:16.375Z
-Stopped at: Phase 13 context gathered
-Resume with: /gsd:plan-phase 10
+Last session: 2026-03-06T15:44:19Z
+Stopped at: Completed 13-01-PLAN.md
+Resume with: /gsd:execute-phase 14

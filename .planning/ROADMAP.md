@@ -86,7 +86,7 @@ Plans:
   1. With connectivity, the app silently caches the product catalog in IndexedDB; after switching to airplane mode, the Sales catalog still loads and shows all products
   2. With connectivity, the app caches the rep's route customers and today's orders; after switching to airplane mode, the route view loads and shows today's customers and orders
   3. Cached data displays a "last updated" timestamp so the rep knows how fresh the offline data is
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 13-01-PLAN.md — Cache infrastructure: idb-keyval persister, image cache, useCacheSync hook, PersistQueryClientProvider
 - [ ] 13-02-PLAN.md — Sync status UI: SyncStatusCard in Sales profile tab, freshness indicators, locale keys
@@ -130,6 +130,6 @@ Plans:
 | 10. DB Foundation | 1/1 | Complete    | 2026-03-05 | - |
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
-| 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
+| 13. Offline Caching | 1/2 | In Progress|  | - |
 | 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
