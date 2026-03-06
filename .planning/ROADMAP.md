@@ -28,7 +28,7 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
 
 - [x] **Phase 10: DB Foundation** - Performance indexes on the transactions table and new DB schema for expenses, cash reports, and purchases (completed 2026-03-05)
 - [x] **Phase 11: Daily Cash Report** - Admin can view, navigate, and reconcile daily incoming payments and outgoing expenses across all reps (completed 2026-03-05)
-- [ ] **Phase 12: Expense Tracking** - Sales reps log field expenses; Admin logs business expenses and confirms or flags them
+- [x] **Phase 12: Expense Tracking** - Sales reps log field expenses; Admin logs business expenses and confirms or flags them (completed 2026-03-06)
 - [ ] **Phase 13: Offline Caching** - Product catalog and route data cached in IndexedDB and available when the device has no connectivity
 - [ ] **Phase 14: Purchase from Customer** - Sales rep buys products back from a customer, crediting their balance and updating inventory with weighted-average costing
 - [ ] **Phase 15: Statement Enhancements** - Custom date range picker and Arabic PDF export for customer statements
@@ -73,7 +73,7 @@ Plans:
   3. Admin can see a list of all expenses filterable by rep, date range, and status (pending / confirmed / flagged)
   4. A Sales rep can see their own submitted expenses and their current status
   5. Admin can confirm or flag any expense with an optional note, and the status updates immediately in both the admin list and the rep's view
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 12-01-PLAN.md — Backend: expense CRUD endpoints on ledger router (POST, GET, DELETE)
 - [ ] 12-02-PLAN.md — Frontend: shared ExpenseCard component, RouteView + DailyCashReportView wiring, locale keys
@@ -129,7 +129,7 @@ Plans:
 | 9. Image Capture and OCR | v1.1 | 4/4 | Complete | 2026-03-04 |
 | 10. DB Foundation | 1/1 | Complete    | 2026-03-05 | - |
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
-| 12. Expense Tracking | 1/2 | In Progress|  | - |
+| 12. Expense Tracking | 2/2 | Complete   | 2026-03-06 | - |
 | 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
 | 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
