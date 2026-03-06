@@ -38,6 +38,42 @@ class DailyLedgerReportOut(BaseModel):
     outgoing: list[RepLedgerGroup]
 
 
+ALLOWED_EXPENSE_CATEGORIES = {
+    "Food",
+    "Fuel",
+    "Gifts",
+    "CarWash",
+    "Other",
+    "Electricity",
+    "Internet",
+    "CarRepair",
+    "Salaries",
+}
+
+
+class ExpenseCreateIn(BaseModel):
+    amount: Decimal
+    category: str
+    date: date
+    notes: str | None = None
+
+    @field_validator("category")
+    @classmethod
+    def validate_category(cls, v: str) -> str:
+        if v not in ALLOWED_EXPENSE_CATEGORIES:
+            raise ValueError(
+                f"category must be one of: {', '.join(sorted(ALLOWED_EXPENSE_CATEGORIES))}"
+            )
+        return v
+
+    @field_validator("amount")
+    @classmethod
+    def validate_amount(cls, v: Decimal) -> Decimal:
+        if v <= 0:
+            raise ValueError("amount must be greater than 0")
+        return v
+
+
 class LedgerStatusUpdateIn(BaseModel):
     ids: list[uuid.UUID]
     status: str
