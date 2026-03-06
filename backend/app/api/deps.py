@@ -9,6 +9,7 @@ from app.core.errors import HorizonException
 from app.core.security import decode_access_token
 from app.repositories.customer_auth_repository import CustomerAuthRepository
 from app.repositories.customer_repository import CustomerRepository
+from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.product_repository import ProductRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.repositories.user_repository import UserRepository
@@ -128,11 +129,16 @@ def get_customer_auth_repo(db: DbSession) -> CustomerAuthRepository:
     return CustomerAuthRepository(db)
 
 
+def get_ledger_repo(db: DbSession) -> LedgerRepository:
+    return LedgerRepository(db)
+
+
 UserRepo = Annotated[UserRepository, Depends(get_user_repo)]
 ProductRepo = Annotated[ProductRepository, Depends(get_product_repo)]
 CustomerRepo = Annotated[CustomerRepository, Depends(get_customer_repo)]
 TransactionRepo = Annotated[TransactionRepository, Depends(get_transaction_repo)]
 CustomerAuthRepo = Annotated[CustomerAuthRepository, Depends(get_customer_auth_repo)]
+LedgerRepo = Annotated[LedgerRepository, Depends(get_ledger_repo)]
 
 # ---------------------------------------------------------------------------
 # Services
