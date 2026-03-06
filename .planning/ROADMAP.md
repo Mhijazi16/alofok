@@ -88,8 +88,8 @@ Plans:
   3. Cached data displays a "last updated" timestamp so the rep knows how fresh the offline data is
 **Plans:** 2 plans
 Plans:
-- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
-- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
+- [ ] 13-01-PLAN.md — Cache infrastructure: idb-keyval persister, image cache, useCacheSync hook, PersistQueryClientProvider
+- [ ] 13-02-PLAN.md — Sync status UI: SyncStatusCard in Sales profile tab, freshness indicators, locale keys
 
 ### Phase 14: Purchase from Customer
 **Goal**: A Sales rep can record buying products back from a customer, which credits the customer's balance, increases stock, and updates the product's weighted-average purchase price
