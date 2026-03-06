@@ -10,7 +10,9 @@ from app.models.transaction import (
     TransactionStatus,
     TransactionType,
 )
+from app.models.ledger import CompanyLedger
 from app.repositories.customer_repository import CustomerRepository
+from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.admin import CheckOut
 from app.schemas.transaction import PaymentCreate, TransactionOut
@@ -24,9 +26,11 @@ class PaymentService:
         self,
         customer_repo: CustomerRepository,
         transaction_repo: TransactionRepository,
+        ledger_repo: LedgerRepository,
     ):
         self._customers = customer_repo
         self._transactions = transaction_repo
+        self._ledger = ledger_repo
 
     async def create_payment(
         self, body: PaymentCreate, creator_id: uuid.UUID
@@ -86,6 +90,20 @@ class PaymentService:
         customer.balance -= ils_amount
         await self._customers.update_balance(customer)
         txn = await self._transactions.create(txn)
+
+        # Auto-create ledger entry for this payment
+        ledger_entry = CompanyLedger(
+            direction="incoming",
+            payment_method="cash" if body.type == TransactionType.Payment_Cash else "check",
+            amount=ils_amount,
+            rep_id=creator_id,
+            customer_id=body.customer_id,
+            source_transaction_id=txn.id,
+            date=txn.created_at.date(),
+            status="pending",
+        )
+        await self._ledger.create(ledger_entry)
+
         return TransactionOut.model_validate(txn)
 
     async def deposit_check(

@@ -183,9 +183,9 @@ def get_customer_portal_service(
 
 
 def get_payment_service(
-    customer_repo: CustomerRepo, transaction_repo: TransactionRepo
+    customer_repo: CustomerRepo, transaction_repo: TransactionRepo, ledger_repo: LedgerRepo
 ) -> PaymentService:
-    return PaymentService(customer_repo, transaction_repo)
+    return PaymentService(customer_repo, transaction_repo, ledger_repo)
 
 
 def get_admin_service(db: DbSession) -> AdminService:
