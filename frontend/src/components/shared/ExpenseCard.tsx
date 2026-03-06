@@ -18,7 +18,6 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -131,7 +130,7 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
       setDialogOpen(false);
     },
     onError: () => {
-      toast({ title: t("toast.error"), variant: "destructive" });
+      toast({ title: t("toast.error"), variant: "error" });
     },
   });
 
@@ -142,7 +141,7 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
       invalidateQueries();
     },
     onError: () => {
-      toast({ title: t("toast.error"), variant: "destructive" });
+      toast({ title: t("toast.error"), variant: "error" });
     },
   });
 
@@ -170,128 +169,133 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
 
   return (
     <>
-      {/* ── Collapsible Card ── */}
-      <Card
-        className={`glass cursor-pointer transition-all duration-200 ${className ?? ""}`}
-        onClick={() => setExpanded((prev) => !prev)}
+      {/* ── Expenses group: header + dropdown in one bordered container ── */}
+      <div
+        className={`rounded-xl border border-border/60 overflow-hidden transition-all duration-200 ${className ?? ""}`}
       >
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/15">
-                <Receipt className="h-4 w-4 text-red-400" />
-              </div>
-              <div>
-                <p className="text-body-sm font-semibold text-foreground">
-                  {t("expense.title")}
-                </p>
-                {!isLoading && expenses && expenses.length > 0 && (
-                  <p className="text-caption text-muted-foreground">
-                    {expenses.length} {expenses.length === 1 ? "item" : "items"}
-                  </p>
-                )}
-              </div>
+        {/* Header button */}
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className={`
+            flex w-full items-center justify-between p-3 glass cursor-pointer
+            transition-colors hover:bg-accent/30
+            ${expanded ? "border-b border-border/40" : ""}
+          `}
+        >
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/15">
+              <Receipt className="h-4 w-4 text-red-400" />
             </div>
-            <div className="flex items-center gap-2">
-              {isLoading ? (
-                <Skeleton className="h-5 w-16" />
-              ) : (
-                <span className="text-body font-bold text-red-400" dir="ltr">
-                  {total.toLocaleString("en-US", { minimumFractionDigits: 0 })} ILS
-                </span>
-              )}
-              {expanded ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <div className="text-start">
+              <p className="text-body-sm font-semibold text-foreground">
+                {t("expense.title")}
+              </p>
+              {!isLoading && expenses && expenses.length > 0 && (
+                <p className="text-caption text-muted-foreground">
+                  {expenses.length} {expenses.length === 1 ? "item" : "items"}
+                </p>
               )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-2">
+            {isLoading ? (
+              <Skeleton className="h-5 w-16" />
+            ) : (
+              <span className="text-body font-bold text-red-400" dir="ltr">
+                {total.toLocaleString("en-US", { minimumFractionDigits: 0 })} ILS
+              </span>
+            )}
+            {expanded ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
+        </button>
 
-      {/* ── Expanded content ── */}
-      {expanded && (
-        <div className="space-y-2 mt-2">
-          {isLoading ? (
-            <div className="space-y-2">
-              {[1, 2].map((i) => (
-                <Skeleton key={i} className="h-14 w-full rounded-lg" />
-              ))}
-            </div>
-          ) : expenses && expenses.length > 0 ? (
-            expenses.map((expense) => {
-              const cat = getCategoryConfig(expense.category ?? "");
-              const CatIcon = cat?.icon ?? Receipt;
-              return (
-                <Card key={expense.id} className="bg-card/50">
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${cat?.bg ?? "bg-zinc-500/15"}`}
-                      >
-                        <CatIcon className={`h-4 w-4 ${cat?.color ?? "text-zinc-400"}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-body-sm font-medium text-foreground truncate">
-                          {t(`expense.category.${expense.category ?? "Other"}`)}
-                        </p>
-                        {expense.notes && (
-                          <p className="text-caption text-muted-foreground truncate">
-                            {expense.notes}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-body-sm font-semibold text-foreground" dir="ltr">
-                          {Math.abs(expense.amount).toLocaleString("en-US")} ILS
-                        </span>
-                        <Badge
-                          variant={statusBadgeVariant(expense.status)}
-                          size="sm"
-                          className={statusColor(expense.status)}
-                        >
-                          {t(`cash.${expense.status === "confirmed" ? "confirmed" : expense.status === "flagged" ? "flagged" : "confirm"}`)}
-                        </Badge>
-                        {!isAdmin && expense.status === "pending" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteMutation.mutate(expense.id);
-                            }}
-                            className="p-1 rounded-md hover:bg-destructive/15 transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </button>
-                        )}
-                      </div>
+        {/* Expanded dropdown inside the same container */}
+        {expanded && (
+          <div className="bg-card/30 p-2 space-y-1.5">
+            {isLoading ? (
+              <div className="space-y-1.5">
+                {[1, 2].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : expenses && expenses.length > 0 ? (
+              expenses.map((expense) => {
+                const cat = getCategoryConfig(expense.category ?? "");
+                const CatIcon = cat?.icon ?? Receipt;
+                return (
+                  <div
+                    key={expense.id}
+                    className="flex items-center gap-3 rounded-lg bg-card/50 p-2.5"
+                  >
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${cat?.bg ?? "bg-zinc-500/15"}`}
+                    >
+                      <CatIcon className={`h-4 w-4 ${cat?.color ?? "text-zinc-400"}`} />
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          ) : (
-            <p className="text-center text-body-sm text-muted-foreground py-4">
-              {t("expense.noExpenses")}
-            </p>
-          )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-body-sm font-medium text-foreground truncate">
+                        {t(`expense.category.${expense.category ?? "Other"}`)}
+                      </p>
+                      {expense.notes && (
+                        <p className="text-caption text-muted-foreground truncate">
+                          {expense.notes}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-body-sm font-semibold text-foreground" dir="ltr">
+                        {Math.abs(expense.amount).toLocaleString("en-US")} ILS
+                      </span>
+                      <Badge
+                        variant={statusBadgeVariant(expense.status)}
+                        size="sm"
+                        className={statusColor(expense.status)}
+                      >
+                        {t(`cash.${expense.status === "confirmed" ? "confirmed" : expense.status === "flagged" ? "flagged" : "confirm"}`)}
+                      </Badge>
+                      {!isAdmin && expense.status === "pending" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteMutation.mutate(expense.id);
+                          }}
+                          className="p-1 rounded-md hover:bg-destructive/15 transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-center text-body-sm text-muted-foreground py-3">
+                {t("expense.noExpenses")}
+              </p>
+            )}
 
-          {/* Add button */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={(e) => {
-              e.stopPropagation();
-              resetForm();
-              setDialogOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4 me-1" />
-            {t("expense.addExpense")}
-          </Button>
-        </div>
-      )}
+            {/* Add button inside the dropdown */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mt-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                resetForm();
+                setDialogOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4 me-1" />
+              {t("expense.addExpense")}
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* ── Add Expense Dialog ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

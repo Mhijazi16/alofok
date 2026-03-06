@@ -5,7 +5,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AdminChecksView } from "./AdminChecksView";
 import { DailyCashReportView } from "./DailyCashReportView";
 
-export function FinanceView() {
+interface FinanceViewProps {
+  onSelectionChange?: (selecting: boolean) => void;
+}
+
+export function FinanceView({ onSelectionChange }: FinanceViewProps) {
   const { t, i18n } = useTranslation();
 
   return (
@@ -20,7 +24,7 @@ export function FinanceView() {
           </TabsList>
 
           <TabsContent value="cashReport">
-            <DailyCashReportView />
+            <DailyCashReportView onSelectionChange={onSelectionChange} />
           </TabsContent>
 
           <TabsContent value="checks">

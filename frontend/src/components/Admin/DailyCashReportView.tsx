@@ -201,10 +201,25 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
   };
 
   // ── Render helpers ─────────────────────────────────────────────────────────
-  const renderLedgerCard = (entry: LedgerEntry) => {
+  const renderLedgerCard = (entry: LedgerEntry, direction: "incoming" | "outgoing" = "incoming") => {
     const isCash = entry.payment_method === "cash";
+    const isOutgoing = direction === "outgoing";
     const isSelected = selectedIds.has(entry.id);
     const isOpen = openCardId === entry.id;
+
+    // Incoming: green for cash, blue for checks. Outgoing: always red.
+    const borderColor = isOutgoing
+      ? "border-red-500/20"
+      : isCash ? "border-emerald-500/20" : "border-blue-500/20";
+    const iconBg = isOutgoing
+      ? "bg-red-500/10"
+      : isCash ? "bg-emerald-500/10" : "bg-blue-500/10";
+    const iconColor = isOutgoing
+      ? "text-red-400"
+      : isCash ? "text-emerald-400" : "text-blue-400";
+    const amountColor = isOutgoing
+      ? "text-red-400"
+      : isCash ? "text-emerald-400" : "text-blue-400";
 
     return (
       <SwipeableCard
@@ -217,7 +232,7 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
         onTapDisabled={() => toggleSelection(entry.id)}
       >
         <Card
-          className={`cursor-pointer transition-all ${isCash ? "border-emerald-500/20" : "border-blue-500/20"}`}
+          className={`cursor-pointer transition-all ${borderColor}`}
           onPointerDown={() => startLongPress(entry.id)}
           onPointerUp={cancelLongPress}
           onPointerCancel={cancelLongPress}
@@ -232,13 +247,11 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
                   : <Square className="h-5 w-5 text-muted-foreground shrink-0" />
               )}
 
-              <div className={`flex items-center justify-center h-9 w-9 rounded-full shrink-0 ${
-                isCash ? "bg-emerald-500/10" : "bg-blue-500/10"
-              }`}>
+              <div className={`flex items-center justify-center h-9 w-9 rounded-full shrink-0 ${iconBg}`}>
                 {isCash ? (
-                  <Banknote className="h-5 w-5 text-emerald-400" />
+                  <Banknote className={`h-5 w-5 ${iconColor}`} />
                 ) : (
-                  <CreditCard className="h-5 w-5 text-blue-400" />
+                  <CreditCard className={`h-5 w-5 ${iconColor}`} />
                 )}
               </div>
 
@@ -260,11 +273,7 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
                 </span>
               </div>
 
-              <span
-                className={`text-body font-bold tabular-nums ${
-                  isCash ? "text-emerald-400" : "text-blue-400"
-                }`}
-              >
+              <span className={`text-body font-bold tabular-nums ${amountColor}`}>
                 {fmt(entry.amount)}
               </span>
             </div>
@@ -282,12 +291,12 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
     );
   };
 
-  const renderRepGroup = (group: RepLedgerGroup) => (
+  const renderRepGroup = (group: RepLedgerGroup, direction: "incoming" | "outgoing" = "incoming") => (
     <div key={group.rep_id} className="space-y-2">
       <h3 className="text-body-sm font-semibold text-muted-foreground px-1">
         {group.rep_name}
       </h3>
-      {group.entries.map(renderLedgerCard)}
+      {group.entries.map((entry) => renderLedgerCard(entry, direction))}
     </div>
   );
 
@@ -353,7 +362,7 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
                   {t("cash.incoming")}
                 </h2>
               </div>
-              {report!.incoming.map(renderRepGroup)}
+              {report!.incoming.map((g) => renderRepGroup(g, "incoming"))}
             </div>
           )}
 
@@ -368,7 +377,7 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
                 </h2>
               </div>
               <ExpenseCard categories={ADMIN_CATEGORIES} date={toLocalDateStr(reportDate)} isAdmin />
-              {hasOutgoing && report!.outgoing.map(renderRepGroup)}
+              {hasOutgoing && report!.outgoing.map((g) => renderRepGroup(g, "outgoing"))}
             </div>
         </>
       )}

@@ -78,6 +78,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
       queryClient.invalidateQueries({ queryKey: ["my-route"] });
       queryClient.invalidateQueries({ queryKey: ["insights", customer.id] });
       queryClient.invalidateQueries({ queryKey: ["statement", customer.id] });
+      queryClient.invalidateQueries({ queryKey: ["daily-ledger"] });
       toast({ title: t("payment.paymentSuccess"), variant: "success" });
       onDone();
     },

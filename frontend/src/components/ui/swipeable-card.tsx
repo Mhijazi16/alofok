@@ -1,5 +1,4 @@
-import { useRef, useCallback, type ReactNode } from "react";
-import { useDrag } from "@use-gesture/react";
+import { useState, useRef, useCallback, useEffect, type ReactNode } from "react";
 
 interface SwipeAction {
   label: string;
@@ -10,113 +9,146 @@ interface SwipeAction {
 
 interface SwipeableCardProps {
   children: ReactNode;
-  leftActions?: SwipeAction[];
   rightActions?: SwipeAction[];
   className?: string;
   disabled?: boolean;
+  open?: boolean;
+  onToggle?: () => void;
+  onTapDisabled?: () => void;
 }
 
-const ACTION_WIDTH = 72;
+const SWIPE_THRESHOLD = 40;
 
 export function SwipeableCard({
   children,
-  leftActions = [],
   rightActions = [],
   className = "",
   disabled = false,
+  open: controlledOpen,
+  onToggle,
+  onTapDisabled,
 }: SwipeableCardProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
-  const offsetRef = useRef(0);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [actionsWidth, setActionsWidth] = useState(0);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const swiped = useRef(false);
+  const isOpen = controlledOpen ?? internalOpen;
 
-  const maxLeft = rightActions.length * ACTION_WIDTH;
-  const maxRight = leftActions.length * ACTION_WIDTH;
+  useEffect(() => {
+    if (actionsRef.current) {
+      setActionsWidth(actionsRef.current.scrollWidth);
+    }
+  }, [rightActions.length]);
 
-  const resetSwipe = useCallback(() => {
-    const el = contentRef.current;
-    if (!el) return;
-    el.style.transition = "transform 200ms ease-out";
-    el.style.transform = "translateX(0)";
-    offsetRef.current = 0;
+  const open = useCallback(() => {
+    if (onToggle) {
+      if (!isOpen) onToggle();
+    } else {
+      setInternalOpen(true);
+    }
+  }, [onToggle, isOpen]);
+
+  const closeCard = useCallback(() => {
+    if (onToggle) {
+      if (isOpen) onToggle();
+    } else {
+      setInternalOpen(false);
+    }
+  }, [onToggle, isOpen]);
+
+  const toggle = useCallback(() => {
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalOpen((p) => !p);
+    }
+  }, [onToggle]);
+
+  // ── Touch / pointer swipe detection ──
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    touchStartX.current = e.clientX;
+    touchStartY.current = e.clientY;
+    swiped.current = false;
   }, []);
 
-  const bind = useDrag(
-    ({ movement: [mx], last, cancel }) => {
-      if (disabled) {
-        cancel?.();
-        return;
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      const dx = e.clientX - touchStartX.current;
+      const dy = Math.abs(e.clientY - touchStartY.current);
+
+      // Only count horizontal swipes (not vertical scroll)
+      if (dy < Math.abs(dx) && Math.abs(dx) > SWIPE_THRESHOLD) {
+        swiped.current = true;
+        if (!disabled) {
+          if (dx < 0) {
+            // Swipe left → open
+            open();
+          } else {
+            // Swipe right → close
+            closeCard();
+          }
+        }
       }
-
-      const el = contentRef.current;
-      if (!el) return;
-
-      if (last) {
-        const threshold = ACTION_WIDTH * 0.5;
-        let target = 0;
-        if (mx < -threshold && rightActions.length) target = -maxLeft;
-        if (mx > threshold && leftActions.length) target = maxRight;
-        el.style.transition = "transform 200ms ease-out";
-        el.style.transform = `translateX(${target}px)`;
-        offsetRef.current = target;
-        return;
-      }
-
-      const clamped = Math.max(
-        -maxLeft,
-        Math.min(maxRight, mx + offsetRef.current)
-      );
-      el.style.transition = "none";
-      el.style.transform = `translateX(${clamped}px)`;
     },
-    { axis: "x", filterTaps: true, from: () => [offsetRef.current, 0] }
+    [disabled, open, closeCard],
   );
 
+  const handleClick = useCallback(() => {
+    if (swiped.current) {
+      swiped.current = false;
+      return;
+    }
+    if (disabled) {
+      onTapDisabled?.();
+    } else {
+      toggle();
+    }
+  }, [disabled, onTapDisabled, toggle]);
+
+  if (!rightActions.length) {
+    return <div className={className}>{children}</div>;
+  }
+
+  const CORNER_PAD = 12;
+
   return (
-    <div className={`relative overflow-hidden rounded-lg ${className}`}>
-      {rightActions.length > 0 && (
-        <div
-          className="absolute inset-y-0 end-0 flex items-stretch"
-          dir="ltr"
-        >
-          {rightActions.map((action, i) => (
-            <button
-              key={i}
-              className={`flex flex-col items-center justify-center text-white text-xs font-medium gap-1 ${action.color}`}
-              style={{ width: ACTION_WIDTH }}
-              onClick={() => {
-                action.onClick();
-                resetSwipe();
-              }}
-            >
-              {action.icon}
-              {action.label}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className={`relative overflow-hidden rounded-2xl ${isOpen ? rightActions[0]?.color ?? "" : ""} ${className}`}>
+      {/* Action buttons pinned to the right */}
+      <div
+        ref={actionsRef}
+        dir="ltr"
+        className={`absolute inset-y-0 right-0 flex items-stretch transition-opacity duration-200 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {rightActions.map((action, i) => (
+          <button
+            key={i}
+            className={`flex flex-col items-center justify-center text-white text-xs font-medium gap-1 px-5 ${action.color}`}
+            style={i === rightActions.length - 1 ? { paddingRight: `${20 + CORNER_PAD}px` } : undefined}
+            onClick={() => {
+              action.onClick();
+              closeCard();
+            }}
+          >
+            {action.icon}
+            {action.label}
+          </button>
+        ))}
+      </div>
 
-      {leftActions.length > 0 && (
-        <div
-          className="absolute inset-y-0 start-0 flex items-stretch"
-          dir="ltr"
-        >
-          {leftActions.map((action, i) => (
-            <button
-              key={i}
-              className={`flex flex-col items-center justify-center text-white text-xs font-medium gap-1 ${action.color}`}
-              style={{ width: ACTION_WIDTH }}
-              onClick={() => {
-                action.onClick();
-                resetSwipe();
-              }}
-            >
-              {action.icon}
-              {action.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div ref={contentRef} {...bind()} className="relative z-10 touch-pan-y">
+      {/* Card content — slides left to reveal actions */}
+      <div
+        className="relative z-10 transition-transform duration-200 ease-out touch-pan-y"
+        style={{
+          transform: isOpen ? `translateX(-${actionsWidth}px)` : "translateX(0)",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onClick={handleClick}
+      >
         {children}
       </div>
     </div>

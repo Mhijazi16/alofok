@@ -74,6 +74,7 @@ export default function AdminPanel() {
   });
 
   const [activeView, setActiveView] = useState<AdminView>("overview");
+  const [hideNav, setHideNav] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
   const [avatarSeed, setAvatarSeed] = useState(
@@ -182,7 +183,7 @@ export default function AdminPanel() {
       case "overview":
         return <Overview onNavigate={(v) => setActiveView(v as AdminView)} />;
       case "finance":
-        return <FinanceView />;
+        return <FinanceView onSelectionChange={setHideNav} />;
       case "sales":
         return <SalesStats />;
       case "debt":
@@ -390,7 +391,7 @@ export default function AdminPanel() {
   return (
     <AppShell
       bottomNav={
-        isMainView ? (
+        isMainView && !hideNav ? (
           <BottomNav
             items={navItems}
             activeValue={bottomNavActiveValue}
@@ -399,7 +400,7 @@ export default function AdminPanel() {
         ) : undefined
       }
     >
-      <div className="max-w-6xl mx-auto w-full px-4 lg:px-8">
+      <div className="w-full">
         {renderView()}
       </div>
 
