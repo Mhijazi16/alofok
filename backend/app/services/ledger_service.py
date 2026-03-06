@@ -6,6 +6,7 @@ from decimal import Decimal
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.errors import HorizonException
 from app.models.ledger import CompanyLedger
 from app.repositories.ledger_repository import LedgerRepository
 from app.schemas.ledger import (
@@ -127,3 +128,63 @@ class LedgerService:
             values["flag_notes"] = None
 
         return await self._repo.bulk_update_status(ids, values)
+
+    async def create_expense(
+        self,
+        rep_id: uuid.UUID,
+        amount: Decimal,
+        category: str,
+        expense_date: date,
+        notes: str | None = None,
+        is_admin: bool = False,
+    ) -> CompanyLedger:
+        entry = CompanyLedger(
+            direction="outgoing",
+            payment_method="cash",
+            amount=abs(amount),
+            rep_id=rep_id,
+            category=category,
+            date=expense_date,
+            notes=notes,
+            status="confirmed" if is_admin else "pending",
+        )
+        return await self._repo.create(entry)
+
+    async def get_rep_expenses(
+        self, rep_id: uuid.UUID, expense_date: date
+    ) -> list[LedgerEntryOut]:
+        entries = await self._repo.get_by_rep_and_direction(
+            rep_id, "outgoing", expense_date
+        )
+        return [
+            LedgerEntryOut(
+                id=e.id,
+                direction=e.direction,
+                payment_method=e.payment_method,
+                amount=Decimal(str(e.amount)),
+                category=e.category,
+                notes=e.notes,
+                rep_id=e.rep_id,
+                rep_name=None,
+                customer_id=e.customer_id,
+                customer_name=None,
+                source_transaction_id=e.source_transaction_id,
+                status=e.status,
+                confirmed_at=e.confirmed_at,
+                flag_notes=e.flag_notes,
+                date=e.date,
+                created_at=e.created_at,
+            )
+            for e in entries
+        ]
+
+    async def delete_expense(self, expense_id: uuid.UUID, caller_id: uuid.UUID) -> None:
+        entries = await self._repo.get_by_ids([expense_id])
+        if not entries or entries[0].rep_id != caller_id:
+            raise HorizonException(404, "Expense not found")
+        entry = entries[0]
+        if entry.status != "pending":
+            raise HorizonException(400, "Only pending expenses can be deleted")
+        if entry.direction != "outgoing" or entry.source_transaction_id is not None:
+            raise HorizonException(400, "Not a manual expense")
+        await self._repo.soft_delete(expense_id)
