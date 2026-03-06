@@ -499,7 +499,9 @@
     "selectedCount": "{{count}} selected",
     "confirmSelected": "Confirm Selected",
     "flagSelected": "Flag Selected",
-    "swipeToAct": "Swipe to act"
+    "swipeToAct": "Swipe to act",
+    "paymentTime": "Time",
+    "notes": "Notes"
   },
   "payment": {
     "cash": "Cash",

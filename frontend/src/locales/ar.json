@@ -499,7 +499,9 @@
     "selectedCount": "{{count}} محدد",
     "confirmSelected": "ترحيل المحدد",
     "flagSelected": "تعليم المحدد",
-    "swipeToAct": "اسحب للإجراء"
+    "swipeToAct": "اسحب للإجراء",
+    "paymentTime": "الوقت",
+    "notes": "ملاحظات"
   },
   "payment": {
     "cash": "نقدي",
