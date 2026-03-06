@@ -75,8 +75,8 @@ Plans:
   5. Admin can confirm or flag any expense with an optional note, and the status updates immediately in both the admin list and the rep's view
 **Plans:** 2 plans
 Plans:
-- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
-- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
+- [ ] 12-01-PLAN.md — Backend: expense CRUD endpoints on ledger router (POST, GET, DELETE)
+- [ ] 12-02-PLAN.md — Frontend: shared ExpenseCard component, RouteView + DailyCashReportView wiring, locale keys
 
 ### Phase 13: Offline Caching
 **Goal**: A Sales rep visiting a customer with no internet connection can still browse the full product catalog and see their assigned route and today's orders
@@ -129,7 +129,7 @@ Plans:
 | 9. Image Capture and OCR | v1.1 | 4/4 | Complete | 2026-03-04 |
 | 10. DB Foundation | 1/1 | Complete    | 2026-03-05 | - |
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
-| 12. Expense Tracking | v1.2 | 0/TBD | Not started | - |
+| 12. Expense Tracking | v1.2 | 0/2 | Planned | - |
 | 13. Offline Caching | v1.2 | 0/TBD | Not started | - |
 | 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
