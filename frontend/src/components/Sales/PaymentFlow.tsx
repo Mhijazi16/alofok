@@ -100,7 +100,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
        accountNumber.trim().length > 0));
 
   const formatCurrency = (val: number) =>
-    val.toLocaleString(i18n.language === "ar" ? "ar-SA" : "en-US", {
+    val.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
