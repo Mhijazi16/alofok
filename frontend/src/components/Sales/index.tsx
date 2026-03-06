@@ -976,7 +976,7 @@ export default function SalesRoot() {
         ) : undefined
       }
     >
-      <div className="max-w-6xl mx-auto w-full px-4 lg:px-8">
+      <div className="w-full">
         <OfflineBanner
           isOnline={isOnline}
           isSyncing={isSyncing}

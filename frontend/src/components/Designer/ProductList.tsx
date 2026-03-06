@@ -52,7 +52,7 @@ interface ProductListProps {
 
 function ProductGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
       {Array.from({ length: 6 }).map((_, i) => (
         <Card key={i} className="overflow-hidden">
           <Skeleton className="h-36 w-full rounded-none" />
@@ -142,7 +142,7 @@ export function ProductList({ onAdd }: ProductListProps) {
         }
       />
 
-      <PageContainer>
+      <PageContainer maxWidth="full">
         {/* Stats row */}
         <div className="mb-4">
           <StatCard
@@ -190,7 +190,7 @@ export function ProductList({ onAdd }: ProductListProps) {
 
         {/* Product grid */}
         {!isLoading && !isError && filtered.length > 0 && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {filtered.map((product) => (
               <Card
                 key={product.id}

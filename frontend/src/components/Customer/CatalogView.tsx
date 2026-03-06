@@ -314,7 +314,7 @@ export function CatalogView({
       <div className="space-y-2">
         <Separator label={title} />
         {viewMode === "grid" ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {items.map((p) => renderGridCard(p))}
           </div>
         ) : (

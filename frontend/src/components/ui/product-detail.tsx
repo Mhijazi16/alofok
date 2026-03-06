@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronLeft,
@@ -10,6 +10,7 @@ import {
   Layers,
   Box,
   Settings2,
+  X,
 } from "lucide-react";
 import type { Product } from "@/services/salesApi";
 import { getImageUrl } from "@/lib/image";
@@ -53,6 +54,7 @@ export function ProductDetail({ product, onBack, actions, embedded }: ProductDet
     .filter((u): u is string => u !== null);
 
   const [activeIdx, setActiveIdx] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
   function handleTouchStart(e: React.TouchEvent) {
@@ -99,29 +101,10 @@ export function ProductDetail({ product, onBack, actions, embedded }: ProductDet
             <img
               src={images[activeIdx]}
               alt={`${name} ${activeIdx + 1}`}
-              className="h-full w-full object-cover transition-opacity duration-200"
+              className="h-full w-full object-cover transition-opacity duration-200 cursor-pointer"
               key={activeIdx}
+              onClick={() => setLightboxOpen(true)}
             />
-
-            {/* Prev / Next arrows (desktop & multi-image) */}
-            {images.length > 1 && (
-              <>
-                <button
-                  onClick={() => setActiveIdx((i) => Math.max(i - 1, 0))}
-                  disabled={activeIdx === 0}
-                  className="absolute start-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white backdrop-blur-sm transition-opacity disabled:opacity-0"
-                >
-                  <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
-                </button>
-                <button
-                  onClick={() => setActiveIdx((i) => Math.min(i + 1, images.length - 1))}
-                  disabled={activeIdx === images.length - 1}
-                  className="absolute end-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white backdrop-blur-sm transition-opacity disabled:opacity-0"
-                >
-                  <ChevronRight className="h-5 w-5 rtl:rotate-180" />
-                </button>
-              </>
-            )}
 
             {/* Dot indicators */}
             {images.length > 1 && (
@@ -131,20 +114,13 @@ export function ProductDetail({ product, onBack, actions, embedded }: ProductDet
                     key={idx}
                     onClick={() => setActiveIdx(idx)}
                     className={cn(
-                      "h-2 rounded-full transition-all",
+                      "h-2.5 rounded-full transition-all",
                       idx === activeIdx
-                        ? "w-5 bg-white"
-                        : "w-2 bg-white/50"
+                        ? "w-6 bg-primary"
+                        : "w-2.5 bg-muted-foreground/40"
                     )}
                   />
                 ))}
-              </div>
-            )}
-
-            {/* Counter badge */}
-            {images.length > 1 && (
-              <div className="absolute end-3 top-3 rounded-full bg-black/50 px-2.5 py-0.5 text-caption text-white backdrop-blur-sm">
-                {activeIdx + 1}/{images.length}
               </div>
             )}
           </>
@@ -310,6 +286,138 @@ export function ProductDetail({ product, onBack, actions, embedded }: ProductDet
         {/* Bottom actions */}
         {actions && <div className="pt-2 pb-4">{actions}</div>}
       </div>
+
+      {/* Fullscreen lightbox */}
+      {lightboxOpen && images.length > 0 && (
+        <ImageLightbox
+          images={images}
+          initialIndex={activeIdx}
+          onClose={() => setLightboxOpen(false)}
+          onIndexChange={setActiveIdx}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Fullscreen Image Lightbox ─────────────────────────────────────────────────
+
+interface ImageLightboxProps {
+  images: string[];
+  initialIndex: number;
+  onClose: () => void;
+  onIndexChange: (idx: number) => void;
+}
+
+function ImageLightbox({ images, initialIndex, onClose, onIndexChange }: ImageLightboxProps) {
+  const [idx, setIdx] = useState(initialIndex);
+  const touchStartX = useRef<number | null>(null);
+
+  const go = useCallback((dir: 1 | -1) => {
+    setIdx((i) => {
+      const next = Math.max(0, Math.min(images.length - 1, i + dir));
+      onIndexChange(next);
+      return next;
+    });
+  }, [images.length, onIndexChange]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") go(1);
+    }
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [go, onClose]);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(diff) > 50) {
+      go(diff < 0 ? 1 : -1);
+    }
+    touchStartX.current = null;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95"
+      onClick={onClose}
+    >
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+      >
+        <X className="h-6 w-6" />
+      </button>
+
+      {/* Counter */}
+      {images.length > 1 && (
+        <div className="absolute top-4 left-4 z-10 rounded-full bg-white/10 px-3 py-1 text-sm text-white backdrop-blur-sm">
+          {idx + 1} / {images.length}
+        </div>
+      )}
+
+      {/* Image */}
+      <img
+        src={images[idx]}
+        alt={`Image ${idx + 1}`}
+        className="max-h-[90dvh] max-w-[95vw] object-contain select-none"
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        draggable={false}
+      />
+
+      {/* Prev / Next arrows */}
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); go(-1); }}
+            disabled={idx === 0}
+            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2.5 text-white backdrop-blur-sm transition-all hover:bg-white/20 disabled:opacity-0 disabled:pointer-events-none"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); go(1); }}
+            disabled={idx === images.length - 1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2.5 text-white backdrop-blur-sm transition-all hover:bg-white/20 disabled:opacity-0 disabled:pointer-events-none"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </>
+      )}
+
+      {/* Dot indicators */}
+      {images.length > 1 && (
+        <div className="absolute bottom-6 inset-x-0 flex justify-center gap-2">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIdx(i);
+                onIndexChange(i);
+              }}
+              className={cn(
+                "h-2.5 rounded-full transition-all",
+                i === idx ? "w-6 bg-white" : "w-2.5 bg-white/40"
+              )}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

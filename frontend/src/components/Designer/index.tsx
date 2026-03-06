@@ -206,7 +206,7 @@ export default function DesignerShell() {
         />
       }
     >
-      <div className="max-w-6xl mx-auto w-full px-4 lg:px-8">
+      <div className="w-full">
         {content}
       </div>
     </AppShell>
