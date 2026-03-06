@@ -14,6 +14,7 @@ from app.repositories.product_repository import ProductRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.repositories.user_repository import UserRepository
 from app.services.admin_service import AdminService
+from app.services.ledger_service import LedgerService
 from app.services.auth_service import AuthService
 from app.services.catalog_service import CatalogService
 from app.services.customer_auth_service import CustomerAuthService
@@ -192,7 +193,12 @@ def get_admin_service(db: DbSession) -> AdminService:
     return AdminService(db)
 
 
+def get_ledger_service(db: DbSession, ledger_repo: LedgerRepo) -> LedgerService:
+    return LedgerService(db, ledger_repo)
+
+
 AdminSvc = Annotated[AdminService, Depends(get_admin_service)]
+LedgerSvc = Annotated[LedgerService, Depends(get_ledger_service)]
 
 AuthSvc = Annotated[AuthService, Depends(get_auth_service)]
 CatalogSvc = Annotated[CatalogService, Depends(get_catalog_service)]

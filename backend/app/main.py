@@ -10,6 +10,7 @@ from app.api.endpoints import (
     customer_auth,
     customer_portal,
     customers,
+    ledger,
     orders,
     payments,
     products,
@@ -57,6 +58,7 @@ app.include_router(
 app.include_router(
     customer_portal.router, prefix="/customer-portal", tags=["customer-portal"]
 )
+app.include_router(ledger.router)
 
 
 @app.get("/health", tags=["health"])
