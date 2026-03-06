@@ -31,7 +31,7 @@ Requirements for v1.2 Business Operations milestone. Each maps to roadmap phases
 
 - [x] **OFFL-01**: Product catalog is cached in IndexedDB and available when offline
 - [x] **OFFL-02**: Route data (customers, today's orders) is cached and available offline
-- [ ] **OFFL-03**: Stale cached data shows a "last updated" freshness indicator
+- [x] **OFFL-03**: Stale cached data shows a "last updated" freshness indicator
 
 ### Purchase from Customer
 
@@ -114,7 +114,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CASH-05 | Phase 11 | Complete |
 | OFFL-01 | Phase 13 | Complete |
 | OFFL-02 | Phase 13 | Complete |
-| OFFL-03 | Phase 13 | Pending |
+| OFFL-03 | Phase 13 | Complete |
 | PURCH-01 | Phase 14 | Pending |
 | PURCH-02 | Phase 14 | Pending |
 | PURCH-03 | Phase 14 | Pending |

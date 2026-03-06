@@ -29,7 +29,7 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
 - [x] **Phase 10: DB Foundation** - Performance indexes on the transactions table and new DB schema for expenses, cash reports, and purchases (completed 2026-03-05)
 - [x] **Phase 11: Daily Cash Report** - Admin can view, navigate, and reconcile daily incoming payments and outgoing expenses across all reps (completed 2026-03-05)
 - [x] **Phase 12: Expense Tracking** - Sales reps log field expenses; Admin logs business expenses and confirms or flags them (completed 2026-03-06)
-- [ ] **Phase 13: Offline Caching** - Product catalog and route data cached in IndexedDB and available when the device has no connectivity
+- [x] **Phase 13: Offline Caching** - Product catalog and route data cached in IndexedDB and available when the device has no connectivity (completed 2026-03-06)
 - [ ] **Phase 14: Purchase from Customer** - Sales rep buys products back from a customer, crediting their balance and updating inventory with weighted-average costing
 - [ ] **Phase 15: Statement Enhancements** - Custom date range picker and Arabic PDF export for customer statements
 
@@ -86,7 +86,7 @@ Plans:
   1. With connectivity, the app silently caches the product catalog in IndexedDB; after switching to airplane mode, the Sales catalog still loads and shows all products
   2. With connectivity, the app caches the rep's route customers and today's orders; after switching to airplane mode, the route view loads and shows today's customers and orders
   3. Cached data displays a "last updated" timestamp so the rep knows how fresh the offline data is
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 13-01-PLAN.md — Cache infrastructure: idb-keyval persister, image cache, useCacheSync hook, PersistQueryClientProvider
 - [ ] 13-02-PLAN.md — Sync status UI: SyncStatusCard in Sales profile tab, freshness indicators, locale keys
@@ -130,6 +130,6 @@ Plans:
 | 10. DB Foundation | 1/1 | Complete    | 2026-03-05 | - |
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
-| 13. Offline Caching | 1/2 | In Progress|  | - |
+| 13. Offline Caching | 2/2 | Complete   | 2026-03-06 | - |
 | 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
