@@ -56,6 +56,7 @@ import { StatementView } from "./StatementView";
 import { ReturnedChecksView } from "./ReturnedChecksView";
 import { CustomerForm } from "./CustomerForm";
 import { AllCustomersView } from "./AllCustomersView";
+import { SyncStatusCard } from "@/components/shared/SyncStatusCard";
 
 type View =
   | "route"
@@ -830,12 +831,20 @@ export default function SalesRoot() {
                 </CardContent>
               </Card>
 
+              {/* Sync Status */}
+              <div
+                className="animate-slide-up"
+                style={{ animationDelay: "90ms" }}
+              >
+                <SyncStatusCard />
+              </div>
+
               {/* Logout */}
               <Button
                 variant="destructive"
                 size="lg"
                 className="w-full animate-slide-up"
-                style={{ animationDelay: "120ms" }}
+                style={{ animationDelay: "150ms" }}
                 onClick={() => dispatch(logout())}
               >
                 <LogOut className="h-4 w-4" />
