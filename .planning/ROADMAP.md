@@ -130,6 +130,6 @@ Plans:
 | 10. DB Foundation | 1/1 | Complete    | 2026-03-05 | - |
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
-| 13. Offline Caching | 2/2 | Complete   | 2026-03-06 | - |
+| 13. Offline Caching | 2/2 | Complete    | 2026-03-06 | - |
 | 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
