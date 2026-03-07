@@ -94,7 +94,9 @@ class PaymentService:
         # Auto-create ledger entry for this payment
         ledger_entry = CompanyLedger(
             direction="incoming",
-            payment_method="cash" if body.type == TransactionType.Payment_Cash else "check",
+            payment_method=(
+                "cash" if body.type == TransactionType.Payment_Cash else "check"
+            ),
             amount=ils_amount,
             rep_id=creator_id,
             customer_id=body.customer_id,

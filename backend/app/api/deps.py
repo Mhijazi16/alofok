@@ -22,6 +22,7 @@ from app.services.customer_portal_service import CustomerPortalService
 from app.services.customer_service import CustomerService
 from app.services.order_service import OrderService
 from app.services.payment_service import PaymentService
+from app.services.purchase_service import PurchaseService
 from app.utils.cache import CacheBackend, get_cache
 
 # ---------------------------------------------------------------------------
@@ -184,9 +185,20 @@ def get_customer_portal_service(
 
 
 def get_payment_service(
-    customer_repo: CustomerRepo, transaction_repo: TransactionRepo, ledger_repo: LedgerRepo
+    customer_repo: CustomerRepo,
+    transaction_repo: TransactionRepo,
+    ledger_repo: LedgerRepo,
 ) -> PaymentService:
     return PaymentService(customer_repo, transaction_repo, ledger_repo)
+
+
+def get_purchase_service(
+    customer_repo: CustomerRepo,
+    transaction_repo: TransactionRepo,
+    product_repo: ProductRepo,
+    ledger_repo: LedgerRepo,
+) -> PurchaseService:
+    return PurchaseService(customer_repo, transaction_repo, product_repo, ledger_repo)
 
 
 def get_admin_service(db: DbSession) -> AdminService:
@@ -205,6 +217,7 @@ CatalogSvc = Annotated[CatalogService, Depends(get_catalog_service)]
 CustomerSvc = Annotated[CustomerService, Depends(get_customer_service)]
 OrderSvc = Annotated[OrderService, Depends(get_order_service)]
 PaymentSvc = Annotated[PaymentService, Depends(get_payment_service)]
+PurchaseSvc = Annotated[PurchaseService, Depends(get_purchase_service)]
 CustomerAuthSvc = Annotated[CustomerAuthService, Depends(get_customer_auth_service)]
 CustomerPortalSvc = Annotated[
     CustomerPortalService, Depends(get_customer_portal_service)

@@ -192,9 +192,7 @@ class CustomerService:
 
         # Self-heal: reconcile customer.balance if it drifted
         if customer.balance != computed_balance:
-            await self._customers.update(
-                customer_id, {"balance": computed_balance}
-            )
+            await self._customers.update(customer_id, {"balance": computed_balance})
             await self._cache.invalidate_prefix("route:")
 
         payments = await self._transactions.get_payments_for_customer(customer_id)

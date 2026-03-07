@@ -14,6 +14,7 @@ from app.api.endpoints import (
     orders,
     payments,
     products,
+    purchases,
 )
 from app.middleware.error_handler import GlobalErrorHandler
 from app.utils.cache import close_cache, init_cache
@@ -50,6 +51,7 @@ app.include_router(products.router, prefix="/products", tags=["catalog"])
 app.include_router(customers.router, prefix="/customers", tags=["customers"])
 app.include_router(orders.router, prefix="/orders", tags=["orders"])
 app.include_router(payments.router, prefix="/payments", tags=["payments"])
+app.include_router(purchases.router, prefix="/purchases", tags=["purchases"])
 
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(
