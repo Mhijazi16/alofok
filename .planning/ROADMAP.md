@@ -103,8 +103,8 @@ Plans:
   5. The purchase appears in the customer's statement as a distinct "Purchase" line item, visually differentiated from orders and payments
 **Plans:** 2 plans
 Plans:
-- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
-- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
+- [ ] 14-01-PLAN.md — Backend: PurchaseService with WAC/stock/balance/ledger logic, schema, endpoint, DI wiring
+- [ ] 14-02-PLAN.md — Frontend: PurchaseFlow component, CustomerDashboard wiring, StatementView type, sync queue, locale keys
 
 ### Phase 15: Statement Enhancements
 **Goal**: Users can filter a customer statement by any custom date range and download that statement as a properly rendered Arabic PDF
@@ -131,5 +131,5 @@ Plans:
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
 | 13. Offline Caching | 2/2 | Complete    | 2026-03-06 | - |
-| 14. Purchase from Customer | v1.2 | 0/TBD | Not started | - |
+| 14. Purchase from Customer | v1.2 | 0/2 | Not started | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
