@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.models.transaction import Currency, TransactionStatus, TransactionType
 
@@ -76,3 +76,21 @@ class PaymentCreate(BaseModel):
     notes: str | None = None
     # Check-only fields
     data: CheckData | None = None
+
+
+# ---------------------------------------------------------------------------
+# Purchase from Customer
+# ---------------------------------------------------------------------------
+
+
+class PurchaseItem(BaseModel):
+    product_id: uuid.UUID
+    name: str
+    quantity: int = Field(gt=0)
+    unit_price: Decimal = Field(gt=0)
+
+
+class PurchaseCreate(BaseModel):
+    customer_id: uuid.UUID
+    items: list[PurchaseItem] = Field(min_length=1)
+    notes: str | None = None
