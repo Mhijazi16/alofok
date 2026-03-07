@@ -167,6 +167,19 @@ export interface PaymentCreate {
   data?: CheckData;
 }
 
+export interface PurchaseItem {
+  product_id: string;
+  name: string;
+  quantity: number;
+  unit_price: number;
+}
+
+export interface PurchaseCreate {
+  customer_id: string;
+  items: PurchaseItem[];
+  notes?: string;
+}
+
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
 export const salesApi = {
@@ -304,4 +317,8 @@ export const salesApi = {
 
   deleteExpense: (id: string) =>
     api.delete<{ deleted: boolean }>(`/ledger/expenses/${id}`).then((r) => r.data),
+
+  // ── Purchases ─────────────────────────────────────────────────────────────
+  createPurchase: (payload: PurchaseCreate) =>
+    api.post<Transaction>("/purchases", payload).then((r) => r.data),
 };

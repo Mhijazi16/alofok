@@ -11,7 +11,7 @@ export const IMAGE_STORE = "check_images";
 
 export interface QueueItem {
   id?: number;
-  type: "order" | "payment";
+  type: "order" | "payment" | "purchase";
   payload: unknown;
   created_at: string;
 }
@@ -36,7 +36,7 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-async function push(type: "order" | "payment", payload: unknown): Promise<void> {
+async function push(type: "order" | "payment" | "purchase", payload: unknown): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
