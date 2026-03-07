@@ -144,6 +144,10 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["insights", customer.id] });
       queryClient.invalidateQueries({ queryKey: ["statement", customer.id] });
+      queryClient.invalidateQueries({ queryKey: ["route-day"] });
+      queryClient.invalidateQueries({ queryKey: ["delivery-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["daily-ledger"] });
       toast({ title: t("purchase.success"), variant: "success" });
       onComplete();
     },

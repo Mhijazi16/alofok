@@ -269,7 +269,7 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
                 </div>
                 <span className="text-caption text-muted-foreground">
                   {fmtTime(entry.created_at)}
-                  {entry.notes && ` · ${entry.notes}`}
+                  {entry.notes && !isOutgoing && ` · ${entry.notes}`}
                 </span>
               </div>
 
@@ -277,6 +277,22 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
                 {fmt(entry.amount)}
               </span>
             </div>
+
+            {/* Purchase items detail */}
+            {isOutgoing && entry.notes && (
+              <div className="mt-2 pt-2 border-t border-border/50">
+                <div className="flex flex-wrap gap-1.5">
+                  {entry.notes.split(", ").map((item, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center rounded-md bg-red-500/10 px-2 py-0.5 text-caption font-medium text-red-300"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Flag notes if any */}
             {entry.flag_notes && (

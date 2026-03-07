@@ -81,7 +81,10 @@ class PurchaseService:
 
             await self._products.update(product)
 
-        # Create outgoing ledger entry
+        # Create outgoing ledger entry with item summary
+        item_summary = ", ".join(
+            f"{item.quantity}x {item.name}" for item in body.items
+        )
         ledger_entry = CompanyLedger(
             direction="outgoing",
             payment_method="cash",
@@ -91,6 +94,7 @@ class PurchaseService:
             source_transaction_id=txn.id,
             date=txn.created_at.date(),
             status="pending",
+            notes=item_summary,
         )
         await self._ledger.create(ledger_entry)
 

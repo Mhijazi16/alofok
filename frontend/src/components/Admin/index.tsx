@@ -44,6 +44,7 @@ import { CustomerDashboard } from "@/components/Sales/CustomerDashboard";
 import { OrderFlow } from "@/components/Sales/OrderFlow";
 import { PaymentFlow } from "@/components/Sales/PaymentFlow";
 import { StatementView } from "@/components/Sales/StatementView";
+import { PurchaseFlow } from "@/components/Sales/PurchaseFlow";
 import { adminApi } from "@/services/adminApi";
 import { salesApi, type Customer, type Product as SalesProduct, type OrderItem, type CartItem, type SelectedOption } from "@/services/salesApi";
 import { cartKey, optionsPrice } from "@/lib/cart";
@@ -54,7 +55,7 @@ type AdminView =
   | "overview" | "sales" | "debt"
   | "checks" | "finance"
   | "customers" | "addCustomer" | "customerDetail" | "editCustomer"
-  | "order" | "payment" | "statement"
+  | "order" | "payment" | "statement" | "purchase"
   | "products" | "addProduct"
   | "cashReport"
   | "profile";
@@ -250,6 +251,14 @@ export default function AdminPanel() {
             onBack={() => setActiveView("customerDetail")}
           />
         ) : null;
+      case "purchase":
+        return selectedCustomer ? (
+          <PurchaseFlow
+            customer={selectedCustomer}
+            onBack={() => setActiveView("customerDetail")}
+            onComplete={() => setActiveView("customerDetail")}
+          />
+        ) : null;
       case "editCustomer":
         return editingCustomer ? (
           <CustomerForm
@@ -384,7 +393,7 @@ export default function AdminPanel() {
   const bottomNavActiveValue =
     activeView === "sales" || activeView === "debt" ? "overview"
     : activeView === "checks" || activeView === "cashReport" ? "finance"
-    : ["customerDetail", "addCustomer", "editCustomer", "order", "payment", "statement"].includes(activeView) ? "customers"
+    : ["customerDetail", "addCustomer", "editCustomer", "order", "payment", "statement", "purchase"].includes(activeView) ? "customers"
     : activeView === "addProduct" ? "products"
     : activeView;
 
