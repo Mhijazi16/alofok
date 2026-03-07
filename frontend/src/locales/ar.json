@@ -85,6 +85,7 @@
     "pay": "تحصيل",
     "statement": "كشف حساب",
     "returnedCheck": "شيك مرتجع",
+    "purchase": "شراء",
     "save": "حفظ",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
@@ -179,8 +180,23 @@
       "Payment_Cash": "دفع نقدي",
       "Payment_Check": "شيك",
       "Check_Return": "شيك مرتجع",
-      "Opening_Balance": "رصيد افتتاحي"
+      "Opening_Balance": "رصيد افتتاحي",
+      "Purchase": "شراء"
     }
+  },
+  "purchase": {
+    "title": "شراء من العميل",
+    "selectProducts": "اختر المنتجات للشراء",
+    "unitPrice": "سعر الوحدة",
+    "quantity": "الكمية",
+    "total": "إجمالي الرصيد",
+    "submit": "تأكيد الشراء",
+    "confirmTitle": "تأكيد الشراء",
+    "confirmMessage": "إضافة {{amount}} شيكل لحساب {{customer}}؟",
+    "success": "تم تسجيل الشراء بنجاح",
+    "notes": "ملاحظات (اختياري)",
+    "emptyCart": "لم يتم اختيار منتجات",
+    "enterPrice": "أدخل السعر"
   },
   "product": {
     "nameAr": "الاسم (عربي)",

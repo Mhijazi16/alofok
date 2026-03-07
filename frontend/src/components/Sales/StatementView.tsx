@@ -84,6 +84,7 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
     if (type === "Order") return "warning" as const;
     if (type.startsWith("Payment")) return "success" as const;
     if (type === "Check_Return") return "destructive" as const;
+    if (type === "Purchase") return "info" as const;
     return "default" as const;
   };
 
@@ -91,6 +92,7 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
     if (type === "Order") return "warning" as const;
     if (type.startsWith("Payment")) return "success" as const;
     if (type === "Check_Return") return "destructive" as const;
+    if (type === "Purchase") return "info" as const;
     return "default" as const;
   };
 

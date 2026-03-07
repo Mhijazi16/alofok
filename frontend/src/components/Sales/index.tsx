@@ -56,6 +56,7 @@ import { StatementView } from "./StatementView";
 import { ReturnedChecksView } from "./ReturnedChecksView";
 import { CustomerForm } from "./CustomerForm";
 import { AllCustomersView } from "./AllCustomersView";
+import { PurchaseFlow } from "./PurchaseFlow";
 import { SyncStatusCard } from "@/components/shared/SyncStatusCard";
 
 type View =
@@ -70,7 +71,8 @@ type View =
   | "statement"
   | "returnedChecks"
   | "customerForm"
-  | "productDetail";
+  | "productDetail"
+  | "purchase";
 
 /* ------------------------------------------------------------------ */
 /*  CustomerSelector — dropdown card for picking order customer         */
@@ -608,7 +610,8 @@ export default function SalesRoot() {
       view === "order" ||
       view === "payment" ||
       view === "statement" ||
-      view === "returnedChecks"
+      view === "returnedChecks" ||
+      view === "purchase"
     ) {
       setView("customer");
     }
@@ -625,7 +628,7 @@ export default function SalesRoot() {
   }, []);
 
   const handleCustomerAction = useCallback(
-    (action: "order" | "payment" | "statement" | "check") => {
+    (action: "order" | "payment" | "statement" | "check" | "purchase") => {
       if (action === "check") {
         setView("returnedChecks");
       } else {
@@ -966,6 +969,14 @@ export default function SalesRoot() {
           <ReturnedChecksView
             customer={selectedCustomer}
             onBack={navigateBack}
+          />
+        );
+      case "purchase":
+        return (
+          <PurchaseFlow
+            customer={selectedCustomer}
+            onBack={navigateBack}
+            onComplete={() => setView("customer")}
           />
         );
       default:

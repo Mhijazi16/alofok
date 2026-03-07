@@ -14,6 +14,7 @@ import {
   Pencil,
   Check,
   X,
+  ArrowDownToLine,
 } from "lucide-react";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
@@ -28,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
 
-type CustomerAction = "order" | "payment" | "statement" | "check";
+type CustomerAction = "order" | "payment" | "statement" | "check" | "purchase";
 
 interface CustomerDashboardProps {
   customer: Customer;
@@ -137,6 +138,7 @@ export function CustomerDashboard({
     if (type === "Order") return "warning" as const;
     if (type.startsWith("Payment")) return "success" as const;
     if (type === "Check_Return") return "destructive" as const;
+    if (type === "Purchase") return "info" as const;
     return "default" as const;
   };
 
@@ -144,6 +146,7 @@ export function CustomerDashboard({
     if (type === "Order") return "warning" as const;
     if (type.startsWith("Payment")) return "success" as const;
     if (type === "Check_Return") return "destructive" as const;
+    if (type === "Purchase") return "info" as const;
     return "default" as const;
   };
 
@@ -174,6 +177,13 @@ export function CustomerDashboard({
       label: t("actions.statement"),
       accent: "hover:border-violet-500/50",
       iconBg: "bg-violet-500/15 text-violet-400",
+    },
+    {
+      key: "purchase",
+      icon: ArrowDownToLine,
+      label: t("actions.purchase"),
+      accent: "hover:border-blue-500/50",
+      iconBg: "bg-blue-500/15 text-blue-400",
     },
     {
       key: "check",

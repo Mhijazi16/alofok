@@ -85,6 +85,7 @@
     "pay": "Collect",
     "statement": "Statement",
     "returnedCheck": "Returned Check",
+    "purchase": "Purchase",
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm",
@@ -179,8 +180,23 @@
       "Payment_Cash": "Cash Payment",
       "Payment_Check": "Check",
       "Check_Return": "Returned Check",
-      "Opening_Balance": "Opening Balance"
+      "Opening_Balance": "Opening Balance",
+      "Purchase": "Purchase"
     }
+  },
+  "purchase": {
+    "title": "Purchase from Customer",
+    "selectProducts": "Select products to buy back",
+    "unitPrice": "Unit Price",
+    "quantity": "Quantity",
+    "total": "Total Credit",
+    "submit": "Submit Purchase",
+    "confirmTitle": "Confirm Purchase",
+    "confirmMessage": "Credit {{amount}} ILS to {{customer}}?",
+    "success": "Purchase recorded successfully",
+    "notes": "Notes (optional)",
+    "emptyCart": "No products selected",
+    "enterPrice": "Enter price"
   },
   "product": {
     "nameAr": "Name (Arabic)",
