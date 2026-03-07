@@ -39,7 +39,7 @@ Requirements for v1.2 Business Operations milestone. Each maps to roadmap phases
 - [x] **PURCH-02**: Purchase transaction credits the customer's balance (reduces what they owe)
 - [x] **PURCH-03**: Purchase increases product stock_qty by the purchased quantity
 - [x] **PURCH-04**: Product purchase_price is recalculated using weighted-average cost formula
-- [ ] **PURCH-05**: Purchase transactions appear in customer statement with distinct label
+- [x] **PURCH-05**: Purchase transactions appear in customer statement with distinct label
 
 ### Statement Enhancements
 
@@ -119,7 +119,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PURCH-02 | Phase 14 | Complete |
 | PURCH-03 | Phase 14 | Complete |
 | PURCH-04 | Phase 14 | Complete |
-| PURCH-05 | Phase 14 | Pending |
+| PURCH-05 | Phase 14 | Complete |
 | STMT-01 | Phase 15 | Pending |
 | STMT-02 | Phase 15 | Pending |
 | STMT-03 | Phase 15 | Pending |

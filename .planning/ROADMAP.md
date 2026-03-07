@@ -30,7 +30,7 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
 - [x] **Phase 11: Daily Cash Report** - Admin can view, navigate, and reconcile daily incoming payments and outgoing expenses across all reps (completed 2026-03-05)
 - [x] **Phase 12: Expense Tracking** - Sales reps log field expenses; Admin logs business expenses and confirms or flags them (completed 2026-03-06)
 - [x] **Phase 13: Offline Caching** - Product catalog and route data cached in IndexedDB and available when the device has no connectivity (completed 2026-03-06)
-- [ ] **Phase 14: Purchase from Customer** - Sales rep buys products back from a customer, crediting their balance and updating inventory with weighted-average costing
+- [x] **Phase 14: Purchase from Customer** - Sales rep buys products back from a customer, crediting their balance and updating inventory with weighted-average costing (completed 2026-03-07)
 - [ ] **Phase 15: Statement Enhancements** - Custom date range picker and Arabic PDF export for customer statements
 
 ## Phase Details
@@ -101,7 +101,7 @@ Plans:
   3. After a purchase, each purchased product's stock_qty in the catalog increases by the purchased quantity
   4. After a purchase, each product's purchase_price reflects the weighted-average of the old stock at old price and the new stock at the purchase price
   5. The purchase appears in the customer's statement as a distinct "Purchase" line item, visually differentiated from orders and payments
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 14-01-PLAN.md — Backend: PurchaseService with WAC/stock/balance/ledger logic, schema, endpoint, DI wiring
 - [ ] 14-02-PLAN.md — Frontend: PurchaseFlow component, CustomerDashboard wiring, StatementView type, sync queue, locale keys
@@ -131,5 +131,5 @@ Plans:
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
 | 13. Offline Caching | 2/2 | Complete    | 2026-03-06 | - |
-| 14. Purchase from Customer | 1/2 | In Progress|  | - |
+| 14. Purchase from Customer | 2/2 | Complete   | 2026-03-07 | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
