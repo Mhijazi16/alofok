@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Business Operations
 status: executing
-stopped_at: Phase 14 context gathered
-last_updated: "2026-03-07T11:17:51.669Z"
-last_activity: "2026-03-06 — 13-02 Sync status card: freshness dots, pending queue, cache size, Sync Now button in Sales profile"
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-07T11:35:00.000Z"
+last_activity: "2026-03-07 — 14-01 Purchase backend API: PurchaseService with WAC, stock, balance, ledger; POST /purchases endpoint"
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-05)
 
 **Core value:** Sales Reps can visit customers, take orders, collect payments, and resolve balance disputes — even offline.
-**Current focus:** v1.2 Business Operations — Phase 10: DB Foundation
+**Current focus:** v1.2 Business Operations — Phase 14: Purchase from Customer
 
 ## Current Position
 
-Phase: 13 of 15 (Offline Caching)
-Plan: 02 of 02 complete, ready for Phase 14
+Phase: 14 of 15 (Purchase from Customer)
+Plan: 01 of 02 complete
 Status: In progress
-Last activity: 2026-03-06 — 13-02 Sync status card: freshness dots, pending queue, cache size, Sync Now button in Sales profile
+Last activity: 2026-03-07 — 14-01 Purchase backend API: PurchaseService with WAC, stock, balance, ledger; POST /purchases endpoint
 
-Progress: [██████████] 100%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [██████████] 100%
 | Phase 12 P02 | 3 | 2 tasks | 6 files |
 | Phase 13 P01 | 3 | 2 tasks | 5 files |
 | Phase 13 P02 | 2 | 2 tasks | 4 files |
+| Phase 14 P01 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 13]: PERSIST_QUERY_KEYS exported as module-level const so main.tsx can import without using the hook
 - [Phase 13]: gcTime and maxAge both 24h (not Infinity) per research anti-pattern guidance
 - [Phase 13]: SyncStatusCard is self-contained -- calls useCacheSync internally, no props from parent
+- [Phase 14]: Used payment_method=cash for outgoing purchase ledger entry -- avoids DB migration to extend LedgerPaymentMethod enum
+- [Phase 14]: FOR UPDATE lock on product rows during WAC recalculation prevents concurrent sync race conditions
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T11:17:51.664Z
-Stopped at: Phase 14 context gathered
+Last session: 2026-03-07T11:35:00.000Z
+Stopped at: Completed 14-01-PLAN.md
 Resume with: /gsd:execute-phase 14

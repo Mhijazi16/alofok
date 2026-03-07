@@ -101,7 +101,7 @@ Plans:
   3. After a purchase, each purchased product's stock_qty in the catalog increases by the purchased quantity
   4. After a purchase, each product's purchase_price reflects the weighted-average of the old stock at old price and the new stock at the purchase price
   5. The purchase appears in the customer's statement as a distinct "Purchase" line item, visually differentiated from orders and payments
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 14-01-PLAN.md — Backend: PurchaseService with WAC/stock/balance/ledger logic, schema, endpoint, DI wiring
 - [ ] 14-02-PLAN.md — Frontend: PurchaseFlow component, CustomerDashboard wiring, StatementView type, sync queue, locale keys
@@ -131,5 +131,5 @@ Plans:
 | 11. Daily Cash Report | 2/2 | Complete    | 2026-03-05 | - |
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
 | 13. Offline Caching | 2/2 | Complete    | 2026-03-06 | - |
-| 14. Purchase from Customer | v1.2 | 0/2 | Not started | - |
+| 14. Purchase from Customer | 1/2 | In Progress|  | - |
 | 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |

@@ -35,10 +35,10 @@ Requirements for v1.2 Business Operations milestone. Each maps to roadmap phases
 
 ### Purchase from Customer
 
-- [ ] **PURCH-01**: Sales rep can create a purchase from a customer by selecting products, quantities, and prices
-- [ ] **PURCH-02**: Purchase transaction credits the customer's balance (reduces what they owe)
-- [ ] **PURCH-03**: Purchase increases product stock_qty by the purchased quantity
-- [ ] **PURCH-04**: Product purchase_price is recalculated using weighted-average cost formula
+- [x] **PURCH-01**: Sales rep can create a purchase from a customer by selecting products, quantities, and prices
+- [x] **PURCH-02**: Purchase transaction credits the customer's balance (reduces what they owe)
+- [x] **PURCH-03**: Purchase increases product stock_qty by the purchased quantity
+- [x] **PURCH-04**: Product purchase_price is recalculated using weighted-average cost formula
 - [ ] **PURCH-05**: Purchase transactions appear in customer statement with distinct label
 
 ### Statement Enhancements
@@ -115,10 +115,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OFFL-01 | Phase 13 | Complete |
 | OFFL-02 | Phase 13 | Complete |
 | OFFL-03 | Phase 13 | Complete |
-| PURCH-01 | Phase 14 | Pending |
-| PURCH-02 | Phase 14 | Pending |
-| PURCH-03 | Phase 14 | Pending |
-| PURCH-04 | Phase 14 | Pending |
+| PURCH-01 | Phase 14 | Complete |
+| PURCH-02 | Phase 14 | Complete |
+| PURCH-03 | Phase 14 | Complete |
+| PURCH-04 | Phase 14 | Complete |
 | PURCH-05 | Phase 14 | Pending |
 | STMT-01 | Phase 15 | Pending |
 | STMT-02 | Phase 15 | Pending |
