@@ -114,7 +114,7 @@ Plans:
   1. User can select an arbitrary "from" and "to" date on the customer statement page and see only transactions in that range, with the running balance recalculated correctly
   2. User can click a download button and receive a PDF of the currently displayed statement
   3. The downloaded PDF renders Arabic customer names, Arabic column headers, and mixed Arabic/numeric amounts correctly in RTL layout
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 15-01-PLAN.md — Custom date range tab for both Sales and Customer StatementViews
 - [ ] 15-02-PLAN.md — Arabic PDF export with @react-pdf/renderer, print fallback, download wiring
@@ -132,4 +132,4 @@ Plans:
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
 | 13. Offline Caching | 2/2 | Complete    | 2026-03-06 | - |
 | 14. Purchase from Customer | 2/2 | Complete    | 2026-03-07 | - |
-| 15. Statement Enhancements | v1.2 | 0/2 | Not started | - |
+| 15. Statement Enhancements | 1/2 | In Progress|  | - |

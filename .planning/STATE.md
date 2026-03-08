@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Business Operations
 status: completed
-stopped_at: Phase 15 context gathered
+stopped_at: Plan 15-01 complete
 last_updated: "2026-03-08T12:02:28.127Z"
-last_activity: "2026-03-07 — 14-02 Frontend purchase flow: PurchaseFlow component, CustomerDashboard wiring, StatementView styling, offline sync"
+last_activity: "2026-03-08 — 15-01 Custom date range tab in Sales and Customer StatementView"
 progress:
   total_phases: 6
   completed_phases: 5
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-05)
 
 **Core value:** Sales Reps can visit customers, take orders, collect payments, and resolve balance disputes — even offline.
-**Current focus:** v1.2 Business Operations — Phase 14: Purchase from Customer
+**Current focus:** v1.2 Business Operations — Phase 15: Statement Enhancements
 
 ## Current Position
 
-Phase: 14 of 15 (Purchase from Customer) -- COMPLETE
-Plan: 02 of 02 complete
-Status: Phase 14 complete, ready for Phase 15
-Last activity: 2026-03-07 — 14-02 Frontend purchase flow: PurchaseFlow component, CustomerDashboard wiring, StatementView styling, offline sync
+Phase: 15 of 15 (Statement Enhancements)
+Plan: 01 of 02 complete
+Status: Plan 15-01 complete, ready for Plan 15-02
+Last activity: 2026-03-08 — 15-01 Custom date range tab in Sales and Customer StatementView
 
 Progress: [██████████] 100%
 
@@ -55,6 +55,7 @@ Progress: [██████████] 100%
 | Phase 13 P02 | 2 | 2 tasks | 4 files |
 | Phase 14 P01 | 2 | 2 tasks | 5 files |
 | Phase 14 P02 | 3 | 2 tasks | 9 files |
+| Phase 15 P01 | 2 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 14]: Used payment_method=cash for outgoing purchase ledger entry -- avoids DB migration to extend LedgerPaymentMethod enum
 - [Phase 14]: FOR UPDATE lock on product rows during WAC recalculation prevents concurrent sync race conditions
 - [Phase 14]: Blue theme for purchase action card and statement badge to distinguish from order (yellow) and payment (green)
+- [Phase 15]: Custom range fallback to since_zero_balance when only one date selected (prevents empty query)
+- [Phase 15]: PDF locale keys pre-added in plan 01 to avoid touching locale files again in plan 02
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08T12:02:28.125Z
-Stopped at: Phase 15 context gathered
+Last session: 2026-03-08T12:21:23Z
+Stopped at: Plan 15-01 complete
 Resume with: /gsd:execute-phase 15
