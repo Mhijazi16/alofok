@@ -135,21 +135,19 @@ function buildPrintHtml(props: StatementPdfProps): string {
 }
 
 /**
- * Opens a new window with the statement HTML and triggers the print dialog.
- * Used as a fallback when @react-pdf/renderer fails to render Arabic glyphs.
+ * Generates the statement as an HTML file and downloads it.
+ * The user can then open it in a browser and print to PDF (Ctrl+P → Save as PDF).
+ * This approach avoids popup blockers and works reliably with Arabic RTL.
  */
-export function handlePrintFallback(props: StatementPdfProps): void {
+export function handlePrintFallback(props: StatementPdfProps, filename: string): void {
   const html = buildPrintHtml(props);
-  const printWindow = window.open("", "_blank");
-  if (!printWindow) {
-    console.error("Failed to open print window — popup may be blocked");
-    return;
-  }
-  printWindow.document.write(html);
-  printWindow.document.close();
-  // Wait for fonts to load before printing
-  printWindow.onload = () => {
-    printWindow.print();
-    printWindow.close();
-  };
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename.replace(/\.pdf$/, ".html");
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

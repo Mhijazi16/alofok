@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, FileDown } from "lucide-react";
 import { type DateRange } from "react-day-picker";
-import { pdf } from "@react-pdf/renderer";
-import { StatementPdf, type StatementPdfProps } from "@/components/shared/StatementPdf";
+import type { StatementPdfProps } from "@/components/shared/StatementPdf";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { toLocalDateStr } from "@/lib/utils";
 import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
@@ -107,28 +106,11 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
     if (!pdfProps) return;
     setGenerating(true);
     try {
-      const blobPromise = pdf(<StatementPdf {...pdfProps} />).toBlob();
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("PDF generation timed out")), 15000)
-      );
-      const blob = await Promise.race([blobPromise, timeout]);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `كشف_${customer.name}_${pdfProps.dateRange.from}_${pdfProps.dateRange.to}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const { handlePrintFallback } = await import("@/components/shared/StatementPrintView");
+      const filename = `كشف_${customer.name}_${pdfProps.dateRange.from}_${pdfProps.dateRange.to}.pdf`;
+      handlePrintFallback(pdfProps, filename);
     } catch (err) {
-      console.error("PDF generation failed, using print fallback:", err);
-      try {
-        const { handlePrintFallback } = await import("@/components/shared/StatementPrintView");
-        handlePrintFallback(pdfProps);
-      } catch (fallbackErr) {
-        console.error("Print fallback also failed:", fallbackErr);
-        alert("فشل إنشاء PDF");
-      }
+      console.error("Statement export failed:", err);
     } finally {
       setGenerating(false);
     }
