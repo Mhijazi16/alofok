@@ -6,6 +6,7 @@ const TYPE_LABELS: Record<string, string> = {
   Payment_Check: "\u0634\u064A\u0643",
   Check_Return: "\u0634\u064A\u0643 \u0645\u0631\u062A\u062C\u0639",
   Purchase: "\u0634\u0631\u0627\u0621",
+  opening_balance: "\u0631\u0635\u064A\u062F \u0627\u0641\u062A\u062A\u0627\u062D\u064A",
 };
 
 const HAS_ITEMS = new Set(["Order", "Purchase"]);
@@ -28,7 +29,7 @@ function buildPrintHtml(props: StatementPdfProps): string {
     .map((entry, idx) => {
       const tx = entry.transaction;
       const sign = tx.amount >= 0 ? "+" : "";
-      const bgColor = idx % 2 === 1 ? "#111" : "transparent";
+      const bgColor = idx % 2 === 1 ? "#f5f5f5" : "transparent";
       const items = tx.data?.items;
       const showItems = HAS_ITEMS.has(tx.type);
 
@@ -44,7 +45,7 @@ function buildPrintHtml(props: StatementPdfProps): string {
           mainRow += items
             .map(
               (item) =>
-                `<tr style="background:${bgColor}"><td colspan="4" style="padding:2px 8px 2px 30px;font-size:11px;color:#888">${item.name} x${item.quantity} @${fmtNum(item.unit_price)}</td></tr>`
+                `<tr style="background:${bgColor}"><td colspan="4" style="padding:2px 8px 2px 30px;font-size:11px;color:#888">${item.name} \u00B7 ${item.quantity} \u00D7 ${fmtNum(item.unit_price)} = ${fmtNum(item.total)}</td></tr>`
             )
             .join("");
         } else {

@@ -38,6 +38,7 @@ const TYPE_LABELS: Record<string, string> = {
   Payment_Check: "\u0634\u064A\u0643",
   Check_Return: "\u0634\u064A\u0643 \u0645\u0631\u062A\u062C\u0639",
   Purchase: "\u0634\u0631\u0627\u0621",
+  opening_balance: "\u0631\u0635\u064A\u062F \u0627\u0641\u062A\u062A\u0627\u062D\u064A",
 };
 
 const fmtNum = (n: number) =>
@@ -125,13 +126,14 @@ const s = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 6,
     borderBottomWidth: 0.5,
-    borderBottomColor: "#333",
+    borderBottomColor: "#ddd",
   },
   rowAlt: {
-    backgroundColor: "#111",
+    backgroundColor: "#f5f5f5",
   },
   cellText: {
     fontSize: 9,
+    color: "#222",
   },
   // Sub-rows
   subRow: {
@@ -272,7 +274,7 @@ export function StatementPdf({
                   items.map((item, iIdx) => (
                     <View key={iIdx} style={s.subRow}>
                       <Text style={s.subText}>
-                        {item.name} x{item.quantity} @{fmtNum(item.unit_price)}
+                        {item.name} {"\u00B7"} {item.quantity} {"\u00D7"} {fmtNum(item.unit_price)} = {fmtNum(item.total)}
                       </Text>
                     </View>
                   ))
