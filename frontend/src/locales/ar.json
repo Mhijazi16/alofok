@@ -182,7 +182,22 @@
       "Check_Return": "شيك مرتجع",
       "Opening_Balance": "رصيد افتتاحي",
       "Purchase": "شراء"
-    }
+    },
+    "selectDateRange": "اختر الفترة",
+    "fromDate": "من تاريخ",
+    "toDate": "إلى تاريخ",
+    "downloadPdf": "تحميل كشف PDF",
+    "generatingPdf": "جاري إنشاء الكشف...",
+    "pdfError": "فشل إنشاء الكشف",
+    "pdfFallback": "سيتم فتح نافذة الطباعة",
+    "totalOrders": "إجمالي الطلبات",
+    "totalPayments": "إجمالي المدفوعات",
+    "totalPurchases": "إجمالي المشتريات",
+    "date": "التاريخ",
+    "type": "النوع",
+    "amount": "المبلغ",
+    "balance": "الرصيد",
+    "statementReport": "كشف حساب"
   },
   "purchase": {
     "title": "شراء من العميل",

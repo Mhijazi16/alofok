@@ -182,7 +182,22 @@
       "Check_Return": "Returned Check",
       "Opening_Balance": "Opening Balance",
       "Purchase": "Purchase"
-    }
+    },
+    "selectDateRange": "Select date range",
+    "fromDate": "From date",
+    "toDate": "To date",
+    "downloadPdf": "Download PDF statement",
+    "generatingPdf": "Generating statement...",
+    "pdfError": "Failed to generate statement",
+    "pdfFallback": "Opening print dialog",
+    "totalOrders": "Total Orders",
+    "totalPayments": "Total Payments",
+    "totalPurchases": "Total Purchases",
+    "date": "Date",
+    "type": "Type",
+    "amount": "Amount",
+    "balance": "Balance",
+    "statementReport": "Account Statement"
   },
   "purchase": {
     "title": "Purchase from Customer",
