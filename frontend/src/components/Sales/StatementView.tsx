@@ -2,9 +2,11 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
+import { type DateRange } from "react-day-picker";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { toLocalDateStr } from "@/lib/utils";
 import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
+import { DatePicker } from "@/components/ui/date-picker";
 import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type FilterPreset = "zero" | "week" | "month" | "year";
+type FilterPreset = "zero" | "week" | "month" | "year" | "custom";
 
 interface StatementViewProps {
   customer: Customer;
@@ -23,6 +25,7 @@ interface StatementViewProps {
 export function StatementView({ customer, onBack }: StatementViewProps) {
   const { t } = useTranslation();
   const [preset, setPreset] = useState<FilterPreset>("zero");
+  const [customRange, setCustomRange] = useState<DateRange | undefined>();
 
   const queryParams = useMemo(() => {
     const now = new Date();
@@ -44,11 +47,20 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
         d.setFullYear(d.getFullYear() - 1);
         return { start_date: toLocalDateStr(d) };
       }
+      case "custom": {
+        if (customRange?.from && customRange?.to) {
+          return {
+            start_date: toLocalDateStr(customRange.from),
+            end_date: toLocalDateStr(customRange.to),
+          };
+        }
+        return { since_zero_balance: true };
+      }
     }
-  }, [preset]);
+  }, [preset, customRange]);
 
   const { data: statement, isLoading } = useQuery({
-    queryKey: ["statement", customer.id, preset],
+    queryKey: ["statement", customer.id, preset, customRange?.from?.toISOString(), customRange?.to?.toISOString()],
     queryFn: () => salesApi.getStatement(customer.id, queryParams),
   });
 
@@ -115,8 +127,19 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
             <TabsTrigger value="week">{t("statement.lastWeek")}</TabsTrigger>
             <TabsTrigger value="month">{t("statement.lastMonth")}</TabsTrigger>
             <TabsTrigger value="year">{t("statement.lastYear")}</TabsTrigger>
+            <TabsTrigger value="custom">{t("statement.customRange")}</TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* Custom Date Range Picker */}
+        {preset === "custom" && (
+          <DatePicker
+            mode="range"
+            value={customRange}
+            onChange={setCustomRange}
+            placeholder={t("statement.selectDateRange")}
+          />
+        )}
 
         {/* Opening Balance */}
         <StatCard
