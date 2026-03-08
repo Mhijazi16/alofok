@@ -1,8 +1,10 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
+import { FileText, FileDown } from "lucide-react";
 import { type DateRange } from "react-day-picker";
+import { pdf } from "@react-pdf/renderer";
+import { StatementPdf, type StatementPdfProps } from "@/components/shared/StatementPdf";
 import { customerApi } from "@/services/customerApi";
 import { toLocalDateStr } from "@/lib/utils";
 import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
@@ -21,6 +23,7 @@ export function CustomerStatementView() {
   const { t } = useTranslation();
   const [preset, setPreset] = useState<FilterPreset>("zero");
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
+  const [generating, setGenerating] = useState(false);
 
   /* Profile is needed for the fallback balance only */
   const { data: profile } = useQuery({
@@ -76,6 +79,57 @@ export function CustomerStatementView() {
     return first.running_balance - first.transaction.amount;
   }, [entries, closingBalance]);
 
+  const customerName = profile?.name ?? "";
+
+  const pdfProps = useMemo((): StatementPdfProps | null => {
+    if (!statement || entries.length === 0) return null;
+    const totals = entries.reduce(
+      (acc, e) => {
+        const type = e.transaction.type;
+        if (type === "Order") acc.orders += Math.abs(e.transaction.amount);
+        else if (type.startsWith("Payment")) acc.payments += Math.abs(e.transaction.amount);
+        else if (type === "Purchase") acc.purchases += Math.abs(e.transaction.amount);
+        return acc;
+      },
+      { orders: 0, payments: 0, purchases: 0 }
+    );
+    const fromDate = entries[0].transaction.created_at.split("T")[0];
+    const toDate = entries[entries.length - 1].transaction.created_at.split("T")[0];
+    return {
+      customerName,
+      dateRange: {
+        from: preset === "custom" && customRange?.from ? toLocalDateStr(customRange.from) : fromDate,
+        to: preset === "custom" && customRange?.to ? toLocalDateStr(customRange.to) : toDate,
+      },
+      openingBalance,
+      entries: entries as StatementPdfProps["entries"],
+      closingBalance,
+      totals,
+    };
+  }, [statement, entries, openingBalance, closingBalance, customerName, preset, customRange]);
+
+  const handleDownload = async () => {
+    if (!pdfProps) return;
+    setGenerating(true);
+    try {
+      const blob = await pdf(<StatementPdf {...pdfProps} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `\u0643\u0634\u0641_${customerName || "customer"}_${pdfProps.dateRange.from}_${pdfProps.dateRange.to}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF generation failed, using print fallback:", err);
+      const { handlePrintFallback } = await import("@/components/shared/StatementPrintView");
+      handlePrintFallback(pdfProps);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const formatCurrency = (val: number) =>
     val.toLocaleString("en-US", {
       minimumFractionDigits: 2,
@@ -111,7 +165,26 @@ export function CustomerStatementView() {
 
   return (
     <div className="animate-fade-in">
-      <TopBar title={t("statement.title")} />
+      <TopBar
+        title={t("statement.title")}
+        actions={
+          entries.length > 0 ? (
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={generating}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground active:scale-95 disabled:opacity-50"
+              title={t("statement.downloadPdf")}
+            >
+              {generating ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+              ) : (
+                <FileDown className="h-4 w-4" />
+              )}
+            </button>
+          ) : undefined
+        }
+      />
 
       <div className="space-y-4 p-4">
         {/* Filter Presets */}
