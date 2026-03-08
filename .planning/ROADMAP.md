@@ -116,8 +116,8 @@ Plans:
   3. The downloaded PDF renders Arabic customer names, Arabic column headers, and mixed Arabic/numeric amounts correctly in RTL layout
 **Plans:** 2 plans
 Plans:
-- [ ] 11-01-PLAN.md — Backend API: schemas, aggregation service, confirm/flag endpoints
-- [ ] 11-02-PLAN.md — Frontend: DailyCashReportView, admin wiring, locale keys
+- [ ] 15-01-PLAN.md — Custom date range tab for both Sales and Customer StatementViews
+- [ ] 15-02-PLAN.md — Arabic PDF export with @react-pdf/renderer, print fallback, download wiring
 
 ## Progress
 
@@ -132,4 +132,4 @@ Plans:
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
 | 13. Offline Caching | 2/2 | Complete    | 2026-03-06 | - |
 | 14. Purchase from Customer | 2/2 | Complete    | 2026-03-07 | - |
-| 15. Statement Enhancements | v1.2 | 0/TBD | Not started | - |
+| 15. Statement Enhancements | v1.2 | 0/2 | Not started | - |
