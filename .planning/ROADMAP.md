@@ -31,7 +31,7 @@ Enhanced check data capture (CheckData model, bank/branch/account fields), live 
 - [x] **Phase 12: Expense Tracking** - Sales reps log field expenses; Admin logs business expenses and confirms or flags them (completed 2026-03-06)
 - [x] **Phase 13: Offline Caching** - Product catalog and route data cached in IndexedDB and available when the device has no connectivity (completed 2026-03-06)
 - [x] **Phase 14: Purchase from Customer** - Sales rep buys products back from a customer, crediting their balance and updating inventory with weighted-average costing (completed 2026-03-07)
-- [ ] **Phase 15: Statement Enhancements** - Custom date range picker and Arabic PDF export for customer statements
+- [x] **Phase 15: Statement Enhancements** - Custom date range picker and Arabic PDF export for customer statements (completed 2026-03-08)
 
 ## Phase Details
 
@@ -114,7 +114,7 @@ Plans:
   1. User can select an arbitrary "from" and "to" date on the customer statement page and see only transactions in that range, with the running balance recalculated correctly
   2. User can click a download button and receive a PDF of the currently displayed statement
   3. The downloaded PDF renders Arabic customer names, Arabic column headers, and mixed Arabic/numeric amounts correctly in RTL layout
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 15-01-PLAN.md — Custom date range tab for both Sales and Customer StatementViews
 - [ ] 15-02-PLAN.md — Arabic PDF export with @react-pdf/renderer, print fallback, download wiring
@@ -132,4 +132,4 @@ Plans:
 | 12. Expense Tracking | 2/2 | Complete    | 2026-03-06 | - |
 | 13. Offline Caching | 2/2 | Complete    | 2026-03-06 | - |
 | 14. Purchase from Customer | 2/2 | Complete    | 2026-03-07 | - |
-| 15. Statement Enhancements | 1/2 | In Progress|  | - |
+| 15. Statement Enhancements | 2/2 | Complete   | 2026-03-08 | - |

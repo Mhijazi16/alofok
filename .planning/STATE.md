@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Business Operations
 status: completed
-stopped_at: Plan 15-01 complete
-last_updated: "2026-03-08T12:02:28.127Z"
-last_activity: "2026-03-08 — 15-01 Custom date range tab in Sales and Customer StatementView"
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-03-08T12:52:20.117Z"
+last_activity: 2026-03-08 — 15-02 Arabic PDF export with branded header and print fallback
 progress:
   total_phases: 6
-  completed_phases: 5
-  total_plans: 9
-  completed_plans: 9
+  completed_phases: 6
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-05)
 ## Current Position
 
 Phase: 15 of 15 (Statement Enhancements)
-Plan: 01 of 02 complete
-Status: Plan 15-01 complete, ready for Plan 15-02
-Last activity: 2026-03-08 — 15-01 Custom date range tab in Sales and Customer StatementView
+Plan: 02 of 02 complete
+Status: Phase 15 complete — all v1.2 milestone phases done
+Last activity: 2026-03-08 — 15-02 Arabic PDF export with branded header, transaction table, and print fallback
 
 Progress: [██████████] 100%
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100%
 | Phase 14 P01 | 2 | 2 tasks | 5 files |
 | Phase 14 P02 | 3 | 2 tasks | 9 files |
 | Phase 15 P01 | 2 | 2 tasks | 4 files |
+| Phase 15 P02 | 8 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 14]: Blue theme for purchase action card and statement badge to distinguish from order (yellow) and payment (green)
 - [Phase 15]: Custom range fallback to since_zero_balance when only one date selected (prevents empty query)
 - [Phase 15]: PDF locale keys pre-added in plan 01 to avoid touching locale files again in plan 02
+- [Phase 15]: Light alternating row backgrounds for PDF print readability; product sub-row format: name dot qty times price = total
 
 ### Pending Todos
 
@@ -100,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08T12:21:23Z
-Stopped at: Plan 15-01 complete
+Last session: 2026-03-08T12:52:20.115Z
+Stopped at: Completed 15-02-PLAN.md
 Resume with: /gsd:execute-phase 15

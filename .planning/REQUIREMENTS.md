@@ -44,8 +44,8 @@ Requirements for v1.2 Business Operations milestone. Each maps to roadmap phases
 ### Statement Enhancements
 
 - [x] **STMT-01**: User can select a custom date range (from/to) for customer statements
-- [ ] **STMT-02**: User can export the current statement view as a PDF document
-- [ ] **STMT-03**: PDF supports Arabic text and RTL layout
+- [x] **STMT-02**: User can export the current statement view as a PDF document
+- [x] **STMT-03**: PDF supports Arabic text and RTL layout
 
 ## v1.1 Requirements (Complete)
 
@@ -121,8 +121,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PURCH-04 | Phase 14 | Complete |
 | PURCH-05 | Phase 14 | Complete |
 | STMT-01 | Phase 15 | Complete |
-| STMT-02 | Phase 15 | Pending |
-| STMT-03 | Phase 15 | Pending |
+| STMT-02 | Phase 15 | Complete |
+| STMT-03 | Phase 15 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 22 total
