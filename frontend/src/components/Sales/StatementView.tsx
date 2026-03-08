@@ -107,19 +107,28 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
     if (!pdfProps) return;
     setGenerating(true);
     try {
-      const blob = await pdf(<StatementPdf {...pdfProps} />).toBlob();
+      const blobPromise = pdf(<StatementPdf {...pdfProps} />).toBlob();
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("PDF generation timed out")), 15000)
+      );
+      const blob = await Promise.race([blobPromise, timeout]);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `\u0643\u0634\u0641_${customer.name}_${pdfProps.dateRange.from}_${pdfProps.dateRange.to}.pdf`;
+      a.download = `كشف_${customer.name}_${pdfProps.dateRange.from}_${pdfProps.dateRange.to}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("PDF generation failed, using print fallback:", err);
-      const { handlePrintFallback } = await import("@/components/shared/StatementPrintView");
-      handlePrintFallback(pdfProps);
+      try {
+        const { handlePrintFallback } = await import("@/components/shared/StatementPrintView");
+        handlePrintFallback(pdfProps);
+      } catch (fallbackErr) {
+        console.error("Print fallback also failed:", fallbackErr);
+        alert("فشل إنشاء PDF");
+      }
     } finally {
       setGenerating(false);
     }
