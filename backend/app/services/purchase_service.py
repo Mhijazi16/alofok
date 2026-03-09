@@ -11,7 +11,7 @@ from app.repositories.customer_repository import CustomerRepository
 from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.product_repository import ProductRepository
 from app.repositories.transaction_repository import TransactionRepository
-from app.schemas.transaction import PurchaseCreate
+from app.schemas.transaction import PurchaseCreate, TransactionOut
 
 
 class PurchaseService:
@@ -29,7 +29,7 @@ class PurchaseService:
 
     async def create_purchase(
         self, body: PurchaseCreate, creator_id: uuid.UUID
-    ) -> Transaction:
+    ) -> TransactionOut:
         customer = await self._customers.get_by_id(body.customer_id)
         if customer is None:
             raise HorizonException(404, "Customer not found")
@@ -98,4 +98,4 @@ class PurchaseService:
         )
         await self._ledger.create(ledger_entry)
 
-        return txn
+        return TransactionOut.model_validate(txn)

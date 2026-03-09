@@ -9,7 +9,13 @@ from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_auth_repository import CustomerAuthRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
-from app.schemas.customer import AdminCustomerCreate, CustomerInsightsOut, CustomerOut
+from app.schemas.customer import (
+    AdminCustomerCreate,
+    CustomerCreate,
+    CustomerInsightsOut,
+    CustomerOut,
+    CustomerUpdate,
+)
 from app.schemas.transaction import (
     OrderWithCustomerOut,
     StatementOut,
@@ -42,7 +48,7 @@ class CustomerService:
         self._cache = cache
         self._auth = auth_repo
 
-    async def create_customer(self, data, user_id: uuid.UUID):
+    async def create_customer(self, data: CustomerCreate, user_id: uuid.UUID) -> CustomerOut:
         portal_password = (
             data.portal_password if hasattr(data, "portal_password") else None
         )
@@ -76,15 +82,15 @@ class CustomerService:
                 }
             )
 
-        return customer
+        return CustomerOut.model_validate(customer)
 
     async def get_draft_orders(self, customer_id: uuid.UUID) -> list[TransactionOut]:
         drafts = await self._transactions.get_drafts_for_customer(customer_id)
         return [TransactionOut.model_validate(d) for d in drafts]
 
     async def update_customer(
-        self, customer_id: uuid.UUID, data, user_id: uuid.UUID, role: str
-    ):
+        self, customer_id: uuid.UUID, data: CustomerUpdate, user_id: uuid.UUID, role: str
+    ) -> CustomerOut:
         if role == "Sales":
             customer = await self._customers.get_by_id(customer_id)
             if not customer or customer.assigned_to != user_id:
@@ -95,7 +101,7 @@ class CustomerService:
         if not updated:
             raise HorizonException(404, "Customer not found")
         await self._cache.invalidate_prefix("route:")
-        return updated
+        return CustomerOut.model_validate(updated)
 
     async def _enrich_with_returned_checks(self, customers: list) -> list[CustomerOut]:
         """Validate customer models and attach returned_checks_count."""
