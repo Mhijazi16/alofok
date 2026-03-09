@@ -49,18 +49,20 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 - ✓ Check image capture (camera/upload, compression, IndexedDB blob store) — v1.1
 - ✓ OCR auto-fill from check photo (Tesseract.js, client-side) — v1.1
 
+- ✓ Database performance indexes (created_by, type, status on transactions) — v1.2
+- ✓ Expense tracking (salesman field expenses + admin business expenses) — v1.2
+- ✓ Daily cash report with payment confirmation (admin confirms/flags receipt from salesmen) — v1.2
+- ✓ Offline catalog caching (products available offline) — v1.2
+- ✓ Offline route data (customers, orders cached for daily route) — v1.2
+- ✓ Purchase from customer (reverse order, weighted-average purchase price, stock increase) — v1.2
+- ✓ Custom date intervals in customer statements — v1.2
+- ✓ Customer statement PDF export — v1.2
+
 ### Active
 
-<!-- Current scope. Building toward these. -->
+<!-- Next milestone scope. -->
 
-- [ ] Database performance indexes (created_by, type, status on transactions)
-- [ ] Expense tracking (salesman field expenses + admin business expenses)
-- [ ] Daily cash report with payment confirmation (admin confirms/flags receipt from salesmen)
-- [ ] Offline catalog caching (products available offline)
-- [ ] Offline route data (customers, orders cached for daily route)
-- [ ] Purchase from customer (reverse order, weighted-average purchase price, stock increase)
-- [ ] Custom date intervals in customer statements
-- [ ] Customer statement PDF export
+(None yet — define with `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -71,17 +73,9 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 - Check batching/reconciliation — beyond current needs
 - Check Cleared status — Deposit + Return sufficient for now
 
-## Current Milestone: v1.2 Business Operations
+## Current State
 
-**Goal:** Add expense tracking, daily cash reconciliation for admin, offline data caching, customer purchases, and statement enhancements.
-
-**Target features:**
-- Database indexes for query performance
-- Expense logging for salesmen (field) and admin (business)
-- Admin daily cash report with date traversal, payment confirmation/flagging
-- Offline catalog and route data caching
-- Purchase from customer with inventory and purchase price updates
-- Custom date range picker and PDF export for customer statements
+v1.2 shipped. 3 milestones complete (v1.0 Core, v1.1 Checks, v1.2 Business Operations).
 
 ## Context
 
@@ -90,13 +84,9 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 - Mobile: Capacitor planned (not yet added)
 - File storage: Local filesystem via FastAPI /static mount
 - State: Redis (backend), React Query + Redux Toolkit (frontend)
-- All 22 original PRD features shipped and functional
-- Customer portal added post-PRD with separate auth
-- Delivery date routing and bonus orders added post-PRD
-- Check data enhanced in v1.1: full CheckData model, SVG preview, lifecycle UI, OCR
-- Transactions table missing indexes on created_by, type, status (identified pre-v1.2)
-- No expense tracking exists — new model needed
-- Offline sync exists for orders/payments queue but catalog not cached for offline
+- All 22 original PRD features + customer portal + delivery routing + check enhancements shipped
+- Expense tracking, daily cash report, offline caching, purchase from customer, statement PDF all shipped in v1.2
+- 119 files, ~16,700 lines added in v1.2
 
 ## Constraints
 
@@ -118,6 +108,11 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 | Check data in JSONB column | Flexible schema, easy to extend without migrations | ✓ Good |
 | LTR check layout | Standard check format, universal numerals | ✓ Good |
 | Single transactions table (STI) | Simple statements, balance calc; proper indexes needed | ✓ Good |
+| Expenses in separate table (not transactions) | Prevents statement/balance pollution | ✓ Good |
+| Client-side PDF via @react-pdf/renderer + HTML fallback | Offline-first, avoids server dependency | ✓ Good |
+| idb-keyval + React Query persist for offline | Lightweight, 24h gcTime, whitelist approach | ✓ Good |
+| WAC with FOR UPDATE lock | Prevents concurrent sync race conditions on purchase | ✓ Good |
+| Purchase as TransactionType enum value | Reuses STI pattern, appears in statements naturally | ✓ Good |
 
 ---
-*Last updated: 2026-03-05 after milestone v1.2 started*
+*Last updated: 2026-03-09 after v1.2 milestone complete*
