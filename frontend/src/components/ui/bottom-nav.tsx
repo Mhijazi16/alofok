@@ -45,7 +45,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
         ref={ref}
         className={cn(
           "fixed z-40 inset-x-3 mx-auto max-w-lg rounded-2xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/20 transition-transform duration-300",
-          "bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]",
+          "bottom-[calc(0.25rem+env(safe-area-inset-bottom,0px))]",
           hidden && "translate-y-[calc(100%+2rem+env(safe-area-inset-bottom,0px))]",
           className
         )}
