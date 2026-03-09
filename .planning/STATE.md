@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Business Operations
-status: milestone_complete
-stopped_at: "v1.2 milestone archived"
+milestone: v1.3
+milestone_name: Code Quality & Simplification
+status: defining_requirements
+stopped_at: "Defining requirements"
 last_updated: "2026-03-09"
-last_activity: "2026-03-09 — v1.2 milestone complete, archived to milestones/"
+last_activity: "2026-03-09 — Milestone v1.3 started"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # State: Alofok
@@ -21,12 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Sales Reps can visit customers, take orders, collect payments, and resolve balance disputes — even offline.
-**Current focus:** Planning next milestone
+**Current focus:** Defining requirements for v1.3
 
 ## Current Position
 
-Milestone v1.2 Business Operations — COMPLETE and archived.
-Next step: `/gsd:new-milestone` to plan v1.3.
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-09 — Milestone v1.3 started
 
 ### Quick Tasks Completed
 
@@ -34,8 +36,14 @@ Next step: `/gsd:new-milestone` to plan v1.3.
 |---|-------------|------|--------|-----------|
 | 2 | Fix bottom navbar safe area on iPhone PWA home screen | 2026-03-09 | a32f13e | [2-fix-bottom-navbar-safe-area-on-iphone-pw](./quick/2-fix-bottom-navbar-safe-area-on-iphone-pw/) |
 
+## Accumulated Context
+
+- v1.0-v1.2 shipped successfully with 3 milestones
+- Codebase analysis revealed 23 improvement areas across DB, backend, and frontend
+- Key issues: expense enum mismatch, return_check() bug, N+1 queries, heavy code duplication in frontend
+
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Quick task 2 complete
-Resume with: /gsd:new-milestone
+Stopped at: Defining v1.3 requirements
+Resume with: Continue requirements definition

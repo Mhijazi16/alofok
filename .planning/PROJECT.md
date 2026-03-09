@@ -60,9 +60,29 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 
 ### Active
 
-<!-- Next milestone scope. -->
+<!-- Current scope: v1.3 Code Quality & Simplification -->
 
-(None yet — define with `/gsd:new-milestone`)
+- [ ] Fix expense category enum mismatch between model and schema
+- [ ] Add missing DB indexes (products.created_by, customers.assigned_to, expenses.status)
+- [ ] Add DB constraints (CHECK on amounts, status transitions, STI field validity)
+- [ ] Sync Customer.phone with CustomerAuth.phone
+- [ ] Fix product.discount_type to use Enum instead of loose string
+- [ ] Fix CompanyLedger type hints (Mapped[str] → Mapped[Enum])
+- [ ] Fix return_check() to persist original check status change
+- [ ] Fix N+1 query in get_my_orders_today()
+- [ ] Consolidate duplicate statement logic (customer_service + portal_service)
+- [ ] Add authorization checks in delete_order() and undeliver_order()
+- [ ] Create typed OrderItem schema for OrderCreate.items
+- [ ] Fix portal statement to use DB-level filtering
+- [ ] Standardize service return types (always return Pydantic schemas)
+- [ ] Extract shared useCart() hook
+- [ ] Extract shared StatementViewBase component
+- [ ] Extract shared ProfileView component
+- [ ] Extract shared format utilities (currency, date, time)
+- [ ] Extract shared JWT decode utility
+- [ ] Extract shared getProductName utility
+- [ ] Break up Sales/index.tsx monolith into separate view files
+- [ ] Replace raw button elements with Button component
 
 ### Out of Scope
 
@@ -72,6 +92,16 @@ Sales Reps can visit customers, take orders, collect payments, and resolve balan
 - Notification system — deferred from v1.2, not critical yet
 - Check batching/reconciliation — beyond current needs
 - Check Cleared status — Deposit + Return sufficient for now
+
+## Current Milestone: v1.3 Code Quality & Simplification
+
+**Goal:** Eliminate code duplication, fix bugs, add missing DB constraints/indexes, and simplify monolithic components.
+
+**Target features:**
+- DB schema hardening (indexes, constraints, enum fixes)
+- Backend bug fixes (persistence, N+1, auth checks)
+- Frontend deduplication (shared hooks, components, utilities)
+- Frontend simplification (monolith breakup)
 
 ## Current State
 
@@ -115,4 +145,4 @@ v1.2 shipped. 3 milestones complete (v1.0 Core, v1.1 Checks, v1.2 Business Opera
 | Purchase as TransactionType enum value | Reuses STI pattern, appears in statements naturally | ✓ Good |
 
 ---
-*Last updated: 2026-03-09 after v1.2 milestone complete*
+*Last updated: 2026-03-09 after v1.3 milestone started*
