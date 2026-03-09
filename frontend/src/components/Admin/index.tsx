@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useCart } from "@/hooks/useCart";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -47,8 +48,8 @@ import { PaymentFlow } from "@/components/Sales/PaymentFlow";
 import { StatementView } from "@/components/Sales/StatementView";
 import { PurchaseFlow } from "@/components/Sales/PurchaseFlow";
 import { adminApi } from "@/services/adminApi";
-import { salesApi, type Customer, type Product as SalesProduct, type OrderItem, type CartItem, type SelectedOption } from "@/services/salesApi";
-import { cartKey, optionsPrice } from "@/lib/cart";
+import { salesApi, type Customer, type Product as SalesProduct, type OrderItem, type CartItem } from "@/services/salesApi";
+import { optionsPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
 import { toLocalDateStr } from "@/lib/utils";
 
@@ -87,42 +88,10 @@ export default function AdminPanel() {
   }, [avatarSeed]);
 
   /* ---- Cart state ---- */
-  const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
+  const { cart, addToCart, updateCartQty, removeFromCart, clearCart } = useCart();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
   const [customDeliveryDate, setCustomDeliveryDate] = useState(false);
-
-  const addToCart = useCallback((product: SalesProduct, qty: number = 1, selectedOptions?: SelectedOption[]) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      const key = cartKey(product.id, selectedOptions);
-      const existing = next.get(key);
-      if (existing) {
-        next.set(key, { ...existing, quantity: existing.quantity + qty });
-      } else {
-        next.set(key, { product, quantity: qty, selectedOptions });
-      }
-      return next;
-    });
-  }, []);
-
-  const updateCartQty = useCallback((productId: string, qty: number) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      if (qty <= 0) { next.delete(productId); }
-      else {
-        const existing = next.get(productId);
-        if (existing) next.set(productId, { ...existing, quantity: qty });
-      }
-      return next;
-    });
-  }, []);
-
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prev) => { const next = new Map(prev); next.delete(productId); return next; });
-  }, []);
-
-  const clearCart = useCallback(() => setCart(new Map()), []);
 
   /* ---- Order mutation ---- */
   const orderMutation = useMutation({

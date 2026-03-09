@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
+import { useCart } from "@/hooks/useCart";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -40,8 +41,8 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { logout } from "@/store/authSlice";
-import { salesApi, type Customer, type Product, type OrderItem, type CartItem, type SelectedOption } from "@/services/salesApi";
-import { cartKey, optionsPrice } from "@/lib/cart";
+import { salesApi, type Customer, type Product, type OrderItem, type CartItem } from "@/services/salesApi";
+import { optionsPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
 import { getCoverImage } from "@/lib/image";
 import { formatCurrency } from "@/lib/format";
@@ -452,72 +453,8 @@ export default function SalesRoot() {
     queryFn: salesApi.getMyCustomers,
   });
 
-  /* ---- Cart state — lifted from OrderFlow for persistence ---- */
-  const [cart, setCart] = useState<Map<string, CartItem>>(() => {
-    try {
-      const saved = localStorage.getItem("alofok-cart");
-      if (saved) {
-        const entries = JSON.parse(saved) as [string, CartItem][];
-        return new Map(entries);
-      }
-    } catch {
-      /* ignore */
-    }
-    return new Map();
-  });
-
-  // Persist cart to localStorage
-  useEffect(() => {
-    localStorage.setItem("alofok-cart", JSON.stringify([...cart]));
-  }, [cart]);
-
-  // Cart helper functions
-  const addToCart = useCallback((product: Product, qty: number = 1, selectedOptions?: SelectedOption[]) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      const key = cartKey(product.id, selectedOptions);
-      const existing = next.get(key);
-      if (existing) {
-        next.set(key, { ...existing, quantity: existing.quantity + qty });
-      } else {
-        next.set(key, { product, quantity: qty, selectedOptions });
-      }
-      return next;
-    });
-  }, []);
-
-  const updateCartQty = useCallback((productId: string, qty: number) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      if (qty <= 0) {
-        next.delete(productId);
-      } else {
-        const existing = next.get(productId);
-        if (existing) next.set(productId, { ...existing, quantity: qty });
-      }
-      return next;
-    });
-  }, []);
-
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      next.delete(productId);
-      return next;
-    });
-  }, []);
-
-  const clearCart = useCallback(() => setCart(new Map()), []);
-
-  const cartTotal = useMemo(
-    () =>
-      Array.from(cart.values()).reduce(
-        (sum, item) =>
-          sum + ((item.product.discounted_price ?? item.product.price) + optionsPrice(item.selectedOptions)) * item.quantity,
-        0
-      ),
-    [cart]
-  );
+  /* ---- Cart state ---- */
+  const { cart, addToCart, updateCartQty, removeFromCart, clearCart, cartTotal } = useCart({ storageKey: "alofok-cart" });
 
   /* ---- Order mutation (shared by CartView) ---- */
   const orderMutation = useMutation({
