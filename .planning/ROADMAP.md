@@ -67,10 +67,12 @@ Plans:
   3. Creating an order with malformed items (wrong types, missing fields) returns a clear validation error from the typed OrderItem schema
   4. Portal statement with date filters applies them at the database level — no full-table Python filtering
   5. All service functions return Pydantic schema instances, not raw ORM model objects
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 17-01: TBD
+- [ ] 17-01-PLAN.md — N+1 query fix (JOIN for orders) and typed OrderItemSchema
+- [ ] 17-02-PLAN.md — Statement logic dedup and portal DB-level date filtering
+- [ ] 17-03-PLAN.md — Standardize service return types to Pydantic schemas
 
 ### Phase 18: Frontend Shared Utilities
 **Goal**: Common frontend logic lives in shared modules instead of being duplicated across role components
@@ -111,6 +113,6 @@ Phases execute in numeric order: 16 → 17 → 18 → 19
 | 6-9. Check Enhancement | v1.1 | 10/10 | Complete | 2026-03-04 |
 | 10-15. Business Operations | v1.2 | 11/11 | Complete | 2026-03-09 |
 | 16. Schema Hardening & Critical Bug Fix | v1.3 | Complete    | 2026-03-09 | 2026-03-09 |
-| 17. Backend Code Consolidation | v1.3 | 0/? | Not started | - |
+| 17. Backend Code Consolidation | v1.3 | 0/3 | Not started | - |
 | 18. Frontend Shared Utilities | v1.3 | 0/? | Not started | - |
 | 19. Frontend Component Dedup & Simplification | v1.3 | 0/? | Not started | - |
