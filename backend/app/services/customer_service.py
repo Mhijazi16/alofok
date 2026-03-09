@@ -126,17 +126,16 @@ class CustomerService:
         now = datetime.now(timezone.utc)
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         end = start + timedelta(days=1)
-        orders = await self._transactions.get_orders_by_rep(user_id, start, end)
-        results = []
-        for o in orders:
-            customer = await self._customers.get_by_id(o.customer_id)
-            results.append(
-                OrderWithCustomerOut(
-                    **TransactionOut.model_validate(o).model_dump(),
-                    customer_name=customer.name if customer else "—",
-                )
+        rows = await self._transactions.get_orders_by_rep_with_customer(
+            user_id, start, end
+        )
+        return [
+            OrderWithCustomerOut(
+                **TransactionOut.model_validate(txn).model_dump(),
+                customer_name=name,
             )
-        return results
+            for txn, name in rows
+        ]
 
     async def get_delivery_orders(
         self, user_id: uuid.UUID, delivery: date, assigned_day: str

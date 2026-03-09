@@ -4,6 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel
 
 from app.models.customer import AssignedDay
+from app.schemas.transaction import OrderItemSchema
 
 
 class CustomerLoginRequest(BaseModel):
@@ -30,5 +31,5 @@ class CustomerProfileOut(BaseModel):
 
 
 class DraftOrderCreate(BaseModel):
-    items: list[dict]  # [{"product_id": uuid, "quantity": int, "unit_price": Decimal}]
+    items: list[OrderItemSchema]
     notes: str | None = None

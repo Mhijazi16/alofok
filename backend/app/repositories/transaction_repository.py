@@ -84,6 +84,34 @@ class TransactionRepository:
         result = await self._db.execute(query)
         return list(result.scalars().all())
 
+    async def get_orders_by_rep_with_customer(
+        self,
+        rep_id: uuid.UUID,
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ) -> list[tuple[Transaction, str]]:
+        """Return (Transaction, customer_name) via JOIN — no N+1."""
+        from app.models.customer import Customer
+
+        query = (
+            select(Transaction, Customer.name)
+            .join(Customer, Transaction.customer_id == Customer.id)
+            .where(
+                Transaction.created_by == rep_id,
+                Transaction.type == TransactionType.Order,
+                Transaction.is_deleted.is_(False),
+                Transaction.is_draft.is_(False),
+                Customer.is_deleted.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        if start:
+            query = query.where(Transaction.created_at >= start)
+        if end:
+            query = query.where(Transaction.created_at < end)
+        result = await self._db.execute(query)
+        return list(result.all())
+
     async def get_delivery_orders(
         self, rep_id: uuid.UUID, delivery: date, assigned_day: str
     ) -> list[tuple[Transaction, str, bool]]:

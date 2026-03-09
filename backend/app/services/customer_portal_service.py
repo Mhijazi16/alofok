@@ -79,9 +79,11 @@ class CustomerPortalService:
     async def create_draft_order(
         self,
         customer_id: uuid.UUID,
-        items: list[dict],
+        items: list,
         notes: str | None,
     ) -> TransactionOut:
+        from app.schemas.transaction import OrderItemSchema
+
         customer = await self._customers.get_by_id(customer_id)
         if customer is None:
             raise HorizonException(404, "Customer not found")
@@ -90,8 +92,7 @@ class CustomerPortalService:
             raise HorizonException(400, "Order must contain at least one item")
 
         total = sum(
-            Decimal(str(item.get("quantity", 1)))
-            * Decimal(str(item.get("unit_price", "0")))
+            Decimal(str(item.quantity)) * Decimal(str(item.unit_price))
             for item in items
         )
 
@@ -102,7 +103,7 @@ class CustomerPortalService:
             currency=Currency.ILS,
             amount=total,
             data={
-                "items": items,
+                "items": [item.model_dump(mode="json") for item in items],
                 "source": "customer_portal",
                 "created_by_customer": str(customer_id),
             },

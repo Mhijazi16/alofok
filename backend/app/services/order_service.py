@@ -62,8 +62,7 @@ class OrderService:
             raise HorizonException(400, "Order must contain at least one item")
 
         total = sum(
-            Decimal(str(item.get("quantity", 1)))
-            * Decimal(str(item.get("unit_price", "0")))
+            Decimal(str(item.quantity)) * Decimal(str(item.unit_price))
             for item in body.items
         )
 
@@ -73,7 +72,7 @@ class OrderService:
             type=TransactionType.Order,
             currency=Currency.ILS,
             amount=total,  # positive — increases customer debt
-            data={"items": body.items},
+            data={"items": [item.model_dump(mode="json") for item in body.items]},
             notes=body.notes,
             delivery_date=body.delivery_date,
         )
@@ -117,12 +116,11 @@ class OrderService:
         # Update items and recalculate amount
         if body.items:
             total = sum(
-                Decimal(str(item.get("quantity", 1)))
-                * Decimal(str(item.get("unit_price", "0")))
+                Decimal(str(item.quantity)) * Decimal(str(item.unit_price))
                 for item in body.items
             )
             txn.amount = total
-            txn.data = {"items": body.items}
+            txn.data = {"items": [item.model_dump(mode="json") for item in body.items]}
 
         # Update other fields
         if body.delivery_date is not None:

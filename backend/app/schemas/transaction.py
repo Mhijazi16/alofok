@@ -7,6 +7,15 @@ from pydantic import BaseModel, Field
 from app.models.transaction import Currency, TransactionStatus, TransactionType
 
 
+class OrderItemSchema(BaseModel):
+    """Typed schema for order line items — replaces untyped list[dict]."""
+
+    product_id: uuid.UUID
+    quantity: int = Field(gt=0)
+    unit_price: Decimal = Field(gt=0)
+    name: str | None = None  # optional product name for display
+
+
 class CheckData(BaseModel):
     bank: str | None = None  # existing: free-text bank name
     bank_number: str | None = None  # CHK-01
@@ -55,14 +64,14 @@ class StatementOut(BaseModel):
 
 class OrderCreate(BaseModel):
     customer_id: uuid.UUID
-    items: list[dict]  # [{"product_id": uuid, "quantity": int, "unit_price": Decimal}]
+    items: list[OrderItemSchema]
     notes: str | None = None
     delivery_date: date | None = None
 
 
 class OrderUpdate(BaseModel):
     customer_id: uuid.UUID | None = None
-    items: list[dict] | None = None
+    items: list[OrderItemSchema] | None = None
     delivery_date: date | None = None
     notes: str | None = None
 
