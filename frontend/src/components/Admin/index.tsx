@@ -6,24 +6,18 @@ import {
   LayoutDashboard,
   Users,
   User,
-  LogOut,
-  Globe,
   Package,
   FileCheck2,
-  Sun,
-  Moon,
 } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { PageContainer } from "@/components/layout/page-container";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { useTheme } from "@/hooks/useTheme";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ProfileView } from "@/components/shared/ProfileView";
 import { DatePicker } from "@/components/ui/date-picker";
 import { FormField } from "@/components/ui/form-field";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -63,7 +57,7 @@ type AdminView =
   | "profile";
 
 export default function AdminPanel() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const { isOnline } = useOfflineSync();
@@ -137,17 +131,6 @@ export default function AdminPanel() {
     { icon: Users, label: t("nav.customers"), value: "customers" },
     { icon: User, label: t("profile.title"), value: "profile" },
   ];
-
-  const { isDark, toggleTheme } = useTheme();
-
-  const toggleLanguage = () => {
-    const next = i18n.language === "ar" ? "en" : "ar";
-    i18n.changeLanguage(next);
-  };
-
-  const handleLogout = () => {
-    dispatch(logout());
-  };
 
   const renderView = () => {
     switch (activeView) {
@@ -273,85 +256,25 @@ export default function AdminPanel() {
         );
       case "profile":
         return (
-          <PageContainer>
-            <div className="mx-auto max-w-md space-y-6">
-              <h2 className="text-h2 font-bold text-foreground">
-                {t("profile.title")}
-              </h2>
-
-              <Card variant="glass">
-                <CardContent className="p-6 space-y-5">
-                  {/* User info */}
-                  <div className="flex items-center gap-4">
-                    <AvatarPicker
-                      currentSeed={avatarSeed}
-                      onSelect={setAvatarSeed}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-body-sm font-semibold text-foreground truncate">
-                        {userId ?? "—"}
-                      </p>
-                      <Badge variant="default" size="sm" className="mt-1">
-                        {role ?? "—"}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Language toggle */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Globe className="h-4 w-4" />
-                      <span className="text-body-sm">{t("profile.language")}</span>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={toggleLanguage}>
-                      {i18n.language === "ar"
-                        ? t("profile.english")
-                        : t("profile.arabic")}
-                    </Button>
-                  </div>
-
-                  <Separator />
-
-                  {/* Theme toggle */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                      <span className="text-body-sm">{t("profile.theme")}</span>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={toggleTheme}>
-                      {isDark ? t("profile.lightMode") : t("profile.darkMode")}
-                    </Button>
-                  </div>
-
-                  <Separator />
-
-                  {/* Version */}
-                  <div className="flex items-center justify-between text-body-sm">
-                    <span className="text-muted-foreground">
-                      {t("profile.version")}
-                    </span>
-                    <span className="text-foreground font-medium tabular-nums">
-                      1.0.0
-                    </span>
-                  </div>
-
-                  <Separator />
-
-                  {/* Logout */}
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    {t("auth.logout")}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </PageContainer>
+          <ProfileView
+            identitySlot={
+              <CardContent className="flex items-center gap-4 p-5">
+                <AvatarPicker
+                  currentSeed={avatarSeed}
+                  onSelect={setAvatarSeed}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-body-sm font-semibold text-foreground truncate">
+                    {userId ?? "—"}
+                  </p>
+                  <Badge variant="default" size="sm" className="mt-1">
+                    {role ?? "—"}
+                  </Badge>
+                </div>
+              </CardContent>
+            }
+            onLogout={() => dispatch(logout())}
+          />
         );
       default:
         return <Overview onNavigate={(v) => setActiveView(v as AdminView)} />;

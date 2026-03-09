@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Package, User, LogOut, Globe, Sun, Moon } from "lucide-react";
+import { Package, User } from "lucide-react";
 
 import { useAppSelector, useAppDispatch } from "@/store";
 import { logout } from "@/store/authSlice";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { PageContainer } from "@/components/layout/page-container";
 import { BottomNav } from "@/components/ui/bottom-nav";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { useTheme } from "@/hooks/useTheme";
+import { ProfileView } from "@/components/shared/ProfileView";
 
 import { ProductList } from "./ProductList";
 import { ProductForm } from "./ProductForm";
@@ -21,12 +18,10 @@ import { ProductForm } from "./ProductForm";
 
 type View = "list" | "create" | "profile";
 
-const APP_VERSION = "1.0.0";
-
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function DesignerShell() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { userId, role } = useAppSelector((s) => s.auth);
 
@@ -58,19 +53,6 @@ export default function DesignerShell() {
     setView("list");
   };
 
-  const { isDark, toggleTheme } = useTheme();
-
-  const toggleLanguage = () => {
-    const next = i18n.language === "ar" ? "en" : "ar";
-    i18n.changeLanguage(next);
-    document.documentElement.dir = next === "ar" ? "rtl" : "ltr";
-    document.documentElement.lang = next;
-  };
-
-  const handleLogout = () => {
-    dispatch(logout());
-  };
-
   // ── BottomNav items ────────────────────────────────────────────────────────
 
   const navItems = [
@@ -79,102 +61,6 @@ export default function DesignerShell() {
   ];
 
   const activeNavValue = view === "create" ? "list" : view;
-
-  // ── Profile view ───────────────────────────────────────────────────────────
-
-  const profileView = (
-    <PageContainer>
-      <div className="mx-auto max-w-md space-y-4 pt-4">
-        {/* User card */}
-        <Card variant="glass">
-          <CardContent className="flex flex-col items-center gap-3 p-6">
-            <AvatarPicker
-              currentSeed={avatarSeed}
-              onSelect={setAvatarSeed}
-            />
-            <div className="text-center">
-              <p className="text-h3 font-bold text-foreground">
-                {userId ?? "—"}
-              </p>
-              <p className="text-body-sm text-muted-foreground">
-                {t("profile.role")}: {role ?? "Designer"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Settings */}
-        <Card variant="glass">
-          <CardContent className="p-0">
-            {/* Language toggle */}
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              className="flex w-full items-center gap-3 px-5 py-4 text-start transition-colors hover:bg-accent"
-            >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15">
-                <Globe className="h-4 w-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-body-sm font-medium text-foreground">
-                  {t("profile.language")}
-                </p>
-                <p className="text-caption text-muted-foreground">
-                  {i18n.language === "ar"
-                    ? t("profile.arabic")
-                    : t("profile.english")}
-                </p>
-              </div>
-            </button>
-
-            <Separator />
-
-            {/* Theme toggle */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="flex w-full items-center gap-3 px-5 py-4 text-start transition-colors hover:bg-accent"
-            >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning/15">
-                {isDark ? <Moon className="h-4 w-4 text-warning" /> : <Sun className="h-4 w-4 text-warning" />}
-              </div>
-              <div className="flex-1">
-                <p className="text-body-sm font-medium text-foreground">
-                  {t("profile.theme")}
-                </p>
-                <p className="text-caption text-muted-foreground">
-                  {isDark ? t("profile.darkMode") : t("profile.lightMode")}
-                </p>
-              </div>
-            </button>
-
-            <Separator />
-
-            {/* Version */}
-            <div className="flex items-center justify-between px-5 py-4">
-              <p className="text-body-sm text-muted-foreground">
-                {t("profile.version")}
-              </p>
-              <p className="text-body-sm font-medium text-foreground">
-                {APP_VERSION}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Logout */}
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
-          onClick={handleLogout}
-        >
-          <LogOut className="h-4 w-4" />
-          {t("auth.logout")}
-        </Button>
-      </div>
-    </PageContainer>
-  );
 
   // ── Main content router ────────────────────────────────────────────────────
 
@@ -190,7 +76,29 @@ export default function DesignerShell() {
       );
       break;
     case "profile":
-      content = profileView;
+      content = (
+        <ProfileView
+          identitySlot={
+            <CardContent className="flex flex-col items-center gap-3 p-6">
+              <AvatarPicker
+                currentSeed={avatarSeed}
+                onSelect={setAvatarSeed}
+              />
+              <div className="text-center">
+                <p className="text-h3 font-bold text-foreground">
+                  {userId ?? "—"}
+                </p>
+                <p className="text-body-sm text-muted-foreground">
+                  {t("profile.role")}: {role ?? "Designer"}
+                </p>
+              </div>
+            </CardContent>
+          }
+          onLogout={() => dispatch(logout())}
+          logoutVariant="outline"
+          logoutClassName="w-full animate-slide-up border-destructive/30 text-destructive hover:bg-destructive/10"
+        />
+      );
       break;
   }
 
