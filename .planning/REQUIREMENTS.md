@@ -1,0 +1,85 @@
+# Requirements: Alofok
+
+**Defined:** 2026-03-09
+**Core Value:** Sales Reps can visit customers, take orders, collect payments, and resolve balance disputes — even offline.
+
+## v1.3 Requirements
+
+Requirements for Code Quality & Simplification milestone. Each maps to roadmap phases.
+
+### Database Schema
+
+- [ ] **SCHEMA-01**: Add missing index on customers.assigned_to column used in daily rep queries
+- [ ] **SCHEMA-02**: Sync ExpenseCategory enum between model and Pydantic schema validator
+- [ ] **SCHEMA-03**: Add CHECK constraints (expense amount > 0, product stock_qty >= 0, discount_type as enum)
+
+### Backend Fixes
+
+- [ ] **BACK-01**: Fix return_check() to persist original check's Returned status to database
+- [ ] **BACK-02**: Optimize get_my_orders_today() to use JOIN instead of N+1 per-order customer fetches
+- [ ] **BACK-03**: Consolidate duplicate statement logic between customer_service and customer_portal_service
+- [ ] **BACK-04**: Create typed OrderItem schema for OrderCreate.items validation
+- [ ] **BACK-05**: Fix portal statement to pass date params to repository instead of Python-level filtering
+- [ ] **BACK-06**: Standardize service return types to always return Pydantic schemas (not ORM models)
+
+### Frontend Deduplication
+
+- [ ] **FRONT-01**: Extract shared useCart() hook from Sales and Customer root components
+- [ ] **FRONT-02**: Extract shared StatementViewBase component from duplicate StatementViews
+- [ ] **FRONT-03**: Extract shared ProfileView component from Admin/Sales/Designer profiles
+- [ ] **FRONT-04**: Extract formatCurrency/formatDate/formatTime to src/lib/format.ts
+- [ ] **FRONT-05**: Extract JWT decode utility to src/lib/jwt.ts
+- [ ] **FRONT-06**: Extract getProductName utility to shared location
+
+### Frontend Simplification
+
+- [ ] **SIMP-01**: Break up Sales/index.tsx (1048 lines) into separate view files
+- [ ] **SIMP-02**: Replace raw button elements with shadcn Button component
+
+## Future Requirements
+
+None — this is a cleanup milestone.
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Denormalized customer.balance removal | High-risk refactor; needs careful migration strategy in dedicated milestone |
+| Products.created_by index | No queries filter on this column |
+| Expenses.status index | Expense table not actively queried; CompanyLedger has its own index |
+| Auth checks in delete/undeliver order | Already protected by RBAC middleware |
+| Phone sync Customer/CustomerAuth | Intentionally separate (login credential vs contact info) |
+| CompanyLedger Mapped[str] type hints | Runtime works fine; cosmetic annotation |
+| DailyCashConfirmation explicit status | Implicit status via nullable columns is valid design |
+| Audit trail for check status changes | Requires new audit table; defer to future |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| SCHEMA-01 | — | Pending |
+| SCHEMA-02 | — | Pending |
+| SCHEMA-03 | — | Pending |
+| BACK-01 | — | Pending |
+| BACK-02 | — | Pending |
+| BACK-03 | — | Pending |
+| BACK-04 | — | Pending |
+| BACK-05 | — | Pending |
+| BACK-06 | — | Pending |
+| FRONT-01 | — | Pending |
+| FRONT-02 | — | Pending |
+| FRONT-03 | — | Pending |
+| FRONT-04 | — | Pending |
+| FRONT-05 | — | Pending |
+| FRONT-06 | — | Pending |
+| SIMP-01 | — | Pending |
+| SIMP-02 | — | Pending |
+
+**Coverage:**
+- v1.3 requirements: 17 total
+- Mapped to phases: 0
+- Unmapped: 17 ⚠️
+
+---
+*Requirements defined: 2026-03-09*
+*Last updated: 2026-03-09 after initial definition*
