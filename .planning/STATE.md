@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Code Quality & Simplification
 status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-03-09T12:12:18Z"
-last_activity: "2026-03-09 — Completed 17-01: N+1 fix + typed OrderItemSchema"
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-03-09T12:16:10Z"
+last_activity: "2026-03-09 — Completed 17-02: Statement dedup + portal DB filtering"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 20
 ---
 
@@ -26,25 +26,25 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 17 of 19 (Backend Code Consolidation)
-Plan: 1 of 3 (complete)
+Plan: 2 of 3 (complete)
 Status: Executing
-Last activity: 2026-03-09 — Completed 17-01: N+1 fix + typed OrderItemSchema
+Last activity: 2026-03-09 — Completed 17-02: Statement dedup + portal DB filtering
 
 Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 4min
-- Total execution time: 0.12 hours
+- Total plans completed: 3
+- Average duration: 3min
+- Total execution time: 0.13 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 16 | 1 | 4min | 4min |
-| 17 | 1 | 3min | 3min |
+| 17 | 2 | 4min | 2min |
 
 ### Quick Tasks Completed
 
@@ -62,6 +62,7 @@ Progress: [██░░░░░░░░] 20%
 - Union of both enum sets for ExpenseCategory to preserve existing DB rows
 - Derive ALLOWED_EXPENSE_CATEGORIES from model enum import to prevent future drift
 - OrderItemSchema with optional name field; kept existing get_orders_by_rep for backward compat
+- Shared statement helpers in _statement.py; draft filtering in-service to keep repo interface stable
 
 ### Pending Todos
 
@@ -74,5 +75,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 17-01-PLAN.md
-Resume with: `/gsd:execute-phase 17` (2 more plans in phase 17)
+Stopped at: Completed 17-02-PLAN.md
+Resume with: `/gsd:execute-phase 17` (1 more plan in phase 17)
