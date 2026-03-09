@@ -16,9 +16,9 @@ Requirements for Code Quality & Simplification milestone. Each maps to roadmap p
 ### Backend Fixes
 
 - [x] **BACK-01**: Fix return_check() to persist original check's Returned status to database
-- [ ] **BACK-02**: Optimize get_my_orders_today() to use JOIN instead of N+1 per-order customer fetches
+- [x] **BACK-02**: Optimize get_my_orders_today() to use JOIN instead of N+1 per-order customer fetches
 - [ ] **BACK-03**: Consolidate duplicate statement logic between customer_service and customer_portal_service
-- [ ] **BACK-04**: Create typed OrderItem schema for OrderCreate.items validation
+- [x] **BACK-04**: Create typed OrderItem schema for OrderCreate.items validation
 - [ ] **BACK-05**: Fix portal statement to pass date params to repository instead of Python-level filtering
 - [ ] **BACK-06**: Standardize service return types to always return Pydantic schemas (not ORM models)
 
@@ -61,9 +61,9 @@ None — this is a cleanup milestone.
 | SCHEMA-02 | Phase 16 | Complete |
 | SCHEMA-03 | Phase 16 | Complete |
 | BACK-01 | Phase 16 | Complete |
-| BACK-02 | Phase 17 | Pending |
+| BACK-02 | Phase 17 | Complete |
 | BACK-03 | Phase 17 | Pending |
-| BACK-04 | Phase 17 | Pending |
+| BACK-04 | Phase 17 | Complete |
 | BACK-05 | Phase 17 | Pending |
 | BACK-06 | Phase 17 | Pending |
 | FRONT-01 | Phase 18 | Pending |
