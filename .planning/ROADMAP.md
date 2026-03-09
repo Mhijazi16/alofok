@@ -83,10 +83,11 @@ Plans:
   2. Currency, date, and time formatting is consistent across all views (single source in src/lib/format.ts)
   3. JWT decode logic exists in one place (src/lib/jwt.ts) and all consumers import from there
   4. Product name resolution (with Arabic/English fallback) uses a single getProductName() function from a shared location
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 18-01: TBD
+- [ ] 18-01-PLAN.md — Extract format.ts, jwt.ts, and product.ts utility modules; replace all inline duplicates
+- [ ] 18-02-PLAN.md — Extract useCart hook; replace inline cart logic in Sales, Customer, and Admin
 
 ### Phase 19: Frontend Component Dedup & Simplification
 **Goal**: Duplicated view components are consolidated and the Sales monolith is broken into manageable files
@@ -105,7 +106,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 16 → 17 → 18 → 19
+Phases execute in numeric order: 16 -> 17 -> 18 -> 19
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -114,5 +115,5 @@ Phases execute in numeric order: 16 → 17 → 18 → 19
 | 10-15. Business Operations | v1.2 | 11/11 | Complete | 2026-03-09 |
 | 16. Schema Hardening & Critical Bug Fix | v1.3 | Complete    | 2026-03-09 | 2026-03-09 |
 | 17. Backend Code Consolidation | 3/3 | Complete    | 2026-03-09 | - |
-| 18. Frontend Shared Utilities | v1.3 | 0/? | Not started | - |
+| 18. Frontend Shared Utilities | v1.3 | 0/2 | Not started | - |
 | 19. Frontend Component Dedup & Simplification | v1.3 | 0/? | Not started | - |
