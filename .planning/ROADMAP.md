@@ -52,7 +52,7 @@ See: `.planning/milestones/v1.2-ROADMAP.md` for full details.
   2. Creating an expense with any valid category succeeds without enum mismatch errors
   3. Database rejects negative expense amounts, negative stock quantities, and invalid discount types at the constraint level
   4. Returning a check via the admin UI persists the original check's Returned status — verified by reloading and confirming the status stuck
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [x] 16-01-PLAN.md — Schema hardening (index, enum sync, CHECK constraints) and return_check bug fix
@@ -110,7 +110,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19
 | 1-5. Core Platform | v1.0 | — | Complete | 2026-03-04 |
 | 6-9. Check Enhancement | v1.1 | 10/10 | Complete | 2026-03-04 |
 | 10-15. Business Operations | v1.2 | 11/11 | Complete | 2026-03-09 |
-| 16. Schema Hardening & Critical Bug Fix | v1.3 | 1/1 | Complete | 2026-03-09 |
+| 16. Schema Hardening & Critical Bug Fix | v1.3 | Complete    | 2026-03-09 | 2026-03-09 |
 | 17. Backend Code Consolidation | v1.3 | 0/? | Not started | - |
 | 18. Frontend Shared Utilities | v1.3 | 0/? | Not started | - |
 | 19. Frontend Component Dedup & Simplification | v1.3 | 0/? | Not started | - |
