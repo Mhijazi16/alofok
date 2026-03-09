@@ -24,7 +24,7 @@ Requirements for Code Quality & Simplification milestone. Each maps to roadmap p
 
 ### Frontend Deduplication
 
-- [ ] **FRONT-01**: Extract shared useCart() hook from Sales and Customer root components
+- [x] **FRONT-01**: Extract shared useCart() hook from Sales and Customer root components
 - [ ] **FRONT-02**: Extract shared StatementViewBase component from duplicate StatementViews
 - [ ] **FRONT-03**: Extract shared ProfileView component from Admin/Sales/Designer profiles
 - [x] **FRONT-04**: Extract formatCurrency/formatDate/formatTime to src/lib/format.ts
@@ -66,7 +66,7 @@ None — this is a cleanup milestone.
 | BACK-04 | Phase 17 | Complete |
 | BACK-05 | Phase 17 | Complete |
 | BACK-06 | Phase 17 | Complete |
-| FRONT-01 | Phase 18 | Pending |
+| FRONT-01 | Phase 18 | Complete |
 | FRONT-04 | Phase 18 | Complete |
 | FRONT-05 | Phase 18 | Complete |
 | FRONT-06 | Phase 18 | Complete |
