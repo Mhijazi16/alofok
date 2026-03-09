@@ -29,7 +29,7 @@ function getWeekRange(): { start: string; end: string } {
   return { start, end };
 }
 
-export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }) {
+export function Overview(_props: { onNavigate?: (view: string) => void }) {
   const { t } = useTranslation();
   const weekRange = useMemo(() => getWeekRange(), []);
 

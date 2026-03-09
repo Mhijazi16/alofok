@@ -172,8 +172,7 @@ class TransactionRepository:
         from sqlalchemy import func
 
         result = await self._db.execute(
-            select(func.coalesce(func.sum(func.abs(Transaction.amount)), 0))
-            .where(
+            select(func.coalesce(func.sum(func.abs(Transaction.amount)), 0)).where(
                 Transaction.created_by == rep_id,
                 Transaction.type.in_(
                     [TransactionType.Payment_Cash, TransactionType.Payment_Check]

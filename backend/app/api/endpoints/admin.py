@@ -118,5 +118,3 @@ async def list_checks(
     status: TransactionStatus | None = None,
 ) -> list[CheckOut]:
     return await service.get_all_checks(status)
-
-

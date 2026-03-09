@@ -5,6 +5,7 @@ Revises: b9ec4890c558
 Create Date: 2026-03-05 12:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -22,9 +23,7 @@ def upgrade() -> None:
     conn = op.get_bind()
     conn.execute(sa.text("COMMIT"))
     conn.execute(
-        sa.text(
-            "ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'Opening_Balance'"
-        )
+        sa.text("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'Opening_Balance'")
     )
     conn.execute(sa.text("BEGIN"))
 

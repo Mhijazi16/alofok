@@ -11,8 +11,8 @@ const TYPE_LABELS: Record<string, string> = {
 
 const HAS_ITEMS = new Set(["Order", "Purchase"]);
 
-const fmtNum = (n: number) =>
-  n.toLocaleString("en-US", {
+const fmtNum = (n: number | null | undefined) =>
+  (n ?? 0).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -44,8 +44,13 @@ function buildPrintHtml(props: StatementPdfProps): string {
         if (items && items.length > 0) {
           mainRow += items
             .map(
-              (item) =>
-                `<tr style="background:${bgColor}"><td colspan="4" style="padding:2px 8px 2px 30px;font-size:11px;color:#888">${item.name} \u00B7 ${item.quantity} \u00D7 ${fmtNum(item.unit_price)} = ${fmtNum(item.total)}</td></tr>`
+              (item) => {
+                const name = item.name ?? item.product_id ?? "";
+                const qty = item.quantity ?? 0;
+                const price = Number(item.unit_price ?? 0);
+                const total = item.total ?? qty * price;
+                return `<tr style="background:${bgColor}"><td colspan="4" style="padding:2px 8px 2px 30px;font-size:11px;color:#888">${name} \u00B7 ${qty} \u00D7 ${fmtNum(price)} = ${fmtNum(total)}</td></tr>`;
+              }
             )
             .join("");
         } else {

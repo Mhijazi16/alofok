@@ -231,7 +231,7 @@ function CartView({
 /*  CustomerRoot                                                        */
 /* ------------------------------------------------------------------ */
 export default function CustomerRoot() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -326,7 +326,7 @@ export default function CustomerRoot() {
   const handleConfirmOrder = useCallback(() => {
     const items: DraftOrderItem[] = Array.from(cart.values()).map((ci) => ({
       product_id: ci.product.id,
-      name: productName(ci.product),
+      name: i18n.language === "ar" ? ci.product.name_ar : ci.product.name_en,
       image_url: ci.product.image_urls?.[0] ?? null,
       quantity: ci.quantity,
       unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),

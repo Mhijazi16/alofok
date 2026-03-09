@@ -19,10 +19,11 @@ export interface StatementPdfProps {
       created_at: string;
       data?: {
         items?: Array<{
-          name: string;
-          quantity: number;
-          unit_price: number;
-          total: number;
+          name?: string;
+          product_id?: string;
+          quantity?: number;
+          unit_price?: number;
+          total?: number;
         }>;
       };
     };
@@ -41,8 +42,8 @@ const TYPE_LABELS: Record<string, string> = {
   opening_balance: "\u0631\u0635\u064A\u062F \u0627\u0641\u062A\u062A\u0627\u062D\u064A",
 };
 
-const fmtNum = (n: number) =>
-  n.toLocaleString("en-US", {
+const fmtNum = (n: number | null | undefined) =>
+  (n ?? 0).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -274,7 +275,7 @@ export function StatementPdf({
                   items.map((item, iIdx) => (
                     <View key={iIdx} style={s.subRow}>
                       <Text style={s.subText}>
-                        {item.name} {"\u00B7"} {item.quantity} {"\u00D7"} {fmtNum(item.unit_price)} = {fmtNum(item.total)}
+                        {item.name ?? item.product_id ?? ""} {"\u00B7"} {item.quantity ?? 0} {"\u00D7"} {fmtNum(Number(item.unit_price ?? 0))} = {fmtNum(item.total ?? (item.quantity ?? 0) * Number(item.unit_price ?? 0))}
                       </Text>
                     </View>
                   ))

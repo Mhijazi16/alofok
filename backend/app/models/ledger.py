@@ -29,11 +29,21 @@ class CompanyLedger(Base, BaseMixin):
     __tablename__ = "company_ledger"
 
     direction: Mapped[str] = mapped_column(
-        sa.Enum(LedgerDirection, name="ledgerdirection", create_constraint=True, native_enum=True),
+        sa.Enum(
+            LedgerDirection,
+            name="ledgerdirection",
+            create_constraint=True,
+            native_enum=True,
+        ),
         nullable=False,
     )
     payment_method: Mapped[str] = mapped_column(
-        sa.Enum(LedgerPaymentMethod, name="ledgerpaymentmethod", create_constraint=True, native_enum=True),
+        sa.Enum(
+            LedgerPaymentMethod,
+            name="ledgerpaymentmethod",
+            create_constraint=True,
+            native_enum=True,
+        ),
         nullable=False,
     )
     amount: Mapped[float] = mapped_column(sa.Numeric(12, 2), nullable=False)
@@ -51,7 +61,9 @@ class CompanyLedger(Base, BaseMixin):
     )
 
     status: Mapped[str] = mapped_column(
-        sa.Enum(LedgerStatus, name="ledgerstatus", create_constraint=True, native_enum=True),
+        sa.Enum(
+            LedgerStatus, name="ledgerstatus", create_constraint=True, native_enum=True
+        ),
         nullable=False,
         server_default="pending",
     )

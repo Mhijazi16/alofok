@@ -39,7 +39,7 @@ const DEFAULT_EXCHANGE_RATES: Record<Currency, number> = {
 };
 
 export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { isOnline } = useOfflineSync();
   const { toast } = useToast();
   const queryClient = useQueryClient();

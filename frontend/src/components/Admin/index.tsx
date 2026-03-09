@@ -141,7 +141,7 @@ export default function AdminPanel() {
   const handleConfirmOrder = useCallback(async () => {
     if (!selectedCustomer) return;
     const items: OrderItem[] = Array.from(cart.values()).map((ci) => ({
-      product_id: ci.product.id, quantity: ci.quantity,
+      product_id: ci.product.id, name: i18n.language === "ar" ? ci.product.name_ar : ci.product.name_en, quantity: ci.quantity,
       unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),
       selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
     }));

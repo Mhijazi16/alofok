@@ -5,6 +5,7 @@ Revises: c3d4e5f6a7b8
 Create Date: 2026-03-05 12:01:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -23,8 +24,7 @@ def upgrade() -> None:
     # Fix customer.balance to match SUM(transactions.amount).
     # This corrects drift caused by initial_balance being set
     # without a corresponding transaction.
-    conn.execute(
-        sa.text("""
+    conn.execute(sa.text("""
             UPDATE customers c
             SET balance = COALESCE(s.txn_sum, 0)
             FROM (
@@ -36,12 +36,10 @@ def upgrade() -> None:
             WHERE s.customer_id = c.id
               AND c.is_deleted = false
               AND c.balance != s.txn_sum
-        """)
-    )
+        """))
 
     # Customers with no transactions but non-zero balance
-    conn.execute(
-        sa.text("""
+    conn.execute(sa.text("""
             UPDATE customers
             SET balance = 0
             WHERE is_deleted = false
@@ -51,8 +49,7 @@ def upgrade() -> None:
                   FROM transactions
                   WHERE is_deleted = false
               )
-        """)
-    )
+        """))
 
 
 def downgrade() -> None:
