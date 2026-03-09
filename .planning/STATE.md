@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Code Quality & Simplification
-status: ready_to_plan
-stopped_at: "Roadmap created, ready to plan Phase 16"
+status: executing
+stopped_at: "Completed 16-01-PLAN.md"
 last_updated: "2026-03-09"
-last_activity: "2026-03-09 — Roadmap created for v1.3 (4 phases, 17 requirements)"
+last_activity: "2026-03-09 — Completed 16-01: schema hardening + return_check bug fix"
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 1
+  completed_plans: 1
+  percent: 10
 ---
 
 # State: Alofok
@@ -26,24 +26,24 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 16 of 19 (Schema Hardening & Critical Bug Fix)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-03-09 — Roadmap created for v1.3
+Plan: 1 of 1 (complete)
+Status: Executing
+Last activity: 2026-03-09 — Completed 16-01: schema hardening + return_check bug fix
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 4min
+- Total execution time: 0.07 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 16 | 1 | 4min | 4min |
 
 ### Quick Tasks Completed
 
@@ -58,6 +58,8 @@ Progress: [░░░░░░░░░░] 0%
 - v1.0-v1.2 shipped successfully with 3 milestones
 - v1.3 scope: 17 requirements across DB schema, backend fixes, frontend dedup, frontend simplification
 - Phase ordering: DB fixes first (16), then backend (17), then frontend utilities (18), then frontend components (19)
+- Union of both enum sets for ExpenseCategory to preserve existing DB rows
+- Derive ALLOWED_EXPENSE_CATEGORIES from model enum import to prevent future drift
 
 ### Pending Todos
 
@@ -70,5 +72,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Roadmap created for v1.3
-Resume with: `/gsd:plan-phase 16`
+Stopped at: Completed 16-01-PLAN.md
+Resume with: `/gsd:plan-phase 17` or `/gsd:execute-phase 16` (if more plans)

@@ -36,7 +36,7 @@ See: `.planning/milestones/v1.2-ROADMAP.md` for full details.
 
 **Milestone Goal:** Eliminate code duplication, fix bugs, add missing DB constraints/indexes, and simplify monolithic components.
 
-- [ ] **Phase 16: Schema Hardening & Critical Bug Fix** - DB indexes, enum sync, constraints, and return_check persistence fix
+- [x] **Phase 16: Schema Hardening & Critical Bug Fix** - DB indexes, enum sync, constraints, and return_check persistence fix
 - [ ] **Phase 17: Backend Code Consolidation** - N+1 fix, statement dedup, typed schemas, DB-level filtering, standardized returns
 - [ ] **Phase 18: Frontend Shared Utilities** - Extract reusable hooks and utility functions before component work
 - [ ] **Phase 19: Frontend Component Dedup & Simplification** - Shared components, monolith breakup, raw button replacement
@@ -55,7 +55,7 @@ See: `.planning/milestones/v1.2-ROADMAP.md` for full details.
 **Plans:** 1 plan
 
 Plans:
-- [ ] 16-01-PLAN.md — Schema hardening (index, enum sync, CHECK constraints) and return_check bug fix
+- [x] 16-01-PLAN.md — Schema hardening (index, enum sync, CHECK constraints) and return_check bug fix
 
 ### Phase 17: Backend Code Consolidation
 **Goal**: Backend services are deduplicated, type-safe, and free of N+1 query patterns
@@ -110,7 +110,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19
 | 1-5. Core Platform | v1.0 | — | Complete | 2026-03-04 |
 | 6-9. Check Enhancement | v1.1 | 10/10 | Complete | 2026-03-04 |
 | 10-15. Business Operations | v1.2 | 11/11 | Complete | 2026-03-09 |
-| 16. Schema Hardening & Critical Bug Fix | v1.3 | 0/1 | Not started | - |
+| 16. Schema Hardening & Critical Bug Fix | v1.3 | 1/1 | Complete | 2026-03-09 |
 | 17. Backend Code Consolidation | v1.3 | 0/? | Not started | - |
 | 18. Frontend Shared Utilities | v1.3 | 0/? | Not started | - |
 | 19. Frontend Component Dedup & Simplification | v1.3 | 0/? | Not started | - |

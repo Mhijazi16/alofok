@@ -9,13 +9,13 @@ Requirements for Code Quality & Simplification milestone. Each maps to roadmap p
 
 ### Database Schema
 
-- [ ] **SCHEMA-01**: Add missing index on customers.assigned_to column used in daily rep queries
-- [ ] **SCHEMA-02**: Sync ExpenseCategory enum between model and Pydantic schema validator
-- [ ] **SCHEMA-03**: Add CHECK constraints (expense amount > 0, product stock_qty >= 0, discount_type as enum)
+- [x] **SCHEMA-01**: Add missing index on customers.assigned_to column used in daily rep queries
+- [x] **SCHEMA-02**: Sync ExpenseCategory enum between model and Pydantic schema validator
+- [x] **SCHEMA-03**: Add CHECK constraints (expense amount > 0, product stock_qty >= 0, discount_type as enum)
 
 ### Backend Fixes
 
-- [ ] **BACK-01**: Fix return_check() to persist original check's Returned status to database
+- [x] **BACK-01**: Fix return_check() to persist original check's Returned status to database
 - [ ] **BACK-02**: Optimize get_my_orders_today() to use JOIN instead of N+1 per-order customer fetches
 - [ ] **BACK-03**: Consolidate duplicate statement logic between customer_service and customer_portal_service
 - [ ] **BACK-04**: Create typed OrderItem schema for OrderCreate.items validation
@@ -57,10 +57,10 @@ None — this is a cleanup milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCHEMA-01 | Phase 16 | Pending |
-| SCHEMA-02 | Phase 16 | Pending |
-| SCHEMA-03 | Phase 16 | Pending |
-| BACK-01 | Phase 16 | Pending |
+| SCHEMA-01 | Phase 16 | Complete |
+| SCHEMA-02 | Phase 16 | Complete |
+| SCHEMA-03 | Phase 16 | Complete |
+| BACK-01 | Phase 16 | Complete |
 | BACK-02 | Phase 17 | Pending |
 | BACK-03 | Phase 17 | Pending |
 | BACK-04 | Phase 17 | Pending |
