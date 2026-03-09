@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatCurrency, formatDate, formatTime } from "@/lib/format";
 
 type FilterPreset = "zero" | "week" | "month" | "year" | "custom";
 
@@ -121,24 +122,6 @@ export function CustomerStatementView() {
     }
   };
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-
-  const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
   const txTypeVariant = (type: string) => {
     if (type === "Order") return "warning" as const;

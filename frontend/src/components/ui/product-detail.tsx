@@ -17,6 +17,7 @@ import { getImageUrl } from "@/lib/image";
 import { TopBar } from "@/components/ui/top-bar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getProductName } from "@/lib/product";
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -46,7 +47,7 @@ interface ProductDetailProps {
 export function ProductDetail({ product, onBack, actions, embedded }: ProductDetailProps) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
-  const name = isAr ? product.name_ar : product.name_en;
+  const name = getProductName(product);
   const description = isAr ? product.description_ar : product.description_en;
 
   const images = (product.image_urls ?? [])

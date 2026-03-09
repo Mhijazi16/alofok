@@ -1,7 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { clearBankHistory } from "@/components/ui/bank-autocomplete";
+import { decodeJwt } from "@/lib/jwt";
 
-export type UserRole = "Admin" | "Designer" | "Sales" | "Customer";
+export type { UserRole } from "@/lib/jwt";
+type UserRole = import("@/lib/jwt").UserRole;
 
 interface AuthState {
   token: string | null;
@@ -11,20 +13,6 @@ interface AuthState {
 }
 
 const TOKEN_KEY = "alofok_token";
-
-function decodeJwt(token: string): { sub: string; role: UserRole; customer_id?: string } | null {
-  try {
-    const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    const payload = JSON.parse(atob(b64));
-    return {
-      sub: payload.sub,
-      role: payload.role as UserRole,
-      customer_id: payload.customer_id,
-    };
-  } catch {
-    return null;
-  }
-}
 
 const storedToken = localStorage.getItem(TOKEN_KEY);
 const decoded = storedToken ? decodeJwt(storedToken) : null;

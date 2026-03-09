@@ -6,6 +6,7 @@ import { type DateRange } from "react-day-picker";
 import type { StatementPdfProps } from "@/components/shared/StatementPdf";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { toLocalDateStr } from "@/lib/utils";
+import { formatCurrency, formatDate, formatTime } from "@/lib/format";
 import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TopBar } from "@/components/ui/top-bar";
@@ -116,24 +117,6 @@ export function StatementView({ customer, onBack }: StatementViewProps) {
     }
   };
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-
-  const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
   const txTypeVariant = (type: string) => {
     if (type === "Order") return "warning" as const;

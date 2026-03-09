@@ -44,6 +44,8 @@ import { salesApi, type Customer, type Product, type OrderItem, type CartItem, t
 import { cartKey, optionsPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
 import { getCoverImage } from "@/lib/image";
+import { formatCurrency } from "@/lib/format";
+import { getProductName } from "@/lib/product";
 import { toLocalDateStr } from "@/lib/utils";
 import { OptionPickerDialog } from "@/components/ui/option-picker-dialog";
 
@@ -213,18 +215,11 @@ function CartView({
   customers,
   onSelectCustomer,
 }: CartViewProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const cartEntries = useMemo(() => Array.from(cart.entries()), [cart]);
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-  const productName = (p: Product) =>
-    i18n.language === "ar" ? p.name_ar : p.name_en;
+  const productName = (p: Product) => getProductName(p);
 
   if (cartEntries.length === 0) {
     return (
@@ -428,8 +423,7 @@ export default function SalesRoot() {
   const { isOnline, isSyncing, pendingCount } = useOfflineSync();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const productName = (p: Product) =>
-    i18n.language === "ar" ? p.name_ar : p.name_en;
+  const productName = (p: Product) => getProductName(p);
   const userId = useAppSelector((s) => s.auth.userId);
   const role = useAppSelector((s) => s.auth.role);
 

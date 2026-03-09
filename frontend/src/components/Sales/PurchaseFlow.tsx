@@ -17,6 +17,8 @@ import {
 } from "@/services/salesApi";
 import { syncQueue } from "@/lib/syncQueue";
 import { getCoverImage } from "@/lib/image";
+import { formatCurrency } from "@/lib/format";
+import { getProductName } from "@/lib/product";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { TopBar } from "@/components/ui/top-bar";
@@ -43,7 +45,7 @@ interface PurchaseCartItem {
 }
 
 export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isOnline } = useOfflineSync();
@@ -54,8 +56,8 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const productName = useCallback(
-    (p: Product) => (i18n.language === "ar" ? p.name_ar : p.name_en),
-    [i18n.language]
+    (p: Product) => getProductName(p),
+    []
   );
 
   const { data: products, isLoading } = useQuery({
@@ -75,11 +77,6 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
     );
   }, [products, search]);
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
 
   const cartTotal = useMemo(
     () =>

@@ -27,6 +27,8 @@ import type { DraftOrderItem } from "@/services/customerApi";
 import type { Product, CartItem, SelectedOption } from "@/services/salesApi";
 import { cartKey, optionsPrice } from "@/lib/cart";
 import { getCoverImage } from "@/lib/image";
+import { formatCurrency } from "@/lib/format";
+import { getProductName } from "@/lib/product";
 
 import { Dashboard } from "./Dashboard";
 import { CatalogView } from "./CatalogView";
@@ -58,14 +60,10 @@ function CartView({
   onSubmitOrder,
   onBrowse,
 }: CartViewProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const cartEntries = useMemo(() => Array.from(cart.entries()), [cart]);
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  const productName = (p: Product) =>
-    i18n.language === "ar" ? p.name_ar : p.name_en;
+  const productName = (p: Product) => getProductName(p);
 
   if (cartEntries.length === 0) {
     return (
@@ -231,7 +229,7 @@ function CartView({
 /*  CustomerRoot                                                        */
 /* ------------------------------------------------------------------ */
 export default function CustomerRoot() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -326,7 +324,7 @@ export default function CustomerRoot() {
   const handleConfirmOrder = useCallback(() => {
     const items: DraftOrderItem[] = Array.from(cart.values()).map((ci) => ({
       product_id: ci.product.id,
-      name: i18n.language === "ar" ? ci.product.name_ar : ci.product.name_en,
+      name: getProductName(ci.product),
       image_url: ci.product.image_urls?.[0] ?? null,
       quantity: ci.quantity,
       unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),

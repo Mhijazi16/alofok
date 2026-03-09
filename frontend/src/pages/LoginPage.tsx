@@ -3,22 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { User, Lock, Languages, Phone } from "lucide-react";
 import { useAppDispatch } from "@/store";
-import { setCredentials, type UserRole } from "@/store/authSlice";
+import { setCredentials } from "@/store/authSlice";
+import { type UserRole, decodeJwt } from "@/lib/jwt";
 import { salesApi } from "@/services/salesApi";
 import { customerApi } from "@/services/customerApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-function decodeJwt(token: string): { sub: string; role: string; customer_id?: string } | null {
-  try {
-    const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    const payload = JSON.parse(atob(b64));
-    return { sub: payload.sub, role: payload.role, customer_id: payload.customer_id };
-  } catch {
-    return null;
-  }
-}
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();

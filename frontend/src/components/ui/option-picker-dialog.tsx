@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getCoverImage } from "@/lib/image";
 import { optionsPrice } from "@/lib/cart";
+import { formatCurrency } from "@/lib/format";
+import { getProductName } from "@/lib/product";
 import type { Product, SelectedOption } from "@/services/salesApi";
 
 interface OptionPickerDialogProps {
@@ -26,7 +28,7 @@ export function OptionPickerDialog({
   onOpenChange,
   onAdd,
 }: OptionPickerDialogProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [selections, setSelections] = useState<Record<string, SelectedOption>>(
     {}
   );
@@ -46,17 +48,7 @@ export function OptionPickerDialog({
     : 0;
   const total = (basePrice + optionsPrice(selectedList)) * qty;
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-  const productName = product
-    ? i18n.language === "ar"
-      ? product.name_ar
-      : product.name_en
-    : "";
+  const productName = product ? getProductName(product) : "";
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {

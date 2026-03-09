@@ -18,6 +18,8 @@ import {
   type SelectedOption,
 } from "@/services/salesApi";
 import { getCoverImage } from "@/lib/image";
+import { formatCurrency } from "@/lib/format";
+import { getProductName } from "@/lib/product";
 import { cartKey } from "@/lib/cart";
 import { salesApi } from "@/services/salesApi";
 import { OptionPickerDialog } from "@/components/ui/option-picker-dialog";
@@ -43,7 +45,7 @@ interface OrderFlowProps {
 }
 
 export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, updateCartQty, removeFromCart: _removeFromCart, onViewCart, onViewProduct }: OrderFlowProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
@@ -113,14 +115,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
     }
   }, [addToCart]);
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-  const productName = (p: Product) =>
-    i18n.language === "ar" ? p.name_ar : p.name_en;
+  const productName = (p: Product) => getProductName(p);
 
   const renderProductCard = (product: Product, idx: number) => {
     const key = cartKey(product.id);
@@ -235,7 +230,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
   };
 
   const renderGridCard = (product: Product) => {
-    const name = i18n.language === "ar" ? product.name_ar : product.name_en;
+    const name = getProductName(product);
     const totalQty = productCartQty(product.id);
 
     return (

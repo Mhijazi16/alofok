@@ -25,6 +25,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
+import { getProductName } from "@/lib/product";
 
 interface CatalogViewProps {
   addToCart: (product: Product, qty?: number, selectedOptions?: SelectedOption[]) => void;
@@ -41,7 +43,7 @@ export function CatalogView({
   cart,
   updateCartQty,
 }: CatalogViewProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">(
@@ -58,14 +60,7 @@ export function CatalogView({
     staleTime: 10 * 60 * 1000,
   });
 
-  const productName = (p: Product) =>
-    i18n.language === "ar" ? p.name_ar : p.name_en;
-
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+  const productName = (p: Product) => getProductName(p);
 
   const filtered = useMemo(() => {
     if (!products) return [];

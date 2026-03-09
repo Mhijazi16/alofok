@@ -6,6 +6,7 @@ import { Package, PlusCircle, Copy, Trash2 } from "lucide-react";
 import { designerApi, type Product } from "@/services/designerApi";
 import { useToast } from "@/hooks/useToast";
 import { getCoverImage } from "@/lib/image";
+import { getProductName } from "@/lib/product";
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
 import { Button } from "@/components/ui/button";
@@ -126,7 +127,7 @@ export function ProductList({ onAdd }: ProductListProps) {
     );
   }, [products, search]);
 
-  const productName = (p: Product) => (isAr ? p.name_ar : p.name_en);
+  const productName = (p: Product) => getProductName(p);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -307,7 +308,7 @@ export function ProductList({ onAdd }: ProductListProps) {
             <>
               <DialogHeader>
                 <DialogTitle>
-                  {isAr ? dialogProduct.name_ar : dialogProduct.name_en}
+                  {getProductName(dialogProduct)}
                 </DialogTitle>
               </DialogHeader>
 

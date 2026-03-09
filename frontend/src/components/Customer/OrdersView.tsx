@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { formatDate, formatTime } from "@/lib/format";
 
 export function OrdersView() {
   const { t } = useTranslation();
@@ -24,18 +25,6 @@ export function OrdersView() {
       maximumFractionDigits: 2,
     });
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-
-  const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
   const statusBadge = (tx: CustomerTransaction) => {
     if (tx.is_draft) {

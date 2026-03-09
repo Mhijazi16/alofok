@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, Banknote, CalendarDays, Hash, StickyNote, User } from "lucide-react";
 import { salesApi, type Customer, type PaymentCreate } from "@/services/salesApi";
+import { formatCurrency } from "@/lib/format";
 import { syncQueue } from "@/lib/syncQueue";
 import { checkImageQueue } from "@/lib/checkImageQueue";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
@@ -100,11 +101,6 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
        branchNumber.trim().length > 0 &&
        accountNumber.trim().length > 0));
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
 
   const currencies: { value: Currency; label: string; symbol: string }[] = [
     { value: "ILS", label: t("payment.currencies.ILS"), symbol: "₪" },

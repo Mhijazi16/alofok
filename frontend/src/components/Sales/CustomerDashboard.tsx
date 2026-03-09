@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 
 type CustomerAction = "order" | "payment" | "statement" | "check" | "purchase";
 
@@ -94,13 +95,7 @@ export function CustomerDashboard({
 
   const recentEntries = recentStatement?.entries.slice(-3).reverse() ?? [];
 
-  const formatCurrency = (val: number) =>
-    val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-  const formatDate = (dateStr: string | null) => {
+  const formatDateShort = (dateStr: string | null) => {
     if (!dateStr) return "-";
     return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
@@ -287,7 +282,7 @@ export function CustomerDashboard({
               </div>
               {insights?.last_payment_date && (
                 <span className="text-caption text-muted-foreground shrink-0">
-                  {formatDate(insights.last_payment_date)}
+                  {formatDateShort(insights.last_payment_date)}
                 </span>
               )}
             </div>
@@ -479,7 +474,7 @@ export function CustomerDashboard({
                     key={tx.id}
                     variant={txTypeVariant(tx.type)}
                     title={formatCurrency(Math.abs(tx.amount))}
-                    timestamp={formatDate(tx.created_at)}
+                    timestamp={formatDateShort(tx.created_at)}
                     isLast={idx === recentEntries.length - 1}
                   >
                     <div className="mt-1 flex items-center gap-2">
