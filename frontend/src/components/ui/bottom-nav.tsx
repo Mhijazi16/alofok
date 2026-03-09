@@ -51,7 +51,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
         )}
         {...props}
       >
-        <div className="flex h-14 items-center justify-around">
+        <div className="flex h-16 items-center justify-around">
           {visibleItems.map((item) => {
             const isActive = item.value === activeValue;
             const Icon = item.icon;
@@ -62,16 +62,16 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
                 type="button"
                 onClick={() => onValueChange(item.value)}
                 className={cn(
-                  "relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 pb-1 transition-colors",
+                  "relative flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
+                {isActive && (
+                  <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-primary/10" />
+                )}
                 <div className="relative">
-                  {isActive && (
-                    <span className="absolute -inset-1.5 rounded-lg bg-primary/10" />
-                  )}
                   <Icon
                     className={cn(
                       "relative h-5 w-5",
@@ -84,7 +84,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
                     </span>
                   )}
                 </div>
-                <span className="text-[0.625rem] font-medium leading-tight">
+                <span className="relative text-[0.625rem] font-medium leading-tight">
                   {item.label}
                 </span>
               </button>
