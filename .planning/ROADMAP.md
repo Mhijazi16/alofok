@@ -98,10 +98,11 @@ Plans:
   2. Profile view exists as a single shared ProfileView component used by all roles
   3. Sales/index.tsx is under 200 lines, with each view in its own file under Sales/views/
   4. No raw `<button>` elements remain in the codebase — all replaced with the shadcn Button component
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 19-01: TBD
+- [ ] 19-01-PLAN.md — Sales monolith breakup + StatementViewBase extraction
+- [ ] 19-02-PLAN.md — Shared ProfileView + raw button replacement
 
 ## Progress
 
@@ -116,4 +117,4 @@ Phases execute in numeric order: 16 -> 17 -> 18 -> 19
 | 16. Schema Hardening & Critical Bug Fix | v1.3 | Complete    | 2026-03-09 | 2026-03-09 |
 | 17. Backend Code Consolidation | 3/3 | Complete    | 2026-03-09 | - |
 | 18. Frontend Shared Utilities | 2/2 | Complete    | 2026-03-09 | - |
-| 19. Frontend Component Dedup & Simplification | v1.3 | 0/? | Not started | - |
+| 19. Frontend Component Dedup & Simplification | v1.3 | 0/2 | In progress | - |
