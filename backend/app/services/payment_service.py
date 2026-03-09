@@ -142,6 +142,7 @@ class PaymentService:
             raise HorizonException(409, "Check is already marked as returned")
 
         check_txn.status = TransactionStatus.Returned
+        await self._transactions.update(check_txn)
 
         original_amount = abs(check_txn.amount)
         return_txn = Transaction(
