@@ -57,29 +57,29 @@ None — this is a cleanup milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCHEMA-01 | — | Pending |
-| SCHEMA-02 | — | Pending |
-| SCHEMA-03 | — | Pending |
-| BACK-01 | — | Pending |
-| BACK-02 | — | Pending |
-| BACK-03 | — | Pending |
-| BACK-04 | — | Pending |
-| BACK-05 | — | Pending |
-| BACK-06 | — | Pending |
-| FRONT-01 | — | Pending |
-| FRONT-02 | — | Pending |
-| FRONT-03 | — | Pending |
-| FRONT-04 | — | Pending |
-| FRONT-05 | — | Pending |
-| FRONT-06 | — | Pending |
-| SIMP-01 | — | Pending |
-| SIMP-02 | — | Pending |
+| SCHEMA-01 | Phase 16 | Pending |
+| SCHEMA-02 | Phase 16 | Pending |
+| SCHEMA-03 | Phase 16 | Pending |
+| BACK-01 | Phase 16 | Pending |
+| BACK-02 | Phase 17 | Pending |
+| BACK-03 | Phase 17 | Pending |
+| BACK-04 | Phase 17 | Pending |
+| BACK-05 | Phase 17 | Pending |
+| BACK-06 | Phase 17 | Pending |
+| FRONT-01 | Phase 18 | Pending |
+| FRONT-04 | Phase 18 | Pending |
+| FRONT-05 | Phase 18 | Pending |
+| FRONT-06 | Phase 18 | Pending |
+| FRONT-02 | Phase 19 | Pending |
+| FRONT-03 | Phase 19 | Pending |
+| SIMP-01 | Phase 19 | Pending |
+| SIMP-02 | Phase 19 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 ⚠️
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after initial definition*
+*Last updated: 2026-03-09 after roadmap creation*
