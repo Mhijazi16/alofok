@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
 import app.models.customer  # noqa: F401
+import app.models.expense  # noqa: F401
 import app.models.product  # noqa: F401
 import app.models.transaction  # noqa: F401
 import app.models.user  # noqa: F401

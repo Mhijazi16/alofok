@@ -38,17 +38,9 @@ class DailyLedgerReportOut(BaseModel):
     outgoing: list[RepLedgerGroup]
 
 
-ALLOWED_EXPENSE_CATEGORIES = {
-    "Food",
-    "Fuel",
-    "Gifts",
-    "CarWash",
-    "Other",
-    "Electricity",
-    "Internet",
-    "CarRepair",
-    "Salaries",
-}
+from app.models.expense import ExpenseCategory
+
+ALLOWED_EXPENSE_CATEGORIES = {e.value for e in ExpenseCategory}
 
 
 class ExpenseCreateIn(BaseModel):

@@ -2,7 +2,15 @@ import uuid
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import Boolean, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -11,6 +19,16 @@ from app.models import Base, BaseMixin
 
 class Product(BaseMixin, Base):
     __tablename__ = "products"
+    __table_args__ = (
+        CheckConstraint(
+            "stock_qty >= 0 OR stock_qty IS NULL",
+            name="ck_product_stock_qty_non_negative",
+        ),
+        CheckConstraint(
+            "discount_type IN ('percent', 'fixed') OR discount_type IS NULL",
+            name="ck_product_discount_type_valid",
+        ),
+    )
 
     name_ar: Mapped[str] = mapped_column(String, nullable=False)
     name_en: Mapped[str] = mapped_column(String, nullable=False)

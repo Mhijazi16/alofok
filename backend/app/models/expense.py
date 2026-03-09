@@ -4,6 +4,7 @@ import uuid
 from decimal import Decimal
 
 from sqlalchemy import (
+    CheckConstraint,
     Date,
     DateTime,
     Enum as SAEnum,
@@ -32,6 +33,12 @@ class ExpenseCategory(str, enum.Enum):
     Marketing = "Marketing"
     Utilities = "Utilities"
     Other = "Other"
+    Gifts = "Gifts"
+    CarWash = "CarWash"
+    Electricity = "Electricity"
+    Internet = "Internet"
+    CarRepair = "CarRepair"
+    Salaries = "Salaries"
 
 
 class ExpenseStatus(str, enum.Enum):
@@ -42,6 +49,7 @@ class ExpenseStatus(str, enum.Enum):
 
 class Expense(BaseMixin, Base):
     __tablename__ = "expenses"
+    __table_args__ = (CheckConstraint("amount > 0", name="ck_expense_amount_positive"),)
 
     expense_type: Mapped[ExpenseType] = mapped_column(
         SAEnum(ExpenseType, name="expensetype"), nullable=False

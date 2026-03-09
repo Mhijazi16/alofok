@@ -38,7 +38,7 @@ class Customer(BaseMixin, Base):
         Boolean, default=False, server_default="false", nullable=False
     )
     assigned_to: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
 
     sales_rep: Mapped["User | None"] = relationship(  # type: ignore[name-defined]
