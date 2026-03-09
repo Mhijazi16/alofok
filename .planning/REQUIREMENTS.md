@@ -20,7 +20,7 @@ Requirements for Code Quality & Simplification milestone. Each maps to roadmap p
 - [x] **BACK-03**: Consolidate duplicate statement logic between customer_service and customer_portal_service
 - [x] **BACK-04**: Create typed OrderItem schema for OrderCreate.items validation
 - [x] **BACK-05**: Fix portal statement to pass date params to repository instead of Python-level filtering
-- [ ] **BACK-06**: Standardize service return types to always return Pydantic schemas (not ORM models)
+- [x] **BACK-06**: Standardize service return types to always return Pydantic schemas (not ORM models)
 
 ### Frontend Deduplication
 
@@ -65,7 +65,7 @@ None — this is a cleanup milestone.
 | BACK-03 | Phase 17 | Complete |
 | BACK-04 | Phase 17 | Complete |
 | BACK-05 | Phase 17 | Complete |
-| BACK-06 | Phase 17 | Pending |
+| BACK-06 | Phase 17 | Complete |
 | FRONT-01 | Phase 18 | Pending |
 | FRONT-04 | Phase 18 | Pending |
 | FRONT-05 | Phase 18 | Pending |

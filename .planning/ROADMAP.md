@@ -37,7 +37,7 @@ See: `.planning/milestones/v1.2-ROADMAP.md` for full details.
 **Milestone Goal:** Eliminate code duplication, fix bugs, add missing DB constraints/indexes, and simplify monolithic components.
 
 - [x] **Phase 16: Schema Hardening & Critical Bug Fix** - DB indexes, enum sync, constraints, and return_check persistence fix
-- [ ] **Phase 17: Backend Code Consolidation** - N+1 fix, statement dedup, typed schemas, DB-level filtering, standardized returns
+- [x] **Phase 17: Backend Code Consolidation** - N+1 fix, statement dedup, typed schemas, DB-level filtering, standardized returns (completed 2026-03-09)
 - [ ] **Phase 18: Frontend Shared Utilities** - Extract reusable hooks and utility functions before component work
 - [ ] **Phase 19: Frontend Component Dedup & Simplification** - Shared components, monolith breakup, raw button replacement
 
@@ -67,7 +67,7 @@ Plans:
   3. Creating an order with malformed items (wrong types, missing fields) returns a clear validation error from the typed OrderItem schema
   4. Portal statement with date filters applies them at the database level — no full-table Python filtering
   5. All service functions return Pydantic schema instances, not raw ORM model objects
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 17-01-PLAN.md — N+1 query fix (JOIN for orders) and typed OrderItemSchema
@@ -113,6 +113,6 @@ Phases execute in numeric order: 16 → 17 → 18 → 19
 | 6-9. Check Enhancement | v1.1 | 10/10 | Complete | 2026-03-04 |
 | 10-15. Business Operations | v1.2 | 11/11 | Complete | 2026-03-09 |
 | 16. Schema Hardening & Critical Bug Fix | v1.3 | Complete    | 2026-03-09 | 2026-03-09 |
-| 17. Backend Code Consolidation | 2/3 | In Progress|  | - |
+| 17. Backend Code Consolidation | 3/3 | Complete   | 2026-03-09 | - |
 | 18. Frontend Shared Utilities | v1.3 | 0/? | Not started | - |
 | 19. Frontend Component Dedup & Simplification | v1.3 | 0/? | Not started | - |
