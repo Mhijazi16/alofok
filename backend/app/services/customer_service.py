@@ -12,10 +12,10 @@ from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.customer import AdminCustomerCreate, CustomerInsightsOut, CustomerOut
 from app.schemas.transaction import (
     OrderWithCustomerOut,
-    StatementEntryOut,
     StatementOut,
     TransactionOut,
 )
+from app.services._statement import build_statement, find_since_zero_index
 from app.utils.cache import CacheBackend, TTL_INSIGHTS, TTL_ROUTE
 
 # Python weekday() → AssignedDay  (Mon=0 … Sun=6; Fri has no route)
@@ -228,6 +228,7 @@ class CustomerService:
         start_date: date | None,
         end_date: date | None,
         since_zero_balance: bool,
+        exclude_drafts: bool = False,
     ) -> StatementOut:
         customer = await self._customers.get_by_id(customer_id)
         if customer is None:
@@ -235,7 +236,9 @@ class CustomerService:
 
         if since_zero_balance:
             all_txns = await self._transactions.get_for_customer(customer_id)
-            txns = all_txns[_find_since_zero_index(all_txns) :]
+            if exclude_drafts:
+                all_txns = [t for t in all_txns if not t.is_draft]
+            txns = all_txns[find_since_zero_index(all_txns) :]
         else:
             start_dt = (
                 datetime(
@@ -257,21 +260,10 @@ class CustomerService:
             txns = await self._transactions.get_for_customer(
                 customer_id, start=start_dt, end=end_dt
             )
+            if exclude_drafts:
+                txns = [t for t in txns if not t.is_draft]
 
-        running = Decimal("0")
-        entries: list[StatementEntryOut] = []
-        for txn in txns:
-            running += txn.amount
-            entries.append(
-                StatementEntryOut(
-                    transaction=TransactionOut.model_validate(txn),
-                    running_balance=running,
-                )
-            )
-
-        return StatementOut(
-            customer_id=customer_id, entries=entries, closing_balance=running
-        )
+        return build_statement(customer_id, txns)
 
     async def get_all_customers_admin(self) -> list[CustomerOut]:
         customers = await self._customers.get_all()
@@ -329,12 +321,3 @@ def _compute_risk(balance: Decimal, last_payment_date: str | None) -> str:
     return "red"
 
 
-def _find_since_zero_index(txns) -> int:
-    """Return the index of the first transaction after the last zero-or-credit balance."""
-    running = Decimal("0")
-    last_zero_index = 0
-    for i, txn in enumerate(txns):
-        running += txn.amount
-        if running <= 0:
-            last_zero_index = i + 1
-    return last_zero_index

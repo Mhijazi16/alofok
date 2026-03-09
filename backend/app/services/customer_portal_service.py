@@ -7,10 +7,10 @@ from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.transaction import (
-    StatementEntryOut,
     StatementOut,
     TransactionOut,
 )
+from app.services._statement import build_statement, find_since_zero_index
 from app.utils.cache import CacheBackend
 
 
@@ -36,41 +36,34 @@ class CustomerPortalService:
         if customer is None:
             raise HorizonException(404, "Customer not found")
 
-        all_txns = await self._transactions.get_for_customer(customer_id)
-        # Filter out drafts for statement
-        txns = [t for t in all_txns if not t.is_draft]
-
         if since_zero_balance:
-            txns = txns[_find_since_zero_index(txns) :]
+            all_txns = await self._transactions.get_for_customer(customer_id)
+            txns = [t for t in all_txns if not t.is_draft]
+            txns = txns[find_since_zero_index(txns) :]
         else:
-            if start_date:
-                start_dt = datetime(
+            start_dt = (
+                datetime(
                     start_date.year,
                     start_date.month,
                     start_date.day,
                     tzinfo=timezone.utc,
                 )
-                txns = [t for t in txns if t.created_at >= start_dt]
-            if end_date:
-                end_dt = datetime(
+                if start_date
+                else None
+            )
+            end_dt = (
+                datetime(
                     end_date.year, end_date.month, end_date.day + 1, tzinfo=timezone.utc
                 )
-                txns = [t for t in txns if t.created_at < end_dt]
-
-        running = Decimal("0")
-        entries: list[StatementEntryOut] = []
-        for txn in txns:
-            running += txn.amount
-            entries.append(
-                StatementEntryOut(
-                    transaction=TransactionOut.model_validate(txn),
-                    running_balance=running,
-                )
+                if end_date
+                else None
             )
+            txns = await self._transactions.get_for_customer(
+                customer_id, start=start_dt, end=end_dt
+            )
+            txns = [t for t in txns if not t.is_draft]
 
-        return StatementOut(
-            customer_id=customer_id, entries=entries, closing_balance=running
-        )
+        return build_statement(customer_id, txns)
 
     async def get_orders(self, customer_id: uuid.UUID) -> list[TransactionOut]:
         txns = await self._transactions.get_orders_for_customer(customer_id)
@@ -113,13 +106,3 @@ class CustomerPortalService:
         # Draft does NOT update balance
         txn = await self._transactions.create(txn)
         return TransactionOut.model_validate(txn)
-
-
-def _find_since_zero_index(txns) -> int:
-    running = Decimal("0")
-    last_zero_index = 0
-    for i, txn in enumerate(txns):
-        running += txn.amount
-        if running <= 0:
-            last_zero_index = i + 1
-    return last_zero_index
