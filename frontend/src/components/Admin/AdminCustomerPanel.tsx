@@ -135,28 +135,24 @@ export function AdminCustomerPanel() {
 
           {/* Day Filter Pills */}
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
-            <button
+            <Button
+              variant={selectedDay === "All" ? "default" : "outline"}
+              size="sm"
               onClick={() => setSelectedDay("All")}
-              className={`flex-shrink-0 px-3 py-1 rounded-full text-caption font-medium transition-all ${
-                selectedDay === "All"
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-card hover:border-primary/50"
-              }`}
+              className="flex-shrink-0 rounded-full"
             >
               {t("filter.all") || "All"}
-            </button>
+            </Button>
             {ASSIGNED_DAY_VALUES.map((day) => (
-              <button
+              <Button
                 key={day}
+                variant={selectedDay === day ? "default" : "outline"}
+                size="sm"
                 onClick={() => setSelectedDay(day)}
-                className={`flex-shrink-0 px-3 py-1 rounded-full text-caption font-medium transition-all ${
-                  selectedDay === day
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-card hover:border-primary/50"
-                }`}
+                className="flex-shrink-0 rounded-full"
               >
                 {getDayLabel(day)}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -213,12 +209,14 @@ export function AdminCustomerPanel() {
                                 )}
                               </div>
                             </div>
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => setArchiveTarget(customer)}
-                              className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                              className="h-7 w-7 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
                             >
                               <Archive className="h-3.5 w-3.5" />
-                            </button>
+                            </Button>
                           </CardContent>
                         </Card>
                       ))}
@@ -244,13 +242,15 @@ export function AdminCustomerPanel() {
       />
 
       {/* FAB - Add Customer */}
-      <button
+      <Button
+        variant="gradient"
+        size="icon"
         onClick={() => setMode("add")}
-        className="fixed right-4 w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-lg flex items-center justify-center text-white hover:shadow-xl transition-shadow"
+        className="fixed right-4 w-14 h-14 rounded-full shadow-lg hover:shadow-xl"
         style={{ bottom: "calc(6rem + env(safe-area-inset-bottom))" }}
       >
         <Plus className="h-6 w-6" />
-      </button>
+      </Button>
     </div>
   );
 }

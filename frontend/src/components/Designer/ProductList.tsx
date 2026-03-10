@@ -235,8 +235,10 @@ export function ProductList({ onAdd }: ProductListProps) {
 
                   {/* Per-card action buttons */}
                   <div className="absolute end-2 top-2 flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                    <button
-                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 text-white hover:bg-black/80 transition-colors"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg bg-black/60 text-white hover:bg-black/80"
                       onClick={(e) => {
                         e.stopPropagation();
                         duplicateMutation.mutate(product.id);
@@ -244,9 +246,11 @@ export function ProductList({ onAdd }: ProductListProps) {
                       title={t("actions.duplicate")}
                     >
                       <Copy className="h-4 w-4" />
-                    </button>
-                    <button
-                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 text-destructive hover:bg-black/80 transition-colors"
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg bg-black/60 text-destructive hover:bg-black/80"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteTarget(product);
@@ -254,7 +258,7 @@ export function ProductList({ onAdd }: ProductListProps) {
                       title={t("actions.delete")}
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 

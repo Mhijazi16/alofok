@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type FilterPreset = "zero" | "week" | "month" | "year" | "custom";
@@ -188,11 +189,12 @@ export function StatementViewBase({
         backButton={onBack ? { onBack } : undefined}
         actions={
           entries.length > 0 ? (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleDownload}
               disabled={generating}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground active:scale-95 disabled:opacity-50"
+              className="h-8 w-8 rounded-full"
               title={t("statement.downloadPdf")}
             >
               {generating ? (
@@ -200,7 +202,7 @@ export function StatementViewBase({
               ) : (
                 <FileDown className="h-4 w-4" />
               )}
-            </button>
+            </Button>
           ) : undefined
         }
       />

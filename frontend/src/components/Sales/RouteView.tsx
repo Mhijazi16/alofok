@@ -291,15 +291,16 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
             const isPast = idx < TODAY_INDEX;
 
             return (
-              <button
+              <Button
                 key={idx}
+                variant="ghost"
                 onClick={() => setSelectedIdx(idx)}
                 className={`
                   flex flex-col items-center justify-center shrink-0 snap-center
-                  w-[calc(20%-0.3rem)] min-w-[3.5rem] rounded-xl py-2 px-1
+                  w-[calc(20%-0.3rem)] min-w-[3.5rem] rounded-xl py-2 px-1 h-auto
                   transition-all duration-200
                   ${isSelected
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105 hover:bg-primary/90"
                     : isToday
                       ? "bg-primary/15 text-foreground ring-1 ring-primary/30"
                       : isPast
@@ -320,7 +321,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                 {isToday && isSelected && (
                   <span className="h-1 w-1 rounded-full bg-primary-foreground mt-0.5" />
                 )}
-              </button>
+              </Button>
             );
           })}
         </div>

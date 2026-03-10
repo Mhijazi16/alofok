@@ -201,10 +201,11 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
           <FormField label={t("customer.assignedRep") || "Assigned Rep"}>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
               {salesReps.map((rep) => (
-                <button
+                <Button
                   key={rep.id}
+                  variant="ghost"
                   onClick={() => setSelectedRepId(rep.id)}
-                  className={`flex flex-col items-center gap-2 flex-shrink-0 p-2 rounded-lg transition-all ${
+                  className={`flex flex-col items-center gap-2 flex-shrink-0 p-2 rounded-lg h-auto ${
                     selectedRepId === rep.id
                       ? "border-2 border-primary ring-2 ring-primary/30 bg-primary/5"
                       : "border border-border/50 hover:border-border"
@@ -214,7 +215,7 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
                   <span className="text-caption text-foreground font-medium text-center max-w-12 truncate">
                     {rep.username}
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
           </FormField>

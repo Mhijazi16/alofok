@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { User, ChevronDown, Check } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Card } from "@/components/ui/card";
 import { type Customer } from "@/services/salesApi";
@@ -33,10 +34,11 @@ export function CustomerSelector({
 
   return (
     <div className="relative">
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${
+        className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 h-auto justify-start ${
           selected
             ? "border-primary/50 bg-primary/5"
             : "border-border/50 bg-card/50"
@@ -63,7 +65,7 @@ export function CustomerSelector({
         <ChevronDown
           className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
         />
-      </button>
+      </Button>
 
       {open && (
         <Card
@@ -84,15 +86,16 @@ export function CustomerSelector({
               </p>
             ) : (
               filtered.map((c) => (
-                <button
+                <Button
                   key={c.id}
+                  variant="ghost"
                   type="button"
                   onClick={() => {
                     onSelect(c);
                     setOpen(false);
                     setSearch("");
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/50 ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 h-auto justify-start rounded-none ${
                     selected?.id === c.id ? "bg-primary/10" : ""
                   }`}
                 >
@@ -106,7 +109,7 @@ export function CustomerSelector({
                   {selected?.id === c.id && (
                     <Check className="h-4 w-4 text-primary shrink-0" />
                   )}
-                </button>
+                </Button>
               ))
             )}
           </div>

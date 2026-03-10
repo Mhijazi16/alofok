@@ -327,9 +327,11 @@ export function CatalogView({
         title={t("portal.catalog")}
         actions={
           <div className="flex items-center gap-1.5">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setViewMode((v) => (v === "grid" ? "list" : "grid"))}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="h-9 w-9 rounded-lg"
               title={viewMode === "grid" ? t("catalog.listView") : t("catalog.gridView")}
             >
               {viewMode === "grid" ? (
@@ -337,7 +339,7 @@ export function CatalogView({
               ) : (
                 <LayoutGrid className="h-5 w-5" />
               )}
-            </button>
+            </Button>
           </div>
         }
       />
@@ -375,13 +377,12 @@ export function CatalogView({
 
       {/* Floating cart FAB */}
       {cartSize > 0 && (
-        <button
-          type="button"
+        <Button
+          variant="default"
           onClick={onViewCart}
           className={cn(
             "fixed bottom-24 end-4 z-50 flex items-center gap-2 rounded-2xl",
-            "bg-primary px-4 py-3 text-primary-foreground shadow-lg shadow-primary/30",
-            "transition-all duration-200 hover:bg-primary/90 active:scale-95",
+            "px-4 py-3 shadow-lg shadow-primary/30 h-auto",
             "animate-scale-in"
           )}
         >
@@ -389,7 +390,7 @@ export function CatalogView({
           <span className="text-body-sm font-bold">
             {t("portal.cartItems", { count: cartSize })}
           </span>
-        </button>
+        </Button>
       )}
 
       <OptionPickerDialog

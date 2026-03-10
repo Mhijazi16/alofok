@@ -82,10 +82,11 @@ function Combobox({
       {open && filtered.length > 0 && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg max-h-40 overflow-y-auto">
           {filtered.map((s) => (
-            <button
+            <Button
               key={s}
+              variant="ghost"
               type="button"
-              className="w-full px-3 py-2 text-start text-body-sm hover:bg-accent transition-colors"
+              className="w-full px-3 py-2 text-start text-body-sm h-auto justify-start rounded-none"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
                 onChange(s);
@@ -93,7 +94,7 @@ function Combobox({
               }}
             >
               {s}
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -917,13 +918,15 @@ export function ProductForm({
                     {t("product.coverImage")}
                   </Badge>
                 )}
-                <button
+                <Button
                   type="button"
-                  className="absolute end-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute end-1.5 top-1.5 h-6 w-6 rounded-full bg-black/60 text-white hover:bg-black/80"
                   onClick={() => removeImage(idx)}
                 >
                   <X className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               </div>
             ))}
 

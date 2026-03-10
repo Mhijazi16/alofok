@@ -326,13 +326,15 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
         backButton={{ onBack }}
         actions={
           <div className="flex items-center gap-1.5">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setViewMode((v) => (v === "grid" ? "list" : "grid"))}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="h-9 w-9 rounded-lg"
               title={viewMode === "grid" ? t("catalog.listView") : t("catalog.gridView")}
             >
               {viewMode === "grid" ? <List className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
-            </button>
+            </Button>
             <Button
               variant="glass"
               size="sm"

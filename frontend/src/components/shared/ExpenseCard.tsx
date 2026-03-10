@@ -174,11 +174,12 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
         className={`rounded-xl border border-border/60 overflow-hidden transition-all duration-200 ${className ?? ""}`}
       >
         {/* Header button */}
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
           className={`
-            flex w-full items-center justify-between p-3 glass cursor-pointer
+            flex w-full items-center justify-between p-3 glass cursor-pointer h-auto rounded-none
             transition-colors hover:bg-accent/30
             ${expanded ? "border-b border-border/40" : ""}
           `}
@@ -212,7 +213,7 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
           </div>
-        </button>
+        </Button>
 
         {/* Expanded dropdown inside the same container */}
         {expanded && (
@@ -259,15 +260,17 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
                         {t(`cash.${expense.status === "confirmed" ? "confirmed" : expense.status === "flagged" ? "flagged" : "confirm"}`)}
                       </Badge>
                       {!isAdmin && expense.status === "pending" && (
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
                             deleteMutation.mutate(expense.id);
                           }}
-                          className="p-1 rounded-md hover:bg-destructive/15 transition-colors"
+                          className="h-7 w-7 rounded-md hover:bg-destructive/15"
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -314,11 +317,12 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
                 {categories.map((cat) => {
                   const isSelected = selectedCategory === cat.key;
                   return (
-                    <button
+                    <Button
                       key={cat.key}
+                      variant="ghost"
                       onClick={() => setSelectedCategory(cat.key)}
                       className={`
-                        flex flex-col items-center gap-1.5 rounded-xl p-3 transition-all
+                        flex flex-col items-center gap-1.5 rounded-xl p-3 h-auto transition-all
                         ${isSelected
                           ? "ring-2 ring-primary bg-primary/10"
                           : "bg-card hover:bg-accent"
@@ -331,7 +335,7 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
                       <span className="text-caption font-medium text-foreground">
                         {t(`expense.category.${cat.key}`)}
                       </span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>

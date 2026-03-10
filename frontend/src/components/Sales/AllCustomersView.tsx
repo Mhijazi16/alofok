@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Users, UserPlus, Archive } from "lucide-reac
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { TopBar } from "@/components/ui/top-bar";
 import { SearchInput } from "@/components/ui/search-input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -138,12 +139,14 @@ export function AllCustomersView({
               {formatCurrency(customer.balance)}
             </Badge>
             {archiveFn && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={(e) => { e.stopPropagation(); setArchiveTarget(customer); }}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                className="h-7 w-7 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 <Archive className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             )}
             {showInteractive && <ChevronIcon className="h-4 w-4 text-muted-foreground" />}
           </div>
@@ -158,12 +161,14 @@ export function AllCustomersView({
         title={t("customer.allCustomers")}
         subtitle={!isLoading ? `${customers?.length ?? 0} ${t("customer.totalCustomers").toLowerCase()}` : undefined}
         actions={
-          <button
+          <Button
+            variant="default"
+            size="icon"
             onClick={onAddCustomer}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground active:scale-95 transition-transform"
+            className="h-8 w-8 rounded-full"
           >
             <UserPlus className="h-4 w-4" />
-          </button>
+          </Button>
         }
       />
 
