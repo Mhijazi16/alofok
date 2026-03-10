@@ -830,16 +830,19 @@ export function ProductForm({
               </div>
 
               {/* Values */}
-              <div className="space-y-2 ps-6">
+              <div className="space-y-3 ps-6">
                 {group.values.map((val, vIdx) => (
-                  <div key={vIdx} className="flex items-center gap-2">
+                  <div
+                    key={vIdx}
+                    className="grid grid-cols-2 gap-2 rounded-lg border border-border/50 p-2 relative"
+                  >
                     <Input
                       value={val.label}
                       onChange={(e) =>
                         updateOptionValue(gIdx, vIdx, "label", e.target.value)
                       }
                       placeholder={t("product.optionValue")}
-                      className="flex-1"
+                      className="col-span-2"
                     />
                     <Input
                       type="number"
@@ -849,7 +852,6 @@ export function ProductForm({
                         updateOptionValue(gIdx, vIdx, "price", e.target.value)
                       }
                       placeholder={t("product.price")}
-                      className="w-20"
                       dir="ltr"
                     />
                     <Input
@@ -860,7 +862,6 @@ export function ProductForm({
                         updateOptionValue(gIdx, vIdx, "cost", e.target.value)
                       }
                       placeholder={t("product.cost")}
-                      className="w-20"
                       dir="ltr"
                     />
                     <Input
@@ -871,7 +872,6 @@ export function ProductForm({
                         updateOptionValue(gIdx, vIdx, "quantity", e.target.value)
                       }
                       placeholder={t("product.qty")}
-                      className="w-16"
                       dir="ltr"
                     />
                     {group.values.length > 1 && (
@@ -879,10 +879,10 @@ export function ProductForm({
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-muted-foreground shrink-0"
+                        className="absolute -end-1 -top-1 h-6 w-6 rounded-full bg-destructive/10 text-destructive"
                         onClick={() => removeOptionValue(gIdx, vIdx)}
                       >
-                        <X className="h-3.5 w-3.5" />
+                        <X className="h-3 w-3" />
                       </Button>
                     )}
                   </div>
