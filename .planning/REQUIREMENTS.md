@@ -26,7 +26,7 @@ Requirements for Code Quality & Simplification milestone. Each maps to roadmap p
 
 - [x] **FRONT-01**: Extract shared useCart() hook from Sales and Customer root components
 - [x] **FRONT-02**: Extract shared StatementViewBase component from duplicate StatementViews
-- [ ] **FRONT-03**: Extract shared ProfileView component from Admin/Sales/Designer profiles
+- [x] **FRONT-03**: Extract shared ProfileView component from Admin/Sales/Designer profiles
 - [x] **FRONT-04**: Extract formatCurrency/formatDate/formatTime to src/lib/format.ts
 - [x] **FRONT-05**: Extract JWT decode utility to src/lib/jwt.ts
 - [x] **FRONT-06**: Extract getProductName utility to shared location
@@ -34,7 +34,7 @@ Requirements for Code Quality & Simplification milestone. Each maps to roadmap p
 ### Frontend Simplification
 
 - [x] **SIMP-01**: Break up Sales/index.tsx (1048 lines) into separate view files
-- [ ] **SIMP-02**: Replace raw button elements with shadcn Button component
+- [x] **SIMP-02**: Replace raw button elements with shadcn Button component
 
 ## Future Requirements
 
@@ -71,9 +71,9 @@ None — this is a cleanup milestone.
 | FRONT-05 | Phase 18 | Complete |
 | FRONT-06 | Phase 18 | Complete |
 | FRONT-02 | Phase 19 | Complete |
-| FRONT-03 | Phase 19 | Pending |
+| FRONT-03 | Phase 19 | Complete |
 | SIMP-01 | Phase 19 | Complete |
-| SIMP-02 | Phase 19 | Pending |
+| SIMP-02 | Phase 19 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 17 total
