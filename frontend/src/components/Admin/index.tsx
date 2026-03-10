@@ -43,7 +43,7 @@ import { StatementView } from "@/components/Sales/StatementView";
 import { PurchaseFlow } from "@/components/Sales/PurchaseFlow";
 import { adminApi } from "@/services/adminApi";
 import { salesApi, type Customer, type Product as SalesProduct, type OrderItem, type CartItem } from "@/services/salesApi";
-import { optionsPrice } from "@/lib/cart";
+import { getUnitPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
 import { toLocalDateStr } from "@/lib/utils";
 
@@ -106,7 +106,7 @@ export default function AdminPanel() {
     if (!selectedCustomer) return;
     const items: OrderItem[] = Array.from(cart.values()).map((ci) => ({
       product_id: ci.product.id, name: getProductName(ci.product), quantity: ci.quantity,
-      unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),
+      unit_price: getUnitPrice(ci.product, ci.selectedOptions),
       selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
     }));
     const payload = {

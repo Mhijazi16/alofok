@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import type { Product, CartItem, SelectedOption } from "@/services/salesApi";
-import { cartKey, optionsPrice } from "@/lib/cart";
+import { cartKey, getUnitPrice } from "@/lib/cart";
 
 interface UseCartOptions {
   /** localStorage key for persistence. Omit or pass null to skip persistence. */
@@ -84,10 +84,7 @@ export function useCart(options?: UseCartOptions): UseCartReturn {
     () =>
       Array.from(cart.values()).reduce(
         (sum, item) =>
-          sum +
-          ((item.product.discounted_price ?? item.product.price) +
-            optionsPrice(item.selectedOptions)) *
-            item.quantity,
+          sum + getUnitPrice(item.product, item.selectedOptions) * item.quantity,
         0
       ),
     [cart]

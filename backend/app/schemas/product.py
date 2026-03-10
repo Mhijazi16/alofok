@@ -8,7 +8,9 @@ from pydantic import BaseModel, computed_field
 
 class ProductOptionValueOut(BaseModel):
     label: str
-    price_modifier: float = 0
+    price: float = 0
+    cost: float = 0
+    quantity: int = 0
 
 
 class ProductOptionOut(BaseModel):

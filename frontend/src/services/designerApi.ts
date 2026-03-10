@@ -5,7 +5,7 @@ export type { Product, ProductOption };
 
 export interface ProductOptionInput {
   name: string;
-  values: { label: string; price_modifier: number }[];
+  values: { label: string; price: number; cost: number; quantity: number }[];
   sort_order: number;
 }
 

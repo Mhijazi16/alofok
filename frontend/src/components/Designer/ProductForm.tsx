@@ -106,7 +106,7 @@ function Combobox({
 
 interface OptionGroup {
   name: string;
-  values: { label: string; price_modifier: number }[];
+  values: { label: string; price: number; cost: number; quantity: number }[];
 }
 
 // ── Props ────────────────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ export function ProductForm({
         name: o.name,
         values: o.values.map((v) => ({
           label: v.label,
-          price_modifier: v.price_modifier,
+          price: v.price, cost: v.cost, quantity: v.quantity,
         })),
       }));
     }
@@ -261,7 +261,7 @@ export function ProductForm({
         name: o.name,
         values: o.values.map((v) => ({
           label: v.label,
-          price_modifier: v.price_modifier,
+          price: v.price, cost: v.cost, quantity: v.quantity,
         })),
       })) ?? [],
     })
@@ -337,7 +337,7 @@ export function ProductForm({
         name: o.name,
         values: o.values.map((v) => ({
           label: v.label,
-          price_modifier: v.price_modifier,
+          price: v.price, cost: v.cost, quantity: v.quantity,
         })),
       })) ?? []
     );
@@ -368,7 +368,7 @@ export function ProductForm({
         name: o.name,
         values: o.values.map((v) => ({
           label: v.label,
-          price_modifier: v.price_modifier,
+          price: v.price, cost: v.cost, quantity: v.quantity,
         })),
       })) ?? [],
     });
@@ -408,7 +408,7 @@ export function ProductForm({
   const addOptionGroup = () => {
     setOptionGroups((prev) => [
       ...prev,
-      { name: "", values: [{ label: "", price_modifier: 0 }] },
+      { name: "", values: [{ label: "", price: 0, cost: 0, quantity: 0 }] },
     ]);
   };
 
@@ -426,7 +426,7 @@ export function ProductForm({
     setOptionGroups((prev) =>
       prev.map((g, i) =>
         i === groupIdx
-          ? { ...g, values: [...g.values, { label: "", price_modifier: 0 }] }
+          ? { ...g, values: [...g.values, { label: "", price: 0, cost: 0, quantity: 0 }] }
           : g
       )
     );
@@ -445,7 +445,7 @@ export function ProductForm({
   const updateOptionValue = (
     groupIdx: number,
     valueIdx: number,
-    field: "label" | "price_modifier",
+    field: "label" | "price" | "cost" | "quantity",
     val: string
   ) => {
     setOptionGroups((prev) =>
@@ -458,7 +458,7 @@ export function ProductForm({
                   ? {
                       ...v,
                       [field]:
-                        field === "price_modifier" ? parseFloat(val) || 0 : val,
+                        field === "label" ? val : field === "quantity" ? parseInt(val) || 0 : parseFloat(val) || 0,
                     }
                   : v
               ),
@@ -844,17 +844,34 @@ export function ProductForm({
                     <Input
                       type="number"
                       step="0.01"
-                      value={val.price_modifier || ""}
+                      value={val.price || ""}
                       onChange={(e) =>
-                        updateOptionValue(
-                          gIdx,
-                          vIdx,
-                          "price_modifier",
-                          e.target.value
-                        )
+                        updateOptionValue(gIdx, vIdx, "price", e.target.value)
                       }
-                      placeholder={t("product.priceModifier")}
-                      className="w-28"
+                      placeholder={t("product.price")}
+                      className="w-20"
+                      dir="ltr"
+                    />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={val.cost || ""}
+                      onChange={(e) =>
+                        updateOptionValue(gIdx, vIdx, "cost", e.target.value)
+                      }
+                      placeholder={t("product.cost")}
+                      className="w-20"
+                      dir="ltr"
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      value={val.quantity || ""}
+                      onChange={(e) =>
+                        updateOptionValue(gIdx, vIdx, "quantity", e.target.value)
+                      }
+                      placeholder={t("product.qty")}
+                      className="w-16"
                       dir="ltr"
                     />
                     {group.values.length > 1 && (

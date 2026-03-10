@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { del } from "idb-keyval";
 import { cacheProductImages, getImageCacheSize } from "@/lib/imageCache";
 import { syncQueue } from "@/lib/syncQueue";
 
@@ -109,6 +110,12 @@ export function useCacheSync() {
     if (isSyncingRef.current) return;
     isSyncingRef.current = true;
     setIsSyncing(true);
+
+    // Clear persisted IndexedDB cache so stale data isn't restored on reload.
+    // Only when online — offline mode keeps cached data intact.
+    if (navigator.onLine) {
+      await del("alofok-rq-cache").catch(() => {});
+    }
 
     const categories = Object.keys(CATEGORY_KEYS) as (keyof SyncTimestamps)[];
 

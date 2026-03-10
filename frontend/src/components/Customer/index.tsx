@@ -26,7 +26,7 @@ import { useToast } from "@/hooks/useToast";
 import { customerApi } from "@/services/customerApi";
 import type { DraftOrderItem } from "@/services/customerApi";
 import type { Product, CartItem } from "@/services/salesApi";
-import { optionsPrice } from "@/lib/cart";
+import { getUnitPrice } from "@/lib/cart";
 import { getCoverImage } from "@/lib/image";
 import { formatCurrency } from "@/lib/format";
 import { getProductName } from "@/lib/product";
@@ -102,7 +102,7 @@ function CartView({
         {/* Cart items */}
         <div className="space-y-2">
           {cartEntries.map(([key, ci], idx) => {
-            const unitPrice = (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions);
+            const unitPrice = getUnitPrice(ci.product, ci.selectedOptions);
             return (
               <Card
                 key={key}
@@ -264,7 +264,7 @@ export default function CustomerRoot() {
       name: getProductName(ci.product),
       image_url: ci.product.image_urls?.[0] ?? null,
       quantity: ci.quantity,
-      unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),
+      unit_price: getUnitPrice(ci.product, ci.selectedOptions),
       selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
     }));
     draftMutation.mutate({ items });

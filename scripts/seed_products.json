@@ -1,0 +1,5301 @@
+[
+  {
+    "name_ar": "فرشاية دهان Agron",
+    "name_en": "Paint Brush Agron",
+    "category": "فراشي",
+    "trademark": "Agron",
+    "price": 1.25,
+    "purchase_price": 0.65,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "½\"",
+            "price": 1.25,
+            "cost": 0.65,
+            "quantity": 8644
+          },
+          {
+            "label": "1\"",
+            "price": 2.0,
+            "cost": 1.43,
+            "quantity": 1639
+          },
+          {
+            "label": "1½\"",
+            "price": 3.5,
+            "cost": 2.1,
+            "quantity": 557
+          },
+          {
+            "label": "2\"",
+            "price": 5.6,
+            "cost": 4.03,
+            "quantity": 1569
+          },
+          {
+            "label": "2½\"",
+            "price": 7.25,
+            "cost": 5.51,
+            "quantity": 410
+          },
+          {
+            "label": "3\"",
+            "price": 9.9,
+            "cost": 7.07,
+            "quantity": 1062
+          },
+          {
+            "label": "4\"",
+            "price": 14.75,
+            "cost": 7.89,
+            "quantity": 215
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية Crown ابيض",
+    "name_en": "Paint Brush Crown White",
+    "category": "فراشي",
+    "trademark": "Crown",
+    "price": 2.0,
+    "purchase_price": 1.06,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1\"",
+            "price": 2.0,
+            "cost": 1.06,
+            "quantity": 2062
+          },
+          {
+            "label": "1½\"",
+            "price": 3.5,
+            "cost": 2.07,
+            "quantity": 1860
+          },
+          {
+            "label": "2\"",
+            "price": 5.6,
+            "cost": 3.62,
+            "quantity": 2002
+          },
+          {
+            "label": "2½\"",
+            "price": 7.25,
+            "cost": 5.21,
+            "quantity": 878
+          },
+          {
+            "label": "3\"",
+            "price": 9.9,
+            "cost": 6.84,
+            "quantity": 2082
+          },
+          {
+            "label": "4\"",
+            "price": 14.75,
+            "cost": 9.62,
+            "quantity": 811
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية Painto ازرق",
+    "name_en": "Paint Brush Painto Blue",
+    "category": "فراشي",
+    "trademark": "Painto",
+    "price": 3.5,
+    "purchase_price": 1.63,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1\"",
+            "price": 3.5,
+            "cost": 1.63,
+            "quantity": 2919
+          },
+          {
+            "label": "1½\"",
+            "price": 4.5,
+            "cost": 2.38,
+            "quantity": 1159
+          },
+          {
+            "label": "2\"",
+            "price": 7.5,
+            "cost": 4.68,
+            "quantity": 779
+          },
+          {
+            "label": "2½\"",
+            "price": 9.5,
+            "cost": 7.26,
+            "quantity": 366
+          },
+          {
+            "label": "3\"",
+            "price": 11.5,
+            "cost": 9.0,
+            "quantity": 559
+          },
+          {
+            "label": "4\"",
+            "price": 16.0,
+            "cost": 11.35,
+            "quantity": 686
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية Super Agron",
+    "name_en": "Paint Brush Super Agron",
+    "category": "فراشي",
+    "trademark": "Super Agron",
+    "price": 2.0,
+    "purchase_price": 1.09,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1\"",
+            "price": 2.0,
+            "cost": 1.09,
+            "quantity": 405
+          },
+          {
+            "label": "1½\"",
+            "price": 3.5,
+            "cost": 1.8,
+            "quantity": 0
+          },
+          {
+            "label": "2\"",
+            "price": 5.6,
+            "cost": 3.11,
+            "quantity": 0
+          },
+          {
+            "label": "2½\"",
+            "price": 7.25,
+            "cost": 6.0,
+            "quantity": 0
+          },
+          {
+            "label": "3\"",
+            "price": 12.0,
+            "cost": 10.6,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية Max",
+    "name_en": "Paint Brush Max",
+    "category": "فراشي",
+    "trademark": "Max",
+    "price": 1.5,
+    "purchase_price": 1.14,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "No.1",
+            "price": 1.5,
+            "cost": 1.14,
+            "quantity": 261
+          },
+          {
+            "label": "No.1.5",
+            "price": 2.5,
+            "cost": 1.36,
+            "quantity": 346
+          },
+          {
+            "label": "No.2",
+            "price": 3.5,
+            "cost": 2.04,
+            "quantity": 7
+          },
+          {
+            "label": "No.2.5",
+            "price": 4.5,
+            "cost": 2.94,
+            "quantity": 189
+          },
+          {
+            "label": "No.3",
+            "price": 5.5,
+            "cost": 3.62,
+            "quantity": 2
+          },
+          {
+            "label": "No.4",
+            "price": 6.5,
+            "cost": 4.08,
+            "quantity": 161
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية قلم",
+    "name_en": "Liner Brush",
+    "category": "فراشي",
+    "trademark": "Agron",
+    "price": 1.25,
+    "purchase_price": 0.48,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#3",
+            "price": 1.25,
+            "cost": 0.48,
+            "quantity": 10416
+          },
+          {
+            "label": "#4",
+            "price": 1.25,
+            "cost": 0.49,
+            "quantity": 10668
+          },
+          {
+            "label": "#5",
+            "price": 1.25,
+            "cost": 0.53,
+            "quantity": 10842
+          },
+          {
+            "label": "#6",
+            "price": 1.25,
+            "cost": 0.57,
+            "quantity": 10776
+          },
+          {
+            "label": "#8",
+            "price": 1.5,
+            "cost": 0.53,
+            "quantity": 1524
+          },
+          {
+            "label": "#10",
+            "price": 1.5,
+            "cost": 0.8,
+            "quantity": 3756
+          },
+          {
+            "label": "#12",
+            "price": 2.25,
+            "cost": 1.1,
+            "quantity": 1164
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية Agron العلبة الصفراء",
+    "name_en": "Paint Brush Agron Yellow Box",
+    "category": "فراشي",
+    "trademark": "Agron",
+    "price": 10.0,
+    "purchase_price": 5.94,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10×3",
+            "price": 10.0,
+            "cost": 5.94,
+            "quantity": 1
+          },
+          {
+            "label": "3×12",
+            "price": 12.0,
+            "cost": 7.34,
+            "quantity": 1
+          },
+          {
+            "label": "14×3",
+            "price": 14.0,
+            "cost": 8.65,
+            "quantity": 476
+          },
+          {
+            "label": "4×14",
+            "price": 16.0,
+            "cost": 11.53,
+            "quantity": 24
+          },
+          {
+            "label": "15×5",
+            "price": 18.0,
+            "cost": 13.32,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية Agron الاصلي",
+    "name_en": "Paint Brush Agron Original",
+    "category": "فراشي",
+    "trademark": "Agron",
+    "price": 15.0,
+    "purchase_price": 8.25,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "3×10",
+            "price": 15.0,
+            "cost": 8.25,
+            "quantity": 51
+          },
+          {
+            "label": "3×14",
+            "price": 22.0,
+            "cost": 10.41,
+            "quantity": 288
+          },
+          {
+            "label": "5×15",
+            "price": 26.0,
+            "cost": 15.31,
+            "quantity": 88
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية بلوفا",
+    "name_en": "Paint Brush Bulova",
+    "category": "فراشي",
+    "trademark": "بلوفا",
+    "price": 7.0,
+    "purchase_price": 4.23,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1\"",
+            "price": 7.0,
+            "cost": 4.23,
+            "quantity": 36
+          },
+          {
+            "label": "1.5\"",
+            "price": 8.0,
+            "cost": 6.29,
+            "quantity": 0
+          },
+          {
+            "label": "2\"",
+            "price": 11.0,
+            "cost": 10.0,
+            "quantity": 1
+          },
+          {
+            "label": "2.5\"",
+            "price": 15.0,
+            "cost": 10.74,
+            "quantity": 13
+          },
+          {
+            "label": "3\"",
+            "price": 21.0,
+            "cost": 14.65,
+            "quantity": 0
+          },
+          {
+            "label": "4\"",
+            "price": 24.0,
+            "cost": 17.36,
+            "quantity": 0
+          },
+          {
+            "label": "5×15",
+            "price": 55.0,
+            "cost": 45.2,
+            "quantity": 17
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية تيرا",
+    "name_en": "Paint Brush Tera",
+    "category": "فراشي",
+    "trademark": "تيرا",
+    "price": 6.0,
+    "purchase_price": 3.02,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "4\"",
+            "price": 6.0,
+            "cost": 3.02,
+            "quantity": 2
+          },
+          {
+            "label": "7سم",
+            "price": 8.0,
+            "cost": 2.35,
+            "quantity": 2185
+          },
+          {
+            "label": "5\"",
+            "price": 8.0,
+            "cost": 3.63,
+            "quantity": 6
+          },
+          {
+            "label": "10سم",
+            "price": 12.0,
+            "cost": 3.86,
+            "quantity": 1787
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية معكوفه",
+    "name_en": "Angled Brush",
+    "category": "فراشي",
+    "trademark": "",
+    "price": 3.5,
+    "purchase_price": 0.65,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1\"",
+            "price": 3.5,
+            "cost": 0.65,
+            "quantity": 866
+          },
+          {
+            "label": "1½\"",
+            "price": 4.5,
+            "cost": 0.9,
+            "quantity": 402
+          },
+          {
+            "label": "2\"",
+            "price": 5.5,
+            "cost": 0.95,
+            "quantity": 0
+          },
+          {
+            "label": "2½\"",
+            "price": 5.5,
+            "cost": 1.5,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية طراشه",
+    "name_en": "Block Brush",
+    "category": "فراشي",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 7.25,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "7×17",
+            "price": 10.0,
+            "cost": 7.25,
+            "quantity": 9
+          },
+          {
+            "label": "7×17",
+            "price": 38.0,
+            "cost": 23.39,
+            "quantity": 312
+          },
+          {
+            "label": "7×17",
+            "price": 50.0,
+            "cost": 32.0,
+            "quantity": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول طراشه A",
+    "name_en": "Paint Roller A",
+    "category": "رولات",
+    "trademark": "",
+    "price": 13.0,
+    "purchase_price": 6.55,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "9\"",
+            "price": 13.0,
+            "cost": 6.55,
+            "quantity": 0
+          },
+          {
+            "label": "10\"",
+            "price": 14.0,
+            "cost": 6.6,
+            "quantity": 777
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول طراشه B",
+    "name_en": "Paint Roller B",
+    "category": "رولات",
+    "trademark": "",
+    "price": 1.25,
+    "purchase_price": 0.53,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#5",
+            "price": 1.25,
+            "cost": 0.53,
+            "quantity": 10842
+          },
+          {
+            "label": "10\"",
+            "price": 13.0,
+            "cost": 5.38,
+            "quantity": 66
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول بشكير",
+    "name_en": "Terry Roller",
+    "category": "رولات",
+    "trademark": "",
+    "price": 3.0,
+    "purchase_price": 0.51,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10سم",
+            "price": 3.0,
+            "cost": 0.51,
+            "quantity": 7408
+          },
+          {
+            "label": "15سم",
+            "price": 6.0,
+            "cost": 0.56,
+            "quantity": 11932
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول اسفنج ابيض",
+    "name_en": "White Sponge Roller",
+    "category": "رولات",
+    "trademark": "",
+    "price": 3.5,
+    "purchase_price": 0.9,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10سم",
+            "price": 3.5,
+            "cost": 0.9,
+            "quantity": 0
+          },
+          {
+            "label": "15سم",
+            "price": 5.0,
+            "cost": 1.4,
+            "quantity": 1600
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول مبطن",
+    "name_en": "Padded Roller",
+    "category": "رولات",
+    "trademark": "",
+    "price": 3.5,
+    "purchase_price": 1.63,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10سم",
+            "price": 3.5,
+            "cost": 1.63,
+            "quantity": 9496
+          },
+          {
+            "label": "15سم",
+            "price": 5.0,
+            "cost": 2.5,
+            "quantity": 130
+          },
+          {
+            "label": "7\"",
+            "price": 13.0,
+            "cost": 6.48,
+            "quantity": 740
+          },
+          {
+            "label": "9\"",
+            "price": 15.0,
+            "cost": 8.23,
+            "quantity": 486
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول تكس",
+    "name_en": "Texture Roller",
+    "category": "رولات",
+    "trademark": "",
+    "price": 3.0,
+    "purchase_price": 1.8,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10سم",
+            "price": 3.0,
+            "cost": 1.8,
+            "quantity": 820
+          },
+          {
+            "label": "7\"",
+            "price": 8.0,
+            "cost": 6.5,
+            "quantity": 0
+          },
+          {
+            "label": "25سم",
+            "price": 13.5,
+            "cost": 8.6,
+            "quantity": 41
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول مهير",
+    "name_en": "Mohair Roller",
+    "category": "رولات",
+    "trademark": "",
+    "price": 3.0,
+    "purchase_price": 0.77,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10سم",
+            "price": 3.0,
+            "cost": 0.77,
+            "quantity": 3435
+          },
+          {
+            "label": "7\"",
+            "price": 11.0,
+            "cost": 5.0,
+            "quantity": 504
+          },
+          {
+            "label": "9\"",
+            "price": 12.0,
+            "cost": 5.7,
+            "quantity": 453
+          },
+          {
+            "label": "10\"",
+            "price": 13.0,
+            "cost": 5.71,
+            "quantity": 318
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "طقم رولات",
+    "name_en": "Roller Set",
+    "category": "رولات",
+    "trademark": "",
+    "price": 4.5,
+    "purchase_price": 2.33,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "2×1",
+            "price": 4.5,
+            "cost": 2.33,
+            "quantity": 0
+          },
+          {
+            "label": "4×1",
+            "price": 5.0,
+            "cost": 2.7,
+            "quantity": 0
+          },
+          {
+            "label": "2×1",
+            "price": 6.5,
+            "cost": 2.77,
+            "quantity": 857
+          },
+          {
+            "label": "2×1",
+            "price": 6.5,
+            "cost": 1.79,
+            "quantity": 1
+          },
+          {
+            "label": "2×1",
+            "price": 7.5,
+            "cost": 3.33,
+            "quantity": 689
+          },
+          {
+            "label": "10×1",
+            "price": 18.0,
+            "cost": 6.8,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "يد رول",
+    "name_en": "Roller Handle",
+    "category": "رولات",
+    "trademark": "",
+    "price": 1.5,
+    "purchase_price": 0.93,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10سم",
+            "price": 1.5,
+            "cost": 0.93,
+            "quantity": 4822
+          },
+          {
+            "label": "15سم",
+            "price": 2.0,
+            "cost": 1.25,
+            "quantity": 896
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول تركي DOGRU",
+    "name_en": "Turkish Roller DOGRU",
+    "category": "رولات",
+    "trademark": "DOGRU",
+    "price": 11.0,
+    "purchase_price": 4.08,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "رول  طراشه 1081 DOGRU",
+            "price": 11.0,
+            "cost": 4.08,
+            "quantity": 1881
+          },
+          {
+            "label": "رول تركي 1025",
+            "price": 12.0,
+            "cost": 4.32,
+            "quantity": 0
+          },
+          {
+            "label": "رول تركي 1020",
+            "price": 12.5,
+            "cost": 4.32,
+            "quantity": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مجراد عادي",
+    "name_en": "Spatula Standard",
+    "category": "مجاريد",
+    "trademark": "",
+    "price": 2.0,
+    "purchase_price": 1.08,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1\"",
+            "price": 2.0,
+            "cost": 1.08,
+            "quantity": 480
+          },
+          {
+            "label": "2\"",
+            "price": 3.0,
+            "cost": 1.12,
+            "quantity": 1428
+          },
+          {
+            "label": "3\"",
+            "price": 4.0,
+            "cost": 1.19,
+            "quantity": 1404
+          },
+          {
+            "label": "4\"",
+            "price": 5.0,
+            "cost": 1.3,
+            "quantity": 995
+          },
+          {
+            "label": "5\"",
+            "price": 5.0,
+            "cost": 1.37,
+            "quantity": 988
+          },
+          {
+            "label": "6\"",
+            "price": 6.0,
+            "cost": 1.47,
+            "quantity": 957
+          },
+          {
+            "label": "8\"",
+            "price": 18.0,
+            "cost": 2.01,
+            "quantity": 678
+          },
+          {
+            "label": "10\"",
+            "price": 20.0,
+            "cost": 2.3,
+            "quantity": 814
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مجراد هايد",
+    "name_en": "Spatula Hyde",
+    "category": "مجاريد",
+    "trademark": "هايد",
+    "price": 22.0,
+    "purchase_price": 11.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "2\"",
+            "price": 22.0,
+            "cost": 11.0,
+            "quantity": 5
+          },
+          {
+            "label": "3\"",
+            "price": 25.0,
+            "cost": 16.0,
+            "quantity": 0
+          },
+          {
+            "label": "4\"",
+            "price": 27.0,
+            "cost": 20.63,
+            "quantity": 19
+          },
+          {
+            "label": "5\"",
+            "price": 30.0,
+            "cost": 21.71,
+            "quantity": 35
+          },
+          {
+            "label": "6\"",
+            "price": 33.0,
+            "cost": 23.77,
+            "quantity": 14
+          },
+          {
+            "label": "8\"",
+            "price": 50.0,
+            "cost": 40.24,
+            "quantity": 1
+          },
+          {
+            "label": "10\"",
+            "price": 60.0,
+            "cost": 48.85,
+            "quantity": 34
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مجراد هايد copy",
+    "name_en": "Spatula Hyde Copy",
+    "category": "مجاريد",
+    "trademark": "هايد",
+    "price": 10.0,
+    "purchase_price": 5.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "2\"",
+            "price": 10.0,
+            "cost": 5.0,
+            "quantity": 0
+          },
+          {
+            "label": "3\"",
+            "price": 12.0,
+            "cost": 6.0,
+            "quantity": 0
+          },
+          {
+            "label": "4\"",
+            "price": 13.0,
+            "cost": 8.0,
+            "quantity": 20
+          },
+          {
+            "label": "5\"",
+            "price": 14.0,
+            "cost": 9.0,
+            "quantity": 20
+          },
+          {
+            "label": "6\"",
+            "price": 15.0,
+            "cost": 10.0,
+            "quantity": 0
+          },
+          {
+            "label": "8\"",
+            "price": 20.0,
+            "cost": 14.0,
+            "quantity": 0
+          },
+          {
+            "label": "10\"",
+            "price": 25.0,
+            "cost": 19.5,
+            "quantity": 15
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مجراد هايد Master كعب حديد",
+    "name_en": "Spatula Hyde Master Iron Heel",
+    "category": "مجاريد",
+    "trademark": "Master Hyde",
+    "price": 28.0,
+    "purchase_price": 22.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "6\"",
+            "price": 28.0,
+            "cost": 22.5,
+            "quantity": 28
+          },
+          {
+            "label": "8\"",
+            "price": 40.0,
+            "cost": 31.0,
+            "quantity": 28
+          },
+          {
+            "label": "10\"",
+            "price": 50.0,
+            "cost": 42.0,
+            "quantity": 45
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مجراد ستانلس",
+    "name_en": "Stainless Steel Spatula",
+    "category": "مجاريد",
+    "trademark": "",
+    "price": 21.0,
+    "purchase_price": 17.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "5\"",
+            "price": 21.0,
+            "cost": 17.0,
+            "quantity": 9
+          },
+          {
+            "label": "6\"",
+            "price": 24.0,
+            "cost": 19.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "سكتش عادي",
+    "name_en": "Sandpaper Standard",
+    "category": "ورق حف",
+    "trademark": "",
+    "price": 0.9,
+    "purchase_price": 0.8,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#100",
+            "price": 0.9,
+            "cost": 0.8,
+            "quantity": 0
+          },
+          {
+            "label": "#150",
+            "price": 0.9,
+            "cost": 0.78,
+            "quantity": 500
+          },
+          {
+            "label": "#60",
+            "price": 0.9,
+            "cost": 0.78,
+            "quantity": 250
+          },
+          {
+            "label": "#80",
+            "price": 0.95,
+            "cost": 0.85,
+            "quantity": 600
+          },
+          {
+            "label": "#120",
+            "price": 0.95,
+            "cost": 0.85,
+            "quantity": 500
+          },
+          {
+            "label": "#180",
+            "price": 0.95,
+            "cost": 0.85,
+            "quantity": 300
+          },
+          {
+            "label": "#240",
+            "price": 0.95,
+            "cost": 0.85,
+            "quantity": 600
+          },
+          {
+            "label": "#320",
+            "price": 0.95,
+            "cost": 0.85,
+            "quantity": 500
+          },
+          {
+            "label": "#220",
+            "price": 0.95,
+            "cost": 0.85,
+            "quantity": 300
+          },
+          {
+            "label": "#400",
+            "price": 0.95,
+            "cost": 0.85,
+            "quantity": 700
+          },
+          {
+            "label": "#40",
+            "price": 1.0,
+            "cost": 0.95,
+            "quantity": 100
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "سكتش 4.5\"",
+    "name_en": "Sandpaper 4.5\"",
+    "category": "ورق حف",
+    "trademark": "",
+    "price": 0.9,
+    "purchase_price": 0.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "4.5\"",
+            "price": 0.9,
+            "cost": 0.5,
+            "quantity": 1100
+          },
+          {
+            "label": "سكتش  3m/ sayt",
+            "price": 0.9,
+            "cost": 0.5,
+            "quantity": 700
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ورق اسفنج عادي",
+    "name_en": "Sponge Paper Standard",
+    "category": "ورق حف",
+    "trademark": "",
+    "price": 135.0,
+    "purchase_price": 105.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#320",
+            "price": 135.0,
+            "cost": 105.0,
+            "quantity": 4
+          },
+          {
+            "label": "#400",
+            "price": 160.0,
+            "cost": 105.0,
+            "quantity": 2
+          },
+          {
+            "label": "#150",
+            "price": 175.0,
+            "cost": 105.0,
+            "quantity": 12
+          },
+          {
+            "label": "#180",
+            "price": 175.0,
+            "cost": 105.0,
+            "quantity": 12
+          },
+          {
+            "label": "#240",
+            "price": 175.0,
+            "cost": 105.0,
+            "quantity": 2
+          },
+          {
+            "label": "#120",
+            "price": 175.0,
+            "cost": 105.0,
+            "quantity": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ورق اسفنج سيا",
+    "name_en": "Sponge Paper Sia",
+    "category": "ورق حف",
+    "trademark": "سيا",
+    "price": 175.0,
+    "purchase_price": 140.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#400",
+            "price": 175.0,
+            "cost": 140.0,
+            "quantity": 0
+          },
+          {
+            "label": "#220",
+            "price": 175.0,
+            "cost": 145.0,
+            "quantity": 0
+          },
+          {
+            "label": "#120",
+            "price": 180.0,
+            "cost": 155.0,
+            "quantity": 0
+          },
+          {
+            "label": "#150",
+            "price": 180.0,
+            "cost": 150.0,
+            "quantity": 0
+          },
+          {
+            "label": "#180",
+            "price": 180.0,
+            "cost": 150.0,
+            "quantity": 0
+          },
+          {
+            "label": "#320",
+            "price": 180.0,
+            "cost": 145.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "نورتن اسفنج",
+    "name_en": "Norton Sponge",
+    "category": "ورق حف",
+    "trademark": "نورتن",
+    "price": 160.0,
+    "purchase_price": 95.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#120",
+            "price": 160.0,
+            "cost": 95.0,
+            "quantity": 0
+          },
+          {
+            "label": "#150",
+            "price": 160.0,
+            "cost": 95.0,
+            "quantity": 0
+          },
+          {
+            "label": "#180",
+            "price": 160.0,
+            "cost": 95.0,
+            "quantity": 0
+          },
+          {
+            "label": "#240",
+            "price": 160.0,
+            "cost": 95.0,
+            "quantity": 0
+          },
+          {
+            "label": "#320",
+            "price": 160.0,
+            "cost": 95.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ورق حف رول تمساح اسود",
+    "name_en": "Crocodile Sanding Roll Black",
+    "category": "ورق حف",
+    "trademark": "تمساح",
+    "price": 8.0,
+    "purchase_price": 5.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10م",
+            "price": 8.0,
+            "cost": 5.5,
+            "quantity": 45
+          },
+          {
+            "label": "10م",
+            "price": 8.0,
+            "cost": 6.9,
+            "quantity": 50
+          },
+          {
+            "label": "10م",
+            "price": 8.0,
+            "cost": 6.9,
+            "quantity": 58
+          },
+          {
+            "label": "10م",
+            "price": 8.0,
+            "cost": 5.5,
+            "quantity": 10
+          },
+          {
+            "label": "10م",
+            "price": 10.0,
+            "cost": 7.53,
+            "quantity": 58
+          },
+          {
+            "label": "#120",
+            "price": 60.0,
+            "cost": 51.22,
+            "quantity": 5
+          },
+          {
+            "label": "#150",
+            "price": 60.0,
+            "cost": 50.59,
+            "quantity": 4
+          },
+          {
+            "label": "#180",
+            "price": 60.0,
+            "cost": 47.96,
+            "quantity": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ورق حف رول تمساح احمر",
+    "name_en": "Crocodile Sanding Roll Red",
+    "category": "ورق حف",
+    "trademark": "تمساح",
+    "price": 8.0,
+    "purchase_price": 5.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10م",
+            "price": 8.0,
+            "cost": 5.5,
+            "quantity": 0
+          },
+          {
+            "label": "10م",
+            "price": 8.0,
+            "cost": 5.5,
+            "quantity": 0
+          },
+          {
+            "label": "10م",
+            "price": 8.0,
+            "cost": 5.97,
+            "quantity": 0
+          },
+          {
+            "label": "10م",
+            "price": 8.0,
+            "cost": 5.5,
+            "quantity": 20
+          },
+          {
+            "label": "#60",
+            "price": 65.0,
+            "cost": 59.95,
+            "quantity": 3
+          },
+          {
+            "label": "#80",
+            "price": 65.0,
+            "cost": 59.95,
+            "quantity": 0
+          },
+          {
+            "label": "#40",
+            "price": 65.0,
+            "cost": 45.57,
+            "quantity": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ورق حف رول كتان",
+    "name_en": "Linen Sanding Roll",
+    "category": "ورق حف",
+    "trademark": "",
+    "price": 700.0,
+    "purchase_price": 400.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#80",
+            "price": 700.0,
+            "cost": 400.0,
+            "quantity": 0
+          },
+          {
+            "label": "#120",
+            "price": 700.0,
+            "cost": 400.0,
+            "quantity": 0
+          },
+          {
+            "label": "#100",
+            "price": 700.0,
+            "cost": 400.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "تيب سم",
+    "name_en": "Masking Tape Narrow",
+    "category": "تيب",
+    "trademark": "",
+    "price": 1.25,
+    "purchase_price": 0.85,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1سم",
+            "price": 1.25,
+            "cost": 0.85,
+            "quantity": 0
+          },
+          {
+            "label": "2سم",
+            "price": 1.85,
+            "cost": 1.53,
+            "quantity": 1384
+          },
+          {
+            "label": "2سم",
+            "price": 2.3,
+            "cost": 1.54,
+            "quantity": 0
+          },
+          {
+            "label": "3سم",
+            "price": 2.5,
+            "cost": 1.85,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "تيب 5سم",
+    "name_en": "Masking Tape 5cm",
+    "category": "تيب",
+    "trademark": "",
+    "price": 1.75,
+    "purchase_price": 1.35,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "5سم",
+            "price": 1.75,
+            "cost": 1.35,
+            "quantity": 0
+          },
+          {
+            "label": "5سم",
+            "price": 1.75,
+            "cost": 1.35,
+            "quantity": 0
+          },
+          {
+            "label": "5سم",
+            "price": 2.75,
+            "cost": 1.87,
+            "quantity": 0
+          },
+          {
+            "label": "5سم",
+            "price": 3.25,
+            "cost": 2.42,
+            "quantity": 6169
+          },
+          {
+            "label": "5سم",
+            "price": 5.0,
+            "cost": 3.15,
+            "quantity": 3032
+          },
+          {
+            "label": "5سم",
+            "price": 7.85,
+            "cost": 7.0,
+            "quantity": 0
+          },
+          {
+            "label": "5سم",
+            "price": 12.0,
+            "cost": 4.6,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "تيب عريض شفاف",
+    "name_en": "Wide Clear Tape",
+    "category": "تيب",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 2.92,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "120 يارد",
+            "price": 5.0,
+            "cost": 2.92,
+            "quantity": 157
+          },
+          {
+            "label": "#144",
+            "price": 5.0,
+            "cost": 3.19,
+            "quantity": 0
+          },
+          {
+            "label": "#132",
+            "price": 5.0,
+            "cost": 4.09,
+            "quantity": 0
+          },
+          {
+            "label": "1000 يارد",
+            "price": 48.0,
+            "cost": 41.67,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "زاوية جبص",
+    "name_en": "Plaster Corner Bead",
+    "category": "زوايا",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 2.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "25م",
+            "price": 6.0,
+            "cost": 2.5,
+            "quantity": 0
+          },
+          {
+            "label": "30م",
+            "price": 22.0,
+            "cost": 12.48,
+            "quantity": 1613
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "زاوية U",
+    "name_en": "U Corner Bead",
+    "category": "زوايا",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 6.01,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "3م",
+            "price": 15.0,
+            "cost": 6.01,
+            "quantity": 6214
+          },
+          {
+            "label": "3م",
+            "price": 18.0,
+            "cost": 14.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ستانسل Painto",
+    "name_en": "Stencil Painto",
+    "category": "ستانسل",
+    "trademark": "Painto",
+    "price": 4.0,
+    "purchase_price": 1.8,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "ستانسل Mini  Painto",
+            "price": 4.0,
+            "cost": 1.8,
+            "quantity": 100
+          },
+          {
+            "label": "3×1",
+            "price": 12.0,
+            "cost": 6.5,
+            "quantity": 5
+          },
+          {
+            "label": "ستانسل بوستر عوضين",
+            "price": 15.0,
+            "cost": 9.33,
+            "quantity": 0
+          },
+          {
+            "label": "ستانسل بوستر  Painto",
+            "price": 35.0,
+            "cost": 20.5,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "عصا",
+    "name_en": "Extension Pole",
+    "category": "عصي",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 5.74,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "2م",
+            "price": 15.0,
+            "cost": 5.74,
+            "quantity": 823
+          },
+          {
+            "label": "3م",
+            "price": 17.0,
+            "cost": 7.14,
+            "quantity": 821
+          },
+          {
+            "label": "4م",
+            "price": 21.0,
+            "cost": 9.37,
+            "quantity": 3
+          },
+          {
+            "label": "1.4م",
+            "price": 25.0,
+            "cost": 15.0,
+            "quantity": 2
+          },
+          {
+            "label": "5م",
+            "price": 26.0,
+            "cost": 13.07,
+            "quantity": 146
+          },
+          {
+            "label": "3.6م",
+            "price": 65.0,
+            "cost": 48.07,
+            "quantity": 0
+          },
+          {
+            "label": "3.6م",
+            "price": 65.0,
+            "cost": 42.28,
+            "quantity": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ورق جبص",
+    "name_en": "Drywall Joint Tape",
+    "category": "ورق جبص",
+    "trademark": "يوتا",
+    "price": 5.0,
+    "purchase_price": 2.7,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "50م",
+            "price": 5.0,
+            "cost": 2.7,
+            "quantity": 199
+          },
+          {
+            "label": "75م",
+            "price": 8.0,
+            "cost": 3.98,
+            "quantity": 239
+          },
+          {
+            "label": "150م",
+            "price": 15.0,
+            "cost": 7.73,
+            "quantity": 41
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فتحة صيانه",
+    "name_en": "Access Panel",
+    "category": "فتحات صيانه",
+    "trademark": "",
+    "price": 40.0,
+    "purchase_price": 18.89,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "15×15",
+            "price": 40.0,
+            "cost": 18.89,
+            "quantity": 30
+          },
+          {
+            "label": "20×20",
+            "price": 50.0,
+            "cost": 25.14,
+            "quantity": 167
+          },
+          {
+            "label": "30×30",
+            "price": 60.0,
+            "cost": 32.83,
+            "quantity": 155
+          },
+          {
+            "label": "40×40",
+            "price": 80.0,
+            "cost": 41.04,
+            "quantity": 88
+          },
+          {
+            "label": "50×50",
+            "price": 90.0,
+            "cost": 48.56,
+            "quantity": 285
+          },
+          {
+            "label": "60×60",
+            "price": 100.0,
+            "cost": 55.4,
+            "quantity": 87
+          },
+          {
+            "label": "40×80",
+            "price": 160.0,
+            "cost": 87.29,
+            "quantity": 21
+          },
+          {
+            "label": "50×100",
+            "price": 180.0,
+            "cost": 113.95,
+            "quantity": 24
+          },
+          {
+            "label": "120×60",
+            "price": 200.0,
+            "cost": 140.0,
+            "quantity": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مالج ملتينه Level5",
+    "name_en": "Finishing Trowel Level5",
+    "category": "موالج",
+    "trademark": "Level5",
+    "price": 60.0,
+    "purchase_price": 16.75,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "25سم",
+            "price": 60.0,
+            "cost": 16.75,
+            "quantity": 38
+          },
+          {
+            "label": "40سم",
+            "price": 80.0,
+            "cost": 23.35,
+            "quantity": 116
+          },
+          {
+            "label": "60سم",
+            "price": 100.0,
+            "cost": 32.62,
+            "quantity": 91
+          },
+          {
+            "label": "80سم",
+            "price": 130.0,
+            "cost": 40.66,
+            "quantity": 129
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "نصلة Level5",
+    "name_en": "Blade Level5",
+    "category": "موالج",
+    "trademark": "Level5",
+    "price": 20.0,
+    "purchase_price": 7.98,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "25سم",
+            "price": 20.0,
+            "cost": 7.98,
+            "quantity": 96
+          },
+          {
+            "label": "40سم",
+            "price": 30.0,
+            "cost": 10.18,
+            "quantity": 90
+          },
+          {
+            "label": "60سم",
+            "price": 40.0,
+            "cost": 13.37,
+            "quantity": 82
+          },
+          {
+            "label": "80سم",
+            "price": 60.0,
+            "cost": 18.42,
+            "quantity": 95
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرد سلكون",
+    "name_en": "Caulking Gun",
+    "category": "ادوات",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 3.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "فرد سلكون برتقالي",
+            "price": 5.0,
+            "cost": 3.5,
+            "quantity": 0
+          },
+          {
+            "label": "فرد سلكون احمر ثقيل",
+            "price": 10.0,
+            "cost": 4.93,
+            "quantity": 0
+          },
+          {
+            "label": "فرد سلكون معدني طبعة",
+            "price": 14.0,
+            "cost": 9.0,
+            "quantity": 40
+          },
+          {
+            "label": "فرد سلكون برتقالي جوده عاليه",
+            "price": 18.0,
+            "cost": 12.0,
+            "quantity": 1
+          },
+          {
+            "label": "فرد سلكون عكسي جوده عاليه",
+            "price": 18.0,
+            "cost": 9.0,
+            "quantity": 11
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "كمامة",
+    "name_en": "Mask",
+    "category": "حماية",
+    "trademark": "",
+    "price": 1.0,
+    "purchase_price": 0.4,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "كمامة دسبوزبل",
+            "price": 1.0,
+            "cost": 0.4,
+            "quantity": 200
+          },
+          {
+            "label": "كمامة فلتر",
+            "price": 2.5,
+            "cost": 0.35,
+            "quantity": 2
+          },
+          {
+            "label": "كمامة سيا",
+            "price": 3.0,
+            "cost": 2.2,
+            "quantity": 0
+          },
+          {
+            "label": "كمامة مع فلتر ابيض MS",
+            "price": 3.0,
+            "cost": 1.9,
+            "quantity": 0
+          },
+          {
+            "label": "كمامة مع فلتر سكني MS",
+            "price": 3.5,
+            "cost": 2.5,
+            "quantity": 0
+          },
+          {
+            "label": "كمامة فلتر تركي",
+            "price": 4.0,
+            "cost": 1.5,
+            "quantity": 0
+          },
+          {
+            "label": "كامة فلتر  جولد",
+            "price": 5.0,
+            "cost": 3.5,
+            "quantity": 0
+          },
+          {
+            "label": "كمامة فلتر الماني",
+            "price": 7.5,
+            "cost": 5.5,
+            "quantity": 0
+          },
+          {
+            "label": "كمامة مع فلتر ازرق  MS",
+            "price": 10.0,
+            "cost": 7.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "كباية اسود",
+    "name_en": "Mixing Cup Black",
+    "category": "كبايات",
+    "trademark": "",
+    "price": 9.0,
+    "purchase_price": 6.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "4\"",
+            "price": 9.0,
+            "cost": 6.0,
+            "quantity": 21
+          },
+          {
+            "label": "6\"",
+            "price": 12.0,
+            "cost": 10.0,
+            "quantity": 2
+          },
+          {
+            "label": "8\"",
+            "price": 16.0,
+            "cost": 13.0,
+            "quantity": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "كباية ازرق",
+    "name_en": "Mixing Cup Blue",
+    "category": "كبايات",
+    "trademark": "",
+    "price": 28.0,
+    "purchase_price": 22.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "4\"",
+            "price": 28.0,
+            "cost": 22.0,
+            "quantity": 4
+          },
+          {
+            "label": "6\"",
+            "price": 40.0,
+            "cost": 35.0,
+            "quantity": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "براغي جبص",
+    "name_en": "Drywall Screws",
+    "category": "براغي",
+    "trademark": "",
+    "price": 20.0,
+    "purchase_price": 17.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1000×1",
+            "price": 20.0,
+            "cost": 17.0,
+            "quantity": 16
+          },
+          {
+            "label": "5سم",
+            "price": 30.0,
+            "cost": 26.0,
+            "quantity": 0
+          },
+          {
+            "label": "5سم",
+            "price": 220.0,
+            "cost": 175.0,
+            "quantity": 0
+          },
+          {
+            "label": "10000×1",
+            "price": 300.0,
+            "cost": 255.0,
+            "quantity": 0
+          },
+          {
+            "label": "1×10000",
+            "price": 420.0,
+            "cost": 365.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "بوت صغير مشمع",
+    "name_en": "Kids Rain Boot",
+    "category": "احذية",
+    "trademark": "",
+    "price": 55.0,
+    "purchase_price": 40.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#23",
+            "price": 55.0,
+            "cost": 40.0,
+            "quantity": 0
+          },
+          {
+            "label": "#28",
+            "price": 60.0,
+            "cost": 45.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "قشاطة ابوكسي",
+    "name_en": "Epoxy Scraper",
+    "category": "ادوات",
+    "trademark": "",
+    "price": 30.0,
+    "purchase_price": 20.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "25سم",
+            "price": 30.0,
+            "cost": 20.0,
+            "quantity": 1
+          },
+          {
+            "label": "45سم",
+            "price": 35.0,
+            "cost": 25.0,
+            "quantity": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مالج ابوكسي",
+    "name_en": "Epoxy Trowel",
+    "category": "ادوات",
+    "trademark": "",
+    "price": 30.0,
+    "purchase_price": 18.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "30سم",
+            "price": 30.0,
+            "cost": 18.0,
+            "quantity": 1
+          },
+          {
+            "label": "50سم",
+            "price": 40.0,
+            "cost": 23.0,
+            "quantity": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول حواف",
+    "name_en": "Edge Roller",
+    "category": "رولات",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 3.23,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "2×1",
+            "price": 5.0,
+            "cost": 3.23,
+            "quantity": 222
+          },
+          {
+            "label": "5سم",
+            "price": 5.0,
+            "cost": 3.47,
+            "quantity": 80
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "سبري ATC",
+    "name_en": "Spray Paint ATC",
+    "category": "سبري",
+    "trademark": "ATC",
+    "price": 10.0,
+    "purchase_price": 7.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "سبري صدأ  ATC",
+            "price": 10.0,
+            "cost": 7.5,
+            "quantity": 0
+          },
+          {
+            "label": "سبري كلكل رش",
+            "price": 12.0,
+            "cost": 9.5,
+            "quantity": 0
+          },
+          {
+            "label": "سبري مزيل الدهان ATC",
+            "price": 15.0,
+            "cost": 12.5,
+            "quantity": 0
+          },
+          {
+            "label": "سبري ذهبي لميع",
+            "price": 15.0,
+            "cost": 13.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "بويه تعتيق",
+    "name_en": "Antiquing Paint",
+    "category": "دهان",
+    "trademark": "",
+    "price": 100.0,
+    "purchase_price": 85.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1لتر",
+            "price": 100.0,
+            "cost": 85.0,
+            "quantity": 0
+          },
+          {
+            "label": "1لتر",
+            "price": 100.0,
+            "cost": 85.0,
+            "quantity": 0
+          },
+          {
+            "label": "1لتر",
+            "price": 100.0,
+            "cost": 85.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ريشت يوتا",
+    "name_en": "Fiberglass Mesh Tape Yuta",
+    "category": "ريشت",
+    "trademark": "يوتا",
+    "price": 6.5,
+    "purchase_price": 3.43,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "50م",
+            "price": 6.5,
+            "cost": 3.43,
+            "quantity": 456
+          },
+          {
+            "label": "75م",
+            "price": 9.0,
+            "cost": 3.77,
+            "quantity": 15
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "تنر ايطالي",
+    "name_en": "Italian Thinner",
+    "category": "مواد",
+    "trademark": "",
+    "price": 11.0,
+    "purchase_price": 8.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "1لتر",
+            "price": 11.0,
+            "cost": 8.5,
+            "quantity": 60
+          },
+          {
+            "label": "5لتر",
+            "price": 38.0,
+            "cost": 34.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "ورق فيبر",
+    "name_en": "Fiber Paper",
+    "category": "ورق حف",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 2.32,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "25م",
+            "price": 6.0,
+            "cost": 2.32,
+            "quantity": 65
+          },
+          {
+            "label": "50م",
+            "price": 8.0,
+            "cost": 4.56,
+            "quantity": 329
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "شفرة تنظيف",
+    "name_en": "Cleaning Blade",
+    "category": "ادوات",
+    "trademark": "",
+    "price": 1.5,
+    "purchase_price": 0.51,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "شفرة تنظيف دسبوزل",
+            "price": 1.5,
+            "cost": 0.51,
+            "quantity": 1306
+          },
+          {
+            "label": "شفرة تنظيف + سبير",
+            "price": 4.0,
+            "cost": 1.21,
+            "quantity": 192
+          },
+          {
+            "label": "شفرة تنظيف (حديد)",
+            "price": 6.0,
+            "cost": 2.7,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "جلدة لازور",
+    "name_en": "Lazure Pad",
+    "category": "جلود",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 2.75,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "جلدة لازور مبسطه",
+            "price": 10.0,
+            "cost": 2.75,
+            "quantity": 0
+          },
+          {
+            "label": "جلدة لازور يد بلاستيك",
+            "price": 15.0,
+            "cost": 4.19,
+            "quantity": 4
+          },
+          {
+            "label": "جلدة لازور يد بلاستيك اسود",
+            "price": 15.0,
+            "cost": 5.08,
+            "quantity": 0
+          },
+          {
+            "label": "جلدة لازور خضراء",
+            "price": 18.0,
+            "cost": 5.4,
+            "quantity": 240
+          },
+          {
+            "label": "جلدة لازور يد خشب ( ازرق)",
+            "price": 25.0,
+            "cost": 7.42,
+            "quantity": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مالج Enox",
+    "name_en": "Trowel Enox",
+    "category": "موالج",
+    "trademark": "Enox",
+    "price": 45.0,
+    "purchase_price": 29.62,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "8×20",
+            "price": 45.0,
+            "cost": 29.62,
+            "quantity": 0
+          },
+          {
+            "label": "11×24",
+            "price": 55.0,
+            "cost": 32.65,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول 9\" ماركات",
+    "name_en": "9\" Roller Assorted Brands",
+    "category": "رولات",
+    "trademark": "",
+    "price": 7.0,
+    "purchase_price": 2.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "9\"",
+            "price": 7.0,
+            "cost": 2.5,
+            "quantity": 0
+          },
+          {
+            "label": "9\"",
+            "price": 10.0,
+            "cost": 5.5,
+            "quantity": 0
+          },
+          {
+            "label": "9\"",
+            "price": 10.0,
+            "cost": 5.5,
+            "quantity": 0
+          },
+          {
+            "label": "9\"",
+            "price": 10.5,
+            "cost": 4.75,
+            "quantity": 119
+          },
+          {
+            "label": "9\"",
+            "price": 15.0,
+            "cost": 5.25,
+            "quantity": 383
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "سوبر جلو",
+    "name_en": "Super Glue",
+    "category": "لواصق",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 6.5,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "#20",
+            "price": 10.0,
+            "cost": 6.5,
+            "quantity": 62
+          },
+          {
+            "label": "#50",
+            "price": 20.0,
+            "cost": 14.5,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مطبة كابرس",
+    "name_en": "Decoration Stamp Caprice",
+    "category": "ديكور",
+    "trademark": "كابرس",
+    "price": 35.0,
+    "purchase_price": 23.69,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "20×20",
+            "price": 35.0,
+            "cost": 23.69,
+            "quantity": 0
+          },
+          {
+            "label": "20×20",
+            "price": 40.0,
+            "cost": 21.73,
+            "quantity": 0
+          },
+          {
+            "label": "15×15",
+            "price": 55.0,
+            "cost": 27.6,
+            "quantity": 0
+          },
+          {
+            "label": "20×20",
+            "price": 65.0,
+            "cost": 60.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مطبة مدوره",
+    "name_en": "Round Stamp",
+    "category": "ديكور",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 11.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "مطبة جلود مدوره",
+            "price": 15.0,
+            "cost": 11.0,
+            "quantity": 28
+          },
+          {
+            "label": "مطبة مدوره  صيني",
+            "price": 15.0,
+            "cost": 10.5,
+            "quantity": 11
+          },
+          {
+            "label": "مطبة مدوره طلياني",
+            "price": 30.0,
+            "cost": 25.0,
+            "quantity": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مشرط",
+    "name_en": "Utility Knife",
+    "category": "ادوات",
+    "trademark": "",
+    "price": 1.25,
+    "purchase_price": 0.74,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "مشرط بلاستيك",
+            "price": 1.25,
+            "cost": 0.74,
+            "quantity": 0
+          },
+          {
+            "label": "مشرط حديد رفيع",
+            "price": 1.5,
+            "cost": 0.64,
+            "quantity": 1370
+          },
+          {
+            "label": "مشرط جومي",
+            "price": 3.5,
+            "cost": 2.03,
+            "quantity": 4147
+          },
+          {
+            "label": "مشرط جومي سوبر",
+            "price": 5.0,
+            "cost": 2.89,
+            "quantity": 0
+          },
+          {
+            "label": "12×1",
+            "price": 8.5,
+            "cost": 6.5,
+            "quantity": 22
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "تكنه",
+    "name_en": "Paint Tray",
+    "category": "ادوات",
+    "trademark": "",
+    "price": 4.0,
+    "purchase_price": 1.11,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "10سم",
+            "price": 4.0,
+            "cost": 1.11,
+            "quantity": 474
+          },
+          {
+            "label": "9\"",
+            "price": 6.0,
+            "cost": 2.45,
+            "quantity": 26
+          },
+          {
+            "label": "10\"",
+            "price": 7.0,
+            "cost": 3.8,
+            "quantity": 1
+          },
+          {
+            "label": "12\"",
+            "price": 10.0,
+            "cost": 4.81,
+            "quantity": 6
+          },
+          {
+            "label": "12\"",
+            "price": 15.0,
+            "cost": 4.51,
+            "quantity": 132
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "رول جومي",
+    "name_en": "Rubber Roller",
+    "category": "رولات",
+    "trademark": "",
+    "price": 12.0,
+    "purchase_price": 7.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "6\"",
+            "price": 12.0,
+            "cost": 7.0,
+            "quantity": 0
+          },
+          {
+            "label": "7\"",
+            "price": 16.5,
+            "cost": 5.0,
+            "quantity": 0
+          },
+          {
+            "label": "10\"",
+            "price": 25.0,
+            "cost": 7.0,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "مالج ملتينه",
+    "name_en": "Finishing Trowel",
+    "category": "موالج",
+    "trademark": "",
+    "price": 9.5,
+    "purchase_price": 6.54,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "مالج ملتينه معدني",
+            "price": 9.5,
+            "cost": 6.54,
+            "quantity": 84
+          },
+          {
+            "label": "مالج ملتينه بلاستيك",
+            "price": 12.0,
+            "cost": 8.72,
+            "quantity": 31
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "طقم لازور احمر",
+    "name_en": "Red Lazure Set",
+    "category": "جلود",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 8.25,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "طقم لازور احمر  (رفيع)",
+            "price": 25.0,
+            "cost": 8.25,
+            "quantity": 838
+          },
+          {
+            "label": "طقم لازور احمر (عريض)",
+            "price": 25.0,
+            "cost": 7.17,
+            "quantity": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "منشار جبص",
+    "name_en": "Drywall Saw",
+    "category": "ادوات",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 5.0,
+    "stock_qty": null,
+    "unit": "piece",
+    "options": [
+      {
+        "name": "الحجم",
+        "values": [
+          {
+            "label": "منشار جبص يد بلاستيك اصفر",
+            "price": 8.0,
+            "cost": 5.0,
+            "quantity": 43
+          },
+          {
+            "label": "منشار جبص جومي",
+            "price": 14.0,
+            "cost": 8.0,
+            "quantity": 53
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name_ar": "فرشاية  5\"  Agron",
+    "name_en": "Paint Brush 5\" Agron",
+    "category": "",
+    "trademark": "",
+    "price": 16.0,
+    "purchase_price": 12.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم فراشي",
+    "name_en": "Brush Set",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 5.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سماعات حمايه",
+    "name_en": "Safety Earmuffs",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 4.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول زوايا اصفر اسفتج",
+    "name_en": "Yellow Sponge Corner Roller",
+    "category": "",
+    "trademark": "",
+    "price": 2.0,
+    "purchase_price": 1.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "حفافة تلسكوب",
+    "name_en": "Telescopic Sander",
+    "category": "",
+    "trademark": "",
+    "price": 22.0,
+    "purchase_price": 12.95,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول طراشه 9\"B",
+    "name_en": "Paint Roller 9\"B",
+    "category": "",
+    "trademark": "",
+    "price": 12.0,
+    "purchase_price": 7.35,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول طراشه 10\" سوبر",
+    "name_en": "Paint Roller 10\" Super",
+    "category": "",
+    "trademark": "",
+    "price": 16.0,
+    "purchase_price": 9.85,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول كابرس صيني",
+    "name_en": "Caprice Roller Chinese",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 12.1,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "اسفنجة سوبر ووش",
+    "name_en": "Super Wash Sponge",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 4.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول كابرس طلياني",
+    "name_en": "Caprice Roller Italian",
+    "category": "",
+    "trademark": "",
+    "price": 40.0,
+    "purchase_price": 28.2,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "نظارات حماية",
+    "name_en": "Safety Glasses",
+    "category": "",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 1.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مطبة ديكور 15*15 طلياني",
+    "name_en": "Decoration Stamp 15x15 Italian",
+    "category": "",
+    "trademark": "",
+    "price": 50.0,
+    "purchase_price": 35.11,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم مجاريد مشرف",
+    "name_en": "Spatula Set Foreman",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 6.9,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "اسفنجة الورده طلياني",
+    "name_en": "Rose Sponge Italian",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 18.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج ديكور بلاستيك طلياني",
+    "name_en": "Plastic Decoration Trowel Italian",
+    "category": "",
+    "trademark": "",
+    "price": 22.0,
+    "purchase_price": 9.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ستانسل Porder Painto",
+    "name_en": "Border Stencil Painto",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 7.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فلم نايلون 50cm*25m",
+    "name_en": "Nylon Film 50cm x 25m",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 6.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كف ووش اسفنج",
+    "name_en": "Sponge Wash Mitt",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 5.21,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زنار ديكور 13سم",
+    "name_en": "Decorative Belt 13cm",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 11.22,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية اغو  6#",
+    "name_en": "فرشاية اغو  6#",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 1.77,
+    "stock_qty": 746,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كف ووش اسفنج مع فرشاية",
+    "name_en": "Sponge Wash Mitt with Brush",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 6.28,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مكينة حبل تربيط",
+    "name_en": "Rope Tying Machine",
+    "category": "",
+    "trademark": "",
+    "price": 0.0,
+    "purchase_price": 0.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زنار 10سم",
+    "name_en": "Decorative Belt 10cm",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 3.4,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ستانسل زخرفه",
+    "name_en": "Ornament Stencil",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 12.6,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "تيب  4سم",
+    "name_en": "Tape 4cm",
+    "category": "",
+    "trademark": "",
+    "price": 3.0,
+    "purchase_price": 1.8,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زنار 5سم",
+    "name_en": "Decorative Belt 5cm",
+    "category": "",
+    "trademark": "",
+    "price": 3.0,
+    "purchase_price": 0.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كف يد تطبيع جلد Painto",
+    "name_en": "Leather Embossing Hand Mitt Painto",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 18.91,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ستانسل  30*45",
+    "name_en": "Stencil 30x45",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 6.6,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مطبة المجنونه",
+    "name_en": "Crazy Stamp",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 3.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم جلود كابرس طلياني",
+    "name_en": "Caprice Leather Set Italian",
+    "category": "",
+    "trademark": "",
+    "price": 30.0,
+    "purchase_price": 13.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ماكنة رول سوبرتكس",
+    "name_en": "Super Texture Roller Machine",
+    "category": "",
+    "trademark": "",
+    "price": 50.0,
+    "purchase_price": 36.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول ورده",
+    "name_en": "Rose Roller",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 3.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج Gold",
+    "name_en": "Gold Trowel",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 9.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج فرنس 20*8",
+    "name_en": "French Trowel 20x8",
+    "category": "",
+    "trademark": "",
+    "price": 100.0,
+    "purchase_price": 81.2,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ستانسل A4  عوضين",
+    "name_en": "A4 Stencil Double",
+    "category": "",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 2.39,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول  7\" جدله ديكور",
+    "name_en": "رول  7\" جدله ديكور",
+    "category": "",
+    "trademark": "",
+    "price": 12.0,
+    "purchase_price": 8.0,
+    "stock_qty": 32,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم رول 16\"   (3رول+يد)",
+    "name_en": "Roller Set 16\" (3 Rollers + Handle)",
+    "category": "",
+    "trademark": "",
+    "price": 45.0,
+    "purchase_price": 34.0,
+    "stock_qty": 69,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سكتش 280",
+    "name_en": "Sandpaper 280",
+    "category": "",
+    "trademark": "",
+    "price": 0.9,
+    "purchase_price": 0.75,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "حفافة Bluk",
+    "name_en": "Sanding Block",
+    "category": "",
+    "trademark": "",
+    "price": 2.0,
+    "purchase_price": 1.5,
+    "stock_qty": 188,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "حفافه يدويه",
+    "name_en": "Hand Sander",
+    "category": "",
+    "trademark": "",
+    "price": 16.0,
+    "purchase_price": 9.83,
+    "stock_qty": 130,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم تكنه 10سم",
+    "name_en": "Paint Tray Set 10cm",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 3.26,
+    "stock_qty": 239,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "عصارة حديد 10سم",
+    "name_en": "Metal Squeegee 10cm",
+    "category": "",
+    "trademark": "",
+    "price": 4.0,
+    "purchase_price": 2.0,
+    "stock_qty": 38,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم طبع اطفال",
+    "name_en": "Kids Stamp Set",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 2.0,
+    "stock_qty": 1322,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "تيب 5سم 20متر",
+    "name_en": "Tape 5cm 20m",
+    "category": "",
+    "trademark": "",
+    "price": 1.5,
+    "purchase_price": 0.9,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طبع اطفال مفرد",
+    "name_en": "Single Kids Stamp",
+    "category": "",
+    "trademark": "",
+    "price": 4.0,
+    "purchase_price": 1.0,
+    "stock_qty": 1063,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ستكرز لاصق ديكور",
+    "name_en": "Decorative Sticker",
+    "category": "",
+    "trademark": "",
+    "price": 60.0,
+    "purchase_price": 10.0,
+    "stock_qty": 155,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مراية ديكور",
+    "name_en": "Decorative Mirror",
+    "category": "",
+    "trademark": "",
+    "price": 20.0,
+    "purchase_price": 11.0,
+    "stock_qty": 180,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "جلدة ترخيم",
+    "name_en": "Marbling Pad",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 3.6,
+    "stock_qty": 3,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج سكني بلاستيك",
+    "name_en": "Plastic Trowel Beige",
+    "category": "",
+    "trademark": "",
+    "price": 12.0,
+    "purchase_price": 4.5,
+    "stock_qty": 849,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "تيب شفاف 5سم 30 يارد",
+    "name_en": "Clear Tape 5cm 30 Yards",
+    "category": "",
+    "trademark": "",
+    "price": 2.0,
+    "purchase_price": 1.18,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج اصفر فوم",
+    "name_en": "Yellow Foam Trowel",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 8.2,
+    "stock_qty": 65,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول 10سم +يد تركي DOGRU",
+    "name_en": "Roller 10cm + Handle Turkish DOGRU",
+    "category": "",
+    "trademark": "",
+    "price": 2.25,
+    "purchase_price": 1.22,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "اسفنجة بحر اصلي",
+    "name_en": "Natural Sea Sponge",
+    "category": "",
+    "trademark": "",
+    "price": 35.0,
+    "purchase_price": 18.0,
+    "stock_qty": 115,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سكتش 9\" ياباني",
+    "name_en": "Sandpaper 9\" Japanese",
+    "category": "",
+    "trademark": "",
+    "price": 2.75,
+    "purchase_price": 1.49,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كف يد اسفنج للديكور",
+    "name_en": "Sponge Hand Mitt for Decoration",
+    "category": "",
+    "trademark": "",
+    "price": 20.0,
+    "purchase_price": 11.25,
+    "stock_qty": 23,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كرت ستوكو مزدوج",
+    "name_en": "Double Stucco Card",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 2.0,
+    "stock_qty": 2016,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كرت ستوكو برتقالي",
+    "name_en": "Orange Stucco Card",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 1.93,
+    "stock_qty": 382,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كيس دبل(100*1)  وورث  wurth",
+    "name_en": "Double Bag (100x1) Wurth",
+    "category": "",
+    "trademark": "",
+    "price": 3.0,
+    "purchase_price": 2.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم فراشي/ طبع/ رولات",
+    "name_en": "Brush / Stamp / Roller Set",
+    "category": "",
+    "trademark": "",
+    "price": 30.0,
+    "purchase_price": 24.42,
+    "stock_qty": 2,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "جلدة غزال ديكور",
+    "name_en": "Deer Skin Decoration Pad",
+    "category": "",
+    "trademark": "",
+    "price": 50.0,
+    "purchase_price": 29.92,
+    "stock_qty": 1,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "نايلون  5م",
+    "name_en": "Nylon Film 5m",
+    "category": "",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 1.97,
+    "stock_qty": 1436,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم نصلات مشرط",
+    "name_en": "Utility Knife Blade Set",
+    "category": "",
+    "trademark": "",
+    "price": 1.8,
+    "purchase_price": 2.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم نصلات اسست",
+    "name_en": "Utility Knife Blade Set Assist",
+    "category": "",
+    "trademark": "",
+    "price": 2.9,
+    "purchase_price": 2.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "تيب 2سم بلولين",
+    "name_en": "Tape 2cm Blue Line",
+    "category": "",
+    "trademark": "",
+    "price": 3.25,
+    "purchase_price": 2.6,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سكتش 9\"",
+    "name_en": "Sandpaper 9\"",
+    "category": "",
+    "trademark": "",
+    "price": 3.5,
+    "purchase_price": 2.75,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "هربول يوني فيرسال",
+    "name_en": "Herbol Universal",
+    "category": "",
+    "trademark": "",
+    "price": 3.5,
+    "purchase_price": 2.8,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زاوية 3سم*3سم  L",
+    "name_en": "L Corner 3cm x 3cm",
+    "category": "",
+    "trademark": "",
+    "price": 3.25,
+    "purchase_price": 2.9,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "تيب 1/2 2سم بلولين",
+    "name_en": "Tape 2.5cm Blue Line",
+    "category": "",
+    "trademark": "",
+    "price": 3.5,
+    "purchase_price": 3.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سوبرماركت تيب monta",
+    "name_en": "Supermarket Tape Monta",
+    "category": "",
+    "trademark": "",
+    "price": 4.0,
+    "purchase_price": 3.39,
+    "stock_qty": 926,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول Turkon طراشه 10\"",
+    "name_en": "Turkon Paint Roller 10\"",
+    "category": "",
+    "trademark": "",
+    "price": 14.0,
+    "purchase_price": 5.0,
+    "stock_qty": 24,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية ليف",
+    "name_en": "Loofah Brush",
+    "category": "",
+    "trademark": "",
+    "price": 6.5,
+    "purchase_price": 3.29,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية زفته بلاستيك",
+    "name_en": "Asphalt Brush Plastic",
+    "category": "",
+    "trademark": "",
+    "price": 4.5,
+    "purchase_price": 1.84,
+    "stock_qty": 351,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "عصا مكنسه 1.4 م",
+    "name_en": "Broom Pole 1.4m",
+    "category": "",
+    "trademark": "",
+    "price": 4.5,
+    "purchase_price": 3.4,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سكتش برايت لروبة البلاط",
+    "name_en": "Bright Sandpaper for Tile Grout",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 3.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فيبر قص حديد 9\" نورتن",
+    "name_en": "Metal Cutting Fiber 9\" Norton",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 3.48,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "لاصق عريض  100يارد",
+    "name_en": "Wide Adhesive 100 Yards",
+    "category": "",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 3.75,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول طراشة ديكور 10\" Dekor",
+    "name_en": "Decoration Roller 10\" Dekor",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 12.0,
+    "stock_qty": 156,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فيبر قص حديد",
+    "name_en": "Metal Cutting Fiber Disc",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 4.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "صندل مسامير (ابوكسي)",
+    "name_en": "Nail Sandal (Epoxy)",
+    "category": "",
+    "trademark": "",
+    "price": 150.0,
+    "purchase_price": 30.0,
+    "stock_qty": 2,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول ابوكسي شوك",
+    "name_en": "Epoxy Spike Roller",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 16.0,
+    "stock_qty": 2,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "يد قفص 9\"",
+    "name_en": "Cage Handle 9\"",
+    "category": "",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 2.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سلكون",
+    "name_en": "Silicone",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 4.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم كرت +فراشي تيرا",
+    "name_en": "Tera Card + Brush Set",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 4.35,
+    "stock_qty": 12,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "تيب بني 5سم 120 يارد",
+    "name_en": "Brown Tape 5cm 120 Yards",
+    "category": "",
+    "trademark": "",
+    "price": 4.75,
+    "purchase_price": 4.58,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زاوية فيبا فيوز 76.2م",
+    "name_en": "Fiba Fuse 76.2m",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 25.3,
+    "stock_qty": 261,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ورق حف  10م تمساح اسود 100",
+    "name_en": "Sanding Paper 10m Crocodile Black 100",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 5.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كييس دبل اسافين (1*1000)",
+    "name_en": "Double Bag Wedges (1x1000)",
+    "category": "",
+    "trademark": "",
+    "price": 27.0,
+    "purchase_price": 20.0,
+    "stock_qty": 104,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "هربول",
+    "name_en": "Herbol",
+    "category": "",
+    "trademark": "",
+    "price": 4.5,
+    "purchase_price": 3.2,
+    "stock_qty": 363,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زاويه صفرية 3م مع ورق L",
+    "name_en": "Corner Bead L with Paper 3m",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 6.16,
+    "stock_qty": 350,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سكتش 9\" االماني",
+    "name_en": "Sandpaper 9\" German",
+    "category": "",
+    "trademark": "",
+    "price": 2.8,
+    "purchase_price": 2.1,
+    "stock_qty": 3075,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "حفافة تلسكوب بلاستيك",
+    "name_en": "Plastic Telescopic Sander",
+    "category": "",
+    "trademark": "",
+    "price": 12.0,
+    "purchase_price": 6.9,
+    "stock_qty": 165,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم 9\"  Agron",
+    "name_en": "Agron Set 9\"",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 9.52,
+    "stock_qty": 1,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زاوية بلاستيك 2.8م",
+    "name_en": "Plastic Corner Bead 2.8m",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 6.5,
+    "stock_qty": 1697,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زاوي المنيوم صفريه 3 م",
+    "name_en": "Aluminum Corner Bead 3m",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 2.3,
+    "stock_qty": 10918,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج دبق مسنن",
+    "name_en": "Notched Adhesive Trowel",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 3.41,
+    "stock_qty": 82,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية طراشه 1406",
+    "name_en": "Block Brush 1406",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 11.99,
+    "stock_qty": 108,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج روبه 5*25  طلياني",
+    "name_en": "Grout Trowel 5x25 Italian",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 22.0,
+    "stock_qty": 180,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم مصفاة دهان 2*1",
+    "name_en": "Paint Strainer Set 2x1",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 11.0,
+    "stock_qty": 4,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "لاصق بودره 125غم الماني",
+    "name_en": "Adhesive Powder 125g German",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 7.05,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول تركي 1017 DOGRU",
+    "name_en": "Turkish Roller 1017 DOGRU",
+    "category": "",
+    "trademark": "",
+    "price": 11.0,
+    "purchase_price": 7.15,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مقص صاج",
+    "name_en": "Tin Snips",
+    "category": "",
+    "trademark": "",
+    "price": 12.0,
+    "purchase_price": 7.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زاوية L مع ورق sheetrock",
+    "name_en": "L Corner with Sheetrock Paper",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 8.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج عادي MS",
+    "name_en": "Standard Trowel MS",
+    "category": "",
+    "trademark": "",
+    "price": 9.0,
+    "purchase_price": 5.0,
+    "stock_qty": 188,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "شفرة تنظيف يد برتقالي MS",
+    "name_en": "Cleaning Blade Orange Handle MS",
+    "category": "",
+    "trademark": "",
+    "price": 4.0,
+    "purchase_price": 3.0,
+    "stock_qty": 91,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فارة جبص صغير",
+    "name_en": "Small Drywall Rasp",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 7.0,
+    "stock_qty": 35,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية 3*7 بلوفا",
+    "name_en": "Brush 3x7 Bulova",
+    "category": "",
+    "trademark": "",
+    "price": 32.0,
+    "purchase_price": 26.59,
+    "stock_qty": 12,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية 3*10 بلوفا",
+    "name_en": "Brush 3x10 Bulova",
+    "category": "",
+    "trademark": "",
+    "price": 36.0,
+    "purchase_price": 30.39,
+    "stock_qty": 20,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية 3*12 بلوفا",
+    "name_en": "Brush 3x12 Bulova",
+    "category": "",
+    "trademark": "",
+    "price": 40.0,
+    "purchase_price": 32.56,
+    "stock_qty": 22,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "راس مقدح مفرغا",
+    "name_en": "Hollow Drill Bit",
+    "category": "",
+    "trademark": "",
+    "price": 1.4,
+    "purchase_price": 0.67,
+    "stock_qty": 195,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سطل 12 لتر",
+    "name_en": "12 Liter Bucket",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 9.3,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مطبة ديكور اسفنج مدوره",
+    "name_en": "Round Sponge Decoration Stamp",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 9.7,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية طراشة بير 100/9",
+    "name_en": "Pier Block Brush 100/9",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 9.9,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فارة جبص كبيره",
+    "name_en": "Large Drywall Rasp",
+    "category": "",
+    "trademark": "",
+    "price": 12.0,
+    "purchase_price": 10.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زاوية جبص lala",
+    "name_en": "Plaster Corner Bead Lala",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 10.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم كباية 9 قطع",
+    "name_en": "Cup Set 9 Pieces",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 10.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مقص صاج ستانلي",
+    "name_en": "Tin Snips Stanley",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 11.0,
+    "stock_qty": 1,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مقص صاج بوز رفيع",
+    "name_en": "Tin Snips Narrow Nose",
+    "category": "",
+    "trademark": "",
+    "price": 11.0,
+    "purchase_price": 7.5,
+    "stock_qty": 101,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كرت قلم رصاص",
+    "name_en": "Pencil Card",
+    "category": "",
+    "trademark": "",
+    "price": 5.5,
+    "purchase_price": 3.5,
+    "stock_qty": 6,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طارة بلاستيك سكتش 4.5\"",
+    "name_en": "Plastic Frame Sandpaper 4.5\"",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 4.0,
+    "stock_qty": 7,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فيبا فيوز 76.2 اوروبي",
+    "name_en": "Fiba Fuse 76.2 European",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 11.9,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم فراشي قلم",
+    "name_en": "Liner Brush Set",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 5.75,
+    "stock_qty": 28,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طارة بلاستيك سكتش 6\"",
+    "name_en": "Plastic Frame Sandpaper 6\"",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 6.0,
+    "stock_qty": 36,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ماكنة لزيق",
+    "name_en": "Adhesive Machine",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 12.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "لاصق بودره 200غم",
+    "name_en": "Adhesive Powder 200g",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 7.43,
+    "stock_qty": 809,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية معكوفة برغي 3\"",
+    "name_en": "Angled Screw Brush 3\"",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 12.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "منشار زوايا سراقه",
+    "name_en": "Miter Saw for Corners",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 17.0,
+    "stock_qty": 4,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج روبه جومي",
+    "name_en": "Rubber Grout Trowel",
+    "category": "",
+    "trademark": "",
+    "price": 16.0,
+    "purchase_price": 12.6,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مجك ستيل",
+    "name_en": "Magic Steel",
+    "category": "",
+    "trademark": "",
+    "price": 9.0,
+    "purchase_price": 7.5,
+    "stock_qty": 36,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "بوكسبول شفاف",
+    "name_en": "Transparent Boxpol",
+    "category": "",
+    "trademark": "",
+    "price": 3.5,
+    "purchase_price": 2.8,
+    "stock_qty": 48,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "خيط نيله",
+    "name_en": "Blue Chalk Line",
+    "category": "",
+    "trademark": "",
+    "price": 8.5,
+    "purchase_price": 4.5,
+    "stock_qty": 58,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول 10سم ديكور",
+    "name_en": "Decoration Roller 10cm",
+    "category": "",
+    "trademark": "",
+    "price": 4.0,
+    "purchase_price": 3.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "اصبع سوبر  اوول Superall",
+    "name_en": "Superall Adhesive Finger",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 14.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول 10سم بشكير  DOGRU",
+    "name_en": "Terry Roller 10cm DOGRU",
+    "category": "",
+    "trademark": "",
+    "price": 2.5,
+    "purchase_price": 0.28,
+    "stock_qty": 10339,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم Turkon \"10",
+    "name_en": "Turkon Set 10\"",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 14.8,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "لاصق بودره 175 غم",
+    "name_en": "Adhesive Powder 175g",
+    "category": "",
+    "trademark": "",
+    "price": 15.0,
+    "purchase_price": 8.77,
+    "stock_qty": 1,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية ديكور مربعة",
+    "name_en": "Square Decoration Brush",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 8.66,
+    "stock_qty": 110,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج بلاستيك شفاف",
+    "name_en": "Clear Plastic Trowel",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 4.51,
+    "stock_qty": 265,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سني ستك للمجاري",
+    "name_en": "Drain Snake",
+    "category": "",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 1.03,
+    "stock_qty": 774,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مطبة ديكور اسفنج كبيرة",
+    "name_en": "Large Sponge Decoration Stamp",
+    "category": "",
+    "trademark": "",
+    "price": 35.0,
+    "purchase_price": 17.85,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية 3*12 Agron  الاصــــلي",
+    "name_en": "Brush 3x12 Agron Original",
+    "category": "",
+    "trademark": "",
+    "price": 18.0,
+    "purchase_price": 9.75,
+    "stock_qty": 37,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طاروش قصاره",
+    "name_en": "Plastering Hawk",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 4.0,
+    "stock_qty": 274,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كف قصاره",
+    "name_en": "Plastering Float",
+    "category": "",
+    "trademark": "",
+    "price": 8.0,
+    "purchase_price": 4.0,
+    "stock_qty": 6,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول 10سم بشكير ديكور DEKOR",
+    "name_en": "Terry Decoration Roller 10cm DEKOR",
+    "category": "",
+    "trademark": "",
+    "price": 3.75,
+    "purchase_price": 3.0,
+    "stock_qty": 16,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مقص صاج الماني",
+    "name_en": "Tin Snips German",
+    "category": "",
+    "trademark": "",
+    "price": 30.0,
+    "purchase_price": 20.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مجراد هايد معكوف",
+    "name_en": "Angled Hyde Spatula",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 20.6,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم مصفاة دهان (2*1) ALOFOK",
+    "name_en": "Paint Strainer Set (2x1) ALOFOK",
+    "category": "",
+    "trademark": "",
+    "price": 9.0,
+    "purchase_price": 4.85,
+    "stock_qty": 1357,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مجراد 6\" هايد كعب حديد",
+    "name_en": "Spatula 6\" Hyde Iron Heel",
+    "category": "",
+    "trademark": "",
+    "price": 28.0,
+    "purchase_price": 21.7,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "معجونه جبص اخضر1 كغم",
+    "name_en": "Green Plaster Filler 1kg",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 21.67,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مالج  Kabriol",
+    "name_en": "Kabriol Trowel",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 22.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كشاف لكس",
+    "name_en": "Flashlight Lux",
+    "category": "",
+    "trademark": "",
+    "price": 50.0,
+    "purchase_price": 0.0,
+    "stock_qty": 63,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرد سلكون ماركة KAPRO",
+    "name_en": "Caulking Gun KAPRO",
+    "category": "",
+    "trademark": "",
+    "price": 75.0,
+    "purchase_price": 45.0,
+    "stock_qty": 4,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول طراشة ابوكسي",
+    "name_en": "Epoxy Spike Roller",
+    "category": "",
+    "trademark": "",
+    "price": 35.0,
+    "purchase_price": 24.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "براغي عدسة  500 (نايواني) علبة صغيره",
+    "name_en": "Lens Screws 500 (Small Box)",
+    "category": "",
+    "trademark": "",
+    "price": 30.0,
+    "purchase_price": 25.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "طقم موالج حقيبه  6قطع",
+    "name_en": "Trowel Set Bag 6 Pieces",
+    "category": "",
+    "trademark": "",
+    "price": 400.0,
+    "purchase_price": 194.18,
+    "stock_qty": 51,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية ديكور  طلياني T",
+    "name_en": "Italian Decorative Brush T",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 25.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "برق 1كغم",
+    "name_en": "Sparkle 1kg",
+    "category": "",
+    "trademark": "",
+    "price": 35.0,
+    "purchase_price": 25.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "سكتش 17 \" لجلي البلاط",
+    "name_en": "Sandpaper 17\" for Tile Polishing",
+    "category": "",
+    "trademark": "",
+    "price": 35.0,
+    "purchase_price": 25.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مجراد 6\" هايد (نورستا)",
+    "name_en": "Spatula 6\" Hyde (Norsta)",
+    "category": "",
+    "trademark": "",
+    "price": 38.0,
+    "purchase_price": 29.26,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ورق حف رول 120 اسود lala",
+    "name_en": "Sanding Roll 120 Black Lala",
+    "category": "",
+    "trademark": "",
+    "price": 50.0,
+    "purchase_price": 30.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "روبه 5 كغم طلياني",
+    "name_en": "Italian Grout 5kg",
+    "category": "",
+    "trademark": "",
+    "price": 38.0,
+    "purchase_price": 30.38,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول ملتينه 9\"  Level5",
+    "name_en": "Finishing Roller 9\" Level5",
+    "category": "",
+    "trademark": "",
+    "price": 60.0,
+    "purchase_price": 13.12,
+    "stock_qty": 402,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "يد مالج ملتينه امريكي Level5",
+    "name_en": "Finishing Trowel Handle Level5",
+    "category": "",
+    "trademark": "",
+    "price": 45.0,
+    "purchase_price": 14.1,
+    "stock_qty": 99,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "زاوية فيبا فيوز 152.3 م",
+    "name_en": "Fiba Fuse 152.3m",
+    "category": "",
+    "trademark": "",
+    "price": 40.0,
+    "purchase_price": 34.5,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "معجونه تشققات ازرق 5 كغم",
+    "name_en": "Blue Crack Filler 5kg",
+    "category": "",
+    "trademark": "",
+    "price": 60.0,
+    "purchase_price": 35.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مفصلات فتحات الصيانه",
+    "name_en": "Access Panel Hinges",
+    "category": "",
+    "trademark": "",
+    "price": 5.0,
+    "purchase_price": 1.5,
+    "stock_qty": 49,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "قضبان لحام 3.25ملم DOZ",
+    "name_en": "Welding Rods 3.25mm DOZ",
+    "category": "",
+    "trademark": "",
+    "price": 38.0,
+    "purchase_price": 37.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "قضبان لحام 2.5ملم DOZ",
+    "name_en": "Welding Rods 2.5mm DOZ",
+    "category": "",
+    "trademark": "",
+    "price": 40.0,
+    "purchase_price": 37.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مجراد 8\" هايد نورستا",
+    "name_en": "Spatula 8\" Hyde Norsta",
+    "category": "",
+    "trademark": "",
+    "price": 48.0,
+    "purchase_price": 38.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول ديكور 10\"  1081 (copy)",
+    "name_en": "Decoration Roller 10\" 1081 (Copy)",
+    "category": "",
+    "trademark": "",
+    "price": 10.0,
+    "purchase_price": 4.08,
+    "stock_qty": 1756,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول طراشة 10 \" بلوفا",
+    "name_en": "Paint Roller 10\" Bulova",
+    "category": "",
+    "trademark": "",
+    "price": 60.0,
+    "purchase_price": 40.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فيبرامريكي 76م  AmericanFiber",
+    "name_en": "American Fiber 76m",
+    "category": "",
+    "trademark": "",
+    "price": 25.0,
+    "purchase_price": 4.67,
+    "stock_qty": 4827,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مقص صاج aroa تايواني",
+    "name_en": "Scissors Aroa Taiwanese",
+    "category": "",
+    "trademark": "",
+    "price": 52.0,
+    "purchase_price": 45.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "كيس صوف ديكور",
+    "name_en": "Decorative Wool Bag",
+    "category": "",
+    "trademark": "",
+    "price": 52.0,
+    "purchase_price": 45.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "خرطوم للكحلة ( محقان)",
+    "name_en": "Grout Syringe Hose",
+    "category": "",
+    "trademark": "",
+    "price": 14.0,
+    "purchase_price": 5.49,
+    "stock_qty": 340,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرد دهان 4001S",
+    "name_en": "Paint Gun 4001S",
+    "category": "",
+    "trademark": "",
+    "price": 69.0,
+    "purchase_price": 50.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مقص صاج ويس (wiss)",
+    "name_en": "Tin Snips Wiss",
+    "category": "",
+    "trademark": "",
+    "price": 60.0,
+    "purchase_price": 52.08,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرشاية طراشه 7*17 بولوفا",
+    "name_en": "Block Brush 7x17 Bulova",
+    "category": "",
+    "trademark": "",
+    "price": 60.0,
+    "purchase_price": 52.32,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ورق زجاج احمر",
+    "name_en": "Red Glass Paper",
+    "category": "",
+    "trademark": "",
+    "price": 70.0,
+    "purchase_price": 55.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرد اغو 4001G",
+    "name_en": "Glue Gun 4001G",
+    "category": "",
+    "trademark": "",
+    "price": 64.0,
+    "purchase_price": 56.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "فرد تباشيم امريكي",
+    "name_en": "American Chalk Gun",
+    "category": "",
+    "trademark": "",
+    "price": 75.0,
+    "purchase_price": 58.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول ملتينه الماني فريس",
+    "name_en": "German Finishing Roller Frees",
+    "category": "",
+    "trademark": "",
+    "price": 80.0,
+    "purchase_price": 59.67,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "بوت  صغير جلد 28-35",
+    "name_en": "Kids Leather Boot 28-35",
+    "category": "",
+    "trademark": "",
+    "price": 80.0,
+    "purchase_price": 60.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ورق زجاج اصفر",
+    "name_en": "Yellow Glass Paper",
+    "category": "",
+    "trademark": "",
+    "price": 75.0,
+    "purchase_price": 65.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ماء زجاج  هيدروسيل  5 كغم",
+    "name_en": "Water Glass Hydroseal 5kg",
+    "category": "",
+    "trademark": "",
+    "price": 90.0,
+    "purchase_price": 72.69,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "بوت وسط 36 - 39 جلد",
+    "name_en": "Mid Work Boot 36-39 Leather",
+    "category": "",
+    "trademark": "",
+    "price": 90.0,
+    "purchase_price": 75.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "بوت عمل بلندستون كبير 40-46",
+    "name_en": "Blundstone Work Boot Large 40-46",
+    "category": "",
+    "trademark": "",
+    "price": 120.0,
+    "purchase_price": 85.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ز1وية الظل   Z (  باس نيتوك)",
+    "name_en": "Shadow Corner Z (Bass Netok)",
+    "category": "",
+    "trademark": "",
+    "price": 20.0,
+    "purchase_price": 12.36,
+    "stock_qty": 725,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ورق اسفنج 240 هرمز",
+    "name_en": "Sponge Paper 240 Hormoz",
+    "category": "",
+    "trademark": "",
+    "price": 135.0,
+    "purchase_price": 90.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "بوت عمل ردباك",
+    "name_en": "Redback Work Boot",
+    "category": "",
+    "trademark": "",
+    "price": 120.0,
+    "purchase_price": 95.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "بوت عمل ردباك مع حديد",
+    "name_en": "Redback Work Boot with Steel Toe",
+    "category": "",
+    "trademark": "",
+    "price": 130.0,
+    "purchase_price": 100.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "براغي 7 سم",
+    "name_en": "Screws 7cm",
+    "category": "",
+    "trademark": "",
+    "price": 135.0,
+    "purchase_price": 105.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "رول ديكور 10\"   1017  (copy)",
+    "name_en": "Decoration Roller 10\" 1017 (Copy)",
+    "category": "",
+    "trademark": "",
+    "price": 11.0,
+    "purchase_price": 5.27,
+    "stock_qty": 900,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "تيب 2سم  45م",
+    "name_en": "Tape 2cm 45m",
+    "category": "",
+    "trademark": "",
+    "price": 2.8,
+    "purchase_price": 1.36,
+    "stock_qty": 8828,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ورق اسفنج 220",
+    "name_en": "Sponge Paper 220",
+    "category": "",
+    "trademark": "",
+    "price": 160.0,
+    "purchase_price": 120.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مجراد معكوف الافق",
+    "name_en": "Angled Spatula Alofok",
+    "category": "",
+    "trademark": "",
+    "price": 6.0,
+    "purchase_price": 3.06,
+    "stock_qty": 102,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "ورق اسفنج  (بلولين) 240",
+    "name_en": "Sponge Paper (Blue Line) 240",
+    "category": "",
+    "trademark": "",
+    "price": 175.0,
+    "purchase_price": 145.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "براغي 3.5",
+    "name_en": "Screws 3.5",
+    "category": "",
+    "trademark": "",
+    "price": 290.0,
+    "purchase_price": 200.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "براغي عدسة (5000*1)",
+    "name_en": "Lens Head Screws (5000x1)",
+    "category": "",
+    "trademark": "",
+    "price": 280.0,
+    "purchase_price": 215.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "براغي 2.5 جبص راس مقدح",
+    "name_en": "Drywall Screws 2.5 Drill Point",
+    "category": "",
+    "trademark": "",
+    "price": 260.0,
+    "purchase_price": 220.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "براغي راس مقدح باخ",
+    "name_en": "Drywall Screws Drill Point Pan Head",
+    "category": "",
+    "trademark": "",
+    "price": 270.0,
+    "purchase_price": 230.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "براغي 4.5",
+    "name_en": "Screws 4.5",
+    "category": "",
+    "trademark": "",
+    "price": 320.0,
+    "purchase_price": 290.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  },
+  {
+    "name_ar": "مفركا",
+    "name_en": "Scrubber",
+    "category": "",
+    "trademark": "",
+    "price": 600.0,
+    "purchase_price": 550.0,
+    "stock_qty": 0,
+    "unit": "piece",
+    "options": null
+  }
+]

@@ -44,7 +44,13 @@ export function CatalogView({
   updateCartQty,
 }: CatalogViewProps) {
   const { t } = useTranslation();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(
+    () => sessionStorage.getItem("catalog-search") || ""
+  );
+  useEffect(() => {
+    if (search) sessionStorage.setItem("catalog-search", search);
+    else sessionStorage.removeItem("catalog-search");
+  }, [search]);
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">(
     () => (localStorage.getItem("portal-catalog-view") as "grid" | "list") || "grid"
@@ -346,7 +352,9 @@ export function CatalogView({
 
       <div className="space-y-4 p-4">
         <SearchInput
+          value={search}
           placeholder={t("catalog.search")}
+          onChange={setSearch}
           onSearch={setSearch}
         />
 

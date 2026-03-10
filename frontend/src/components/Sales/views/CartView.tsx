@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatCard } from "@/components/ui/stat-card";
 import { TopBar } from "@/components/ui/top-bar";
 import { type Customer, type Product, type CartItem } from "@/services/salesApi";
-import { optionsPrice } from "@/lib/cart";
+import { getUnitPrice } from "@/lib/cart";
 import { getCoverImage } from "@/lib/image";
 import { formatCurrency } from "@/lib/format";
 import { getProductName } from "@/lib/product";
@@ -90,7 +90,7 @@ export function CartView({
         {/* Cart items */}
         <div className="space-y-2">
           {cartEntries.map(([key, ci], idx) => {
-            const unitPrice = (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions);
+            const unitPrice = getUnitPrice(ci.product, ci.selectedOptions);
             return (
               <Card
                 key={key}

@@ -17,7 +17,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector } from "@/store";
 import { salesApi, type Customer, type Product, type OrderItem } from "@/services/salesApi";
-import { optionsPrice } from "@/lib/cart";
+import { getUnitPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
 import { getProductName } from "@/lib/product";
 import { toLocalDateStr } from "@/lib/utils";
@@ -96,7 +96,7 @@ export default function SalesRoot() {
       name: getProductName(ci.product),
       image_url: ci.product.image_urls?.[0] ?? null,
       quantity: ci.quantity,
-      unit_price: (ci.product.discounted_price ?? ci.product.price) + optionsPrice(ci.selectedOptions),
+      unit_price: getUnitPrice(ci.product, ci.selectedOptions),
       selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
     }));
     const payload = { customer_id: selectedCustomer.id, items, delivery_date: deliveryDate ? toLocalDateStr(deliveryDate) : null };

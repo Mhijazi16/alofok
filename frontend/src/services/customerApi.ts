@@ -44,7 +44,7 @@ export interface DraftOrderItem {
   image_url?: string | null;
   quantity: number;
   unit_price: number;
-  selected_options?: { name: string; value: string; price_modifier: number }[] | null;
+  selected_options?: { name: string; value: string; price: number }[] | null;
 }
 
 export interface DraftOrderCreate {

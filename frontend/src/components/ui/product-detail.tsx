@@ -269,10 +269,10 @@ export function ProductDetail({ product, onBack, actions, embedded }: ProductDet
                     {opt.values.map((v) => (
                       <Badge key={v.label} variant="outline" size="sm">
                         {v.label}
-                        {v.price_modifier !== 0 && (
+                        {v.price !== 0 && (
                           <span className="ms-1 text-primary">
-                            {v.price_modifier > 0 ? "+" : ""}
-                            {formatPrice(v.price_modifier)}
+                            {v.price > 0 ? "+" : ""}
+                            {formatPrice(v.price)}
                           </span>
                         )}
                       </Badge>

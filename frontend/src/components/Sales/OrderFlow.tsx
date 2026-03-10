@@ -47,7 +47,13 @@ interface OrderFlowProps {
 export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, updateCartQty, removeFromCart: _removeFromCart, onViewCart, onViewProduct }: OrderFlowProps) {
   const { t } = useTranslation();
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(
+    () => sessionStorage.getItem("order-search") || ""
+  );
+  useEffect(() => {
+    if (search) sessionStorage.setItem("order-search", search);
+    else sessionStorage.removeItem("order-search");
+  }, [search]);
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">(
     () => (localStorage.getItem("catalog-view") as "grid" | "list") || "grid"
@@ -354,7 +360,9 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
 
       <div className="space-y-4 p-4">
         <SearchInput
+          value={search}
           placeholder={t("catalog.search")}
+          onChange={setSearch}
           onSearch={setSearch}
         />
 

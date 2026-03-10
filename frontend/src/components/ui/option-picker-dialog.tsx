@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getCoverImage } from "@/lib/image";
-import { optionsPrice } from "@/lib/cart";
 import { formatCurrency } from "@/lib/format";
 import { getProductName } from "@/lib/product";
 import type { Product, SelectedOption } from "@/services/salesApi";
@@ -46,7 +45,8 @@ export function OptionPickerDialog({
   const basePrice = product
     ? (product.discounted_price ?? product.price)
     : 0;
-  const total = (basePrice + optionsPrice(selectedList)) * qty;
+  const selectedPrice = selectedList.length > 0 ? selectedList[0].price : basePrice;
+  const total = selectedPrice * qty;
 
   const productName = product ? getProductName(product) : "";
 
@@ -120,7 +120,7 @@ export function OptionPickerDialog({
                             [og.name]: {
                               name: og.name,
                               value: v.label,
-                              price_modifier: v.price_modifier,
+                              price: v.price,
                             },
                           }))
                         }
@@ -131,14 +131,13 @@ export function OptionPickerDialog({
                         }`}
                       >
                         {v.label}
-                        {v.price_modifier !== 0 && (
+                        {v.price > 0 && (
                           <Badge
-                            variant={v.price_modifier > 0 ? "default" : "success"}
+                            variant="default"
                             size="sm"
                             className="text-[0.6rem]"
                           >
-                            {v.price_modifier > 0 ? "+" : ""}
-                            {formatCurrency(v.price_modifier)}
+                            {formatCurrency(v.price)}
                           </Badge>
                         )}
                       </button>

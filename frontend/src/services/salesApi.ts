@@ -5,7 +5,9 @@ import type { LedgerEntry } from "./adminApi";
 
 export interface ProductOptionValue {
   label: string;
-  price_modifier: number;
+  price: number;
+  cost: number;
+  quantity: number;
 }
 
 export interface ProductOption {
@@ -116,7 +118,7 @@ export interface Statement {
 export interface SelectedOption {
   name: string;
   value: string;
-  price_modifier: number;
+  price: number;
 }
 
 export interface OrderItem {

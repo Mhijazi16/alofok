@@ -226,6 +226,13 @@
     display: none;
   }
 
+  /* Prevent iOS Safari zoom on input focus (requires font-size >= 16px) */
+  @supports (-webkit-touch-callout: none) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
+
   /* Glow effects */
   .glow-primary {
     box-shadow: 0 0 20px hsl(var(--primary) / 0.15), 0 0 40px hsl(var(--primary) / 0.05);
