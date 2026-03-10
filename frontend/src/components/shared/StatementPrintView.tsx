@@ -1,12 +1,13 @@
 import type { StatementPdfProps } from "./StatementPdf";
 
 const TYPE_LABELS: Record<string, string> = {
-  Order: "\u0637\u0644\u0628",
+  Order: "\u0637\u0644\u0628\u064A\u0629",
   Payment_Cash: "\u062F\u0641\u0639 \u0646\u0642\u062F\u064A",
   Payment_Check: "\u0634\u064A\u0643",
   Check_Return: "\u0634\u064A\u0643 \u0645\u0631\u062A\u062C\u0639",
   Purchase: "\u0634\u0631\u0627\u0621",
   opening_balance: "\u0631\u0635\u064A\u062F \u0627\u0641\u062A\u062A\u0627\u062D\u064A",
+  Opening_Balance: "\u0631\u0635\u064A\u062F \u0627\u0641\u062A\u062A\u0627\u062D\u064A",
 };
 
 const HAS_ITEMS = new Set(["Order", "Purchase"]);

@@ -149,17 +149,51 @@ export function StatementViewBase({
     customRange,
   ]);
 
+  const toGrayscaleDataUrl = (src: string): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imageData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+          // Darken: push dark tones much darker for high-contrast B&W
+          const darkened = Math.pow(gray / 255, 2.2) * 255;
+          d[i] = d[i + 1] = d[i + 2] = darkened;
+        }
+        ctx.putImageData(imageData, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+
   const handleDownload = async () => {
     if (!pdfProps) return;
     setGenerating(true);
     try {
-      const { handlePrintFallback } = await import(
-        "@/components/shared/StatementPrintView"
+      const logoDataUrl = await toGrayscaleDataUrl("/dark-mode-logo.png").catch(() => undefined);
+      const { pdf } = await import("@react-pdf/renderer");
+      const { StatementPdf } = await import(
+        "@/components/shared/StatementPdf"
       );
-      const filename = `كشف_${customerName || "customer"}_${pdfProps.dateRange.from}_${pdfProps.dateRange.to}.pdf`;
-      handlePrintFallback(pdfProps, filename);
+      const blob = await pdf(<StatementPdf {...pdfProps} logoDataUrl={logoDataUrl} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `كشف_${customerName || "customer"}_${pdfProps.dateRange.from}_${pdfProps.dateRange.to}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Statement export failed:", err);
+      console.error("PDF generation failed:", err);
     } finally {
       setGenerating(false);
     }

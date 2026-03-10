@@ -5,6 +5,7 @@ import { User, Lock, Languages, Phone } from "lucide-react";
 import { useAppDispatch } from "@/store";
 import { setCredentials } from "@/store/authSlice";
 import { type UserRole, decodeJwt } from "@/lib/jwt";
+import { useTheme } from "@/hooks/useTheme";
 import { salesApi } from "@/services/salesApi";
 import { customerApi } from "@/services/customerApi";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
+  const { isDark } = useTheme();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -77,16 +79,15 @@ export default function LoginPage() {
       {/* Login card */}
       <div className="glass-strong w-full max-w-sm animate-scale-in rounded-2xl p-8">
         {/* Logo + branding */}
-        <div className="mb-8 flex flex-col items-center gap-4">
-          <div className="gradient-primary flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg glow-sm">
-            <span className="text-h1 text-white">أ</span>
-          </div>
-          <div className="text-center">
-            <h1 className="text-display text-gradient-primary">أفق</h1>
-            <p className="mt-1 text-body-sm text-muted-foreground">
-              {t("app.tagline")}
-            </p>
-          </div>
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <img
+            src={isDark ? "/dark-mode-logo.png" : "/light-mode-logo.png"}
+            alt="أفق"
+            className="h-40 w-auto object-contain"
+          />
+          <p className="text-body-sm text-muted-foreground">
+            {t("app.tagline")}
+          </p>
         </div>
 
         {/* Login mode toggle */}

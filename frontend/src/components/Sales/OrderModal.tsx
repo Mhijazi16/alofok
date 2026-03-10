@@ -174,6 +174,11 @@ export function OrderModal({
                         <p className="text-body-sm font-semibold truncate">
                           {item.name}
                         </p>
+                        {item.selected_options?.length > 0 && (
+                          <p className="text-caption text-muted-foreground">
+                            {item.selected_options.map((o: any) => `${o.name}: ${o.value}`).join(" | ")}
+                          </p>
+                        )}
                         <p className="text-caption text-muted-foreground">
                           {item.quantity} × {formatCurrency(item.unit_price)}
                         </p>
@@ -242,6 +247,11 @@ export function OrderModal({
                             <p className="text-body-sm font-semibold truncate">
                               {item.name}
                             </p>
+                            {item.selected_options?.length > 0 && (
+                              <p className="text-caption text-muted-foreground">
+                                {item.selected_options.map((o: any) => `${o.name}: ${o.value}`).join(" | ")}
+                              </p>
+                            )}
                             <div className="flex gap-2 mt-1">
                               <Button
                                 variant="outline"

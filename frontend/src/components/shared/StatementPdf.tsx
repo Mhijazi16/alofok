@@ -4,6 +4,7 @@ import {
   Page,
   View,
   Text,
+  Image,
   StyleSheet,
 } from "@react-pdf/renderer";
 
@@ -24,6 +25,10 @@ export interface StatementPdfProps {
           quantity?: number;
           unit_price?: number;
           total?: number;
+          selected_options?: Array<{
+            name: string;
+            value: string;
+          }> | null;
         }>;
       };
     };
@@ -31,15 +36,18 @@ export interface StatementPdfProps {
   }>;
   closingBalance: number;
   totals: { orders: number; payments: number; purchases: number };
+  /** Base64 data URL of the logo (grayscale) */
+  logoDataUrl?: string;
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  Order: "\u0637\u0644\u0628",
+  Order: "\u0637\u0644\u0628\u064A\u0629",
   Payment_Cash: "\u062F\u0641\u0639 \u0646\u0642\u062F\u064A",
   Payment_Check: "\u0634\u064A\u0643",
   Check_Return: "\u0634\u064A\u0643 \u0645\u0631\u062A\u062C\u0639",
   Purchase: "\u0634\u0631\u0627\u0621",
   opening_balance: "\u0631\u0635\u064A\u062F \u0627\u0641\u062A\u062A\u0627\u062D\u064A",
+  Opening_Balance: "\u0631\u0635\u064A\u062F \u0627\u0641\u062A\u062A\u0627\u062D\u064A",
 };
 
 const fmtNum = (n: number | null | undefined) =>
@@ -63,27 +71,30 @@ const s = StyleSheet.create({
   },
   // Header
   headerSection: {
+    flexDirection: "row-reverse",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
-    alignItems: "flex-end",
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
   },
-  brandAr: {
-    fontSize: 18,
-    fontWeight: 700,
+  logo: {
+    width: 140,
+    height: "auto",
   },
-  brandEn: {
-    fontSize: 12,
-    color: "#888",
-    marginBottom: 4,
+  headerInfo: {
+    alignItems: "flex-start",
   },
   customerName: {
     fontSize: 14,
-    fontWeight: 600,
-    marginTop: 8,
+    fontWeight: 700,
+    color: "#222",
   },
   dateRange: {
     fontSize: 10,
     color: "#888",
-    marginTop: 2,
+    marginTop: 3,
   },
   openingRow: {
     flexDirection: "row-reverse",
@@ -136,16 +147,27 @@ const s = StyleSheet.create({
     fontSize: 9,
     color: "#222",
   },
-  // Sub-rows
-  subRow: {
+  // Sub-rows (item details — single line)
+  itemLine: {
     flexDirection: "row-reverse",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 2,
-    paddingHorizontal: 6,
-    paddingRight: 30,
+    paddingHorizontal: 10,
+    paddingRight: 24,
+    borderBottomWidth: 0.3,
+    borderBottomColor: "#eee",
   },
-  subText: {
-    fontSize: 8,
-    color: "#888",
+  itemText: {
+    fontSize: 7.5,
+    color: "#444",
+    textAlign: "right",
+    flex: 1,
+  },
+  itemTotal: {
+    fontSize: 7.5,
+    fontWeight: 600,
+    color: "#333",
   },
   noItems: {
     fontSize: 8,
@@ -201,18 +223,20 @@ export function StatementPdf({
   entries,
   closingBalance,
   totals,
+  logoDataUrl,
 }: StatementPdfProps) {
   return (
     <Document>
       <Page size="A4" style={s.page}>
         {/* Header */}
         <View style={s.headerSection}>
-          <Text style={s.brandAr}>{"\u0634\u0631\u0643\u0629 \u0627\u0644\u0623\u0641\u0642"}</Text>
-          <Text style={s.brandEn}>Alofok - Tools</Text>
-          <Text style={s.customerName}>{customerName}</Text>
-          <Text style={s.dateRange}>
-            {dateRange.from} {"\u2014"} {dateRange.to}
-          </Text>
+          <Image src={logoDataUrl || "/dark-mode-logo.png"} style={s.logo} />
+          <View style={s.headerInfo}>
+            <Text style={s.customerName}>{customerName}</Text>
+            <Text style={s.dateRange}>
+              {dateRange.from} {"\u2014"} {dateRange.to}
+            </Text>
+          </View>
         </View>
 
         {/* Opening Balance */}
@@ -272,13 +296,26 @@ export function StatementPdf({
               {/* Sub-rows for Order / Purchase items */}
               {showItems &&
                 (items && items.length > 0 ? (
-                  items.map((item, iIdx) => (
-                    <View key={iIdx} style={s.subRow}>
-                      <Text style={s.subText}>
-                        {item.name ?? item.product_id ?? ""} {"\u00B7"} {item.quantity ?? 0} {"\u00D7"} {fmtNum(Number(item.unit_price ?? 0))} = {fmtNum(item.total ?? (item.quantity ?? 0) * Number(item.unit_price ?? 0))}
-                      </Text>
-                    </View>
-                  ))
+                  items.map((item, iIdx) => {
+                    const opts = item.selected_options;
+                    const qty = item.quantity ?? 0;
+                    const unitPrice = Number(item.unit_price ?? 0);
+                    const totalPrice = item.total ?? qty * unitPrice;
+                    const name = item.name ?? item.product_id ?? "";
+                    const optsStr = opts && opts.length > 0
+                      ? ` (${opts.map((o: { name: string; value: string }) => `${o.name}: ${o.value}`).join(", ")})`
+                      : "";
+                    return (
+                      <View key={iIdx} style={s.itemLine}>
+                        <Text style={s.itemText}>
+                          {name}{optsStr}  {"\u00B7"}  {qty} {"\u00D7"} {fmtNum(unitPrice)}
+                        </Text>
+                        <Text style={s.itemTotal}>
+                          {fmtNum(totalPrice)}
+                        </Text>
+                      </View>
+                    );
+                  })
                 ) : (
                   <Text style={s.noItems}>
                     {"\u0644\u0627 \u062A\u0641\u0627\u0635\u064A\u0644"}
