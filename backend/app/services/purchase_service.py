@@ -82,9 +82,7 @@ class PurchaseService:
             await self._products.update(product)
 
         # Create outgoing ledger entry with item summary
-        item_summary = ", ".join(
-            f"{item.quantity}x {item.name}" for item in body.items
-        )
+        item_summary = ", ".join(f"{item.quantity}x {item.name}" for item in body.items)
         ledger_entry = CompanyLedger(
             direction="outgoing",
             payment_method="cash",

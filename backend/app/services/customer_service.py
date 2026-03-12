@@ -48,7 +48,9 @@ class CustomerService:
         self._cache = cache
         self._auth = auth_repo
 
-    async def create_customer(self, data: CustomerCreate, user_id: uuid.UUID) -> CustomerOut:
+    async def create_customer(
+        self, data: CustomerCreate, user_id: uuid.UUID
+    ) -> CustomerOut:
         portal_password = (
             data.portal_password if hasattr(data, "portal_password") else None
         )
@@ -89,7 +91,11 @@ class CustomerService:
         return [TransactionOut.model_validate(d) for d in drafts]
 
     async def update_customer(
-        self, customer_id: uuid.UUID, data: CustomerUpdate, user_id: uuid.UUID, role: str
+        self,
+        customer_id: uuid.UUID,
+        data: CustomerUpdate,
+        user_id: uuid.UUID,
+        role: str,
     ) -> CustomerOut:
         if role == "Sales":
             customer = await self._customers.get_by_id(customer_id)
@@ -325,5 +331,3 @@ def _compute_risk(balance: Decimal, last_payment_date: str | None) -> str:
     if balance < Decimal("5000") and days_since < 60:
         return "yellow"
     return "red"
-
-

@@ -1,43 +1,52 @@
 """Analyze tools.csv to identify product families (variants of the same product)."""
+
 import csv
 import re
 from collections import defaultdict
+
 
 def parse_csv(path):
     rows = []
     with open(path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for r in reader:
-            rows.append({
-                "number": int(r["Number"]),
-                "name": r["Name"].strip(),
-                "qty": int(r["Quantity"]),
-                "cost": float(r["Cost"]),
-                "price": float(r["Price"]),
-            })
+            rows.append(
+                {
+                    "number": int(r["Number"]),
+                    "name": r["Name"].strip(),
+                    "qty": int(r["Quantity"]),
+                    "cost": float(r["Cost"]),
+                    "price": float(r["Price"]),
+                }
+            )
     return rows
+
 
 # Size patterns to extract from names
 SIZE_PATTERNS = [
     # Inch sizes like 1/2", 1", 1/2 1", 2", etc.
     (r'(\d+/\d+\s+\d+|\d+/\d+|\d+\.?\d*)\s*"', "inch"),
     # Hash sizes like 3#, 4#
-    (r'(\d+)\s*#', "hash"),
+    (r"(\d+)\s*#", "hash"),
     # Numbered sizes like No. 1, No. 2.5
-    (r'No\.?\s*(\d+\.?\d*)', "no"),
+    (r"No\.?\s*(\d+\.?\d*)", "no"),
     # CM sizes like 10سم, 15سم
-    (r'(\d+)\s*سم', "cm"),
+    (r"(\d+)\s*سم", "cm"),
     # Dimension sizes like 7*17, 15*15, 20*20
-    (r'(\d+\*\d+)', "dim"),
+    (r"(\d+\*\d+)", "dim"),
     # Meter sizes like 25م, 50م, 75م (but not سم)
-    (r'(?<!سم\s)(?<!s)(\d+)\s*م(?!ل|ت|ج|ش|ع|ق|ك|ن|ح|ر|د|ب|ز|و|ا|ي|ل|س|ف|ه|خ|ص|ض|ط|ظ|غ)', "m"),
+    (
+        r"(?<!سم\s)(?<!s)(\d+)\s*م(?!ل|ت|ج|ش|ع|ق|ك|ن|ح|ر|د|ب|ز|و|ا|ي|ل|س|ف|ه|خ|ص|ض|ط|ظ|غ)",
+        "m",
+    ),
     # Kg sizes like 1 كغم, 5 كغم
-    (r'(\d+\.?\d*)\s*كغم?', "kg"),
+    (r"(\d+\.?\d*)\s*كغم?", "kg"),
     # Liter sizes like 1 لتر, 5 لتر
-    (r'(\d+\.?\d*)\s*لتر', "liter"),
+    (r"(\d+\.?\d*)\s*لتر", "liter"),
     # Grit numbers for sandpaper (standalone 3-digit numbers)
-    (r'\b(\d{2,3})\b', "grit"),
+    (r"\b(\d{2,3})\b", "grit"),
 ]
+
 
 def extract_size(name):
     """Try to extract a size/variant indicator from a product name."""
@@ -46,24 +55,26 @@ def extract_size(name):
     if m:
         return m.group(1).strip() + '"', m.start(), m.end()
 
-    m = re.search(r'(\d+)\s*#', name)
+    m = re.search(r"(\d+)\s*#", name)
     if m:
-        return m.group(1) + '#', m.start(), m.end()
+        return m.group(1) + "#", m.start(), m.end()
 
-    m = re.search(r'No\.?\s*(\d+\.?\d*)', name)
+    m = re.search(r"No\.?\s*(\d+\.?\d*)", name)
     if m:
-        return 'No.' + m.group(1), m.start(), m.end()
+        return "No." + m.group(1), m.start(), m.end()
 
     return None, -1, -1
+
 
 def normalize_name(name, size_start, size_end):
     """Remove the size portion from a name to get the base product name."""
     if size_start >= 0:
         base = name[:size_start] + name[size_end:]
         # Clean up extra spaces
-        base = re.sub(r'\s+', ' ', base).strip()
+        base = re.sub(r"\s+", " ", base).strip()
         return base
     return name
+
 
 # ── Manual grouping rules (based on domain knowledge of the CSV) ──
 # Each rule: (group_name, category, trademark, pattern_to_match_names, size_extraction_method)
@@ -130,7 +141,6 @@ MANUAL_GROUPS = {
         "category": "فراشي",
         "trademark": "",
     },
-
     # Rollers
     "رول طراشه A": {
         "numbers": [48, 50],
@@ -182,7 +192,6 @@ MANUAL_GROUPS = {
         "category": "رولات",
         "trademark": "DOGRU",
     },
-
     # Spatulas (مجراد)
     "مجراد عادي": {
         "numbers": [508, 132, 133, 134, 135, 136, 185, 186],
@@ -209,19 +218,17 @@ MANUAL_GROUPS = {
         "category": "مجاريد",
         "trademark": "",
     },
-
     # Sandpaper (سكتش)
     "سكتش عادي": {
         "numbers": [202, 203, 204, 205, 211, 212, 221, 222, 239, 246, 248],
         "category": "ورق حف",
         "trademark": "",
     },
-    "سكتش 4.5\"": {
+    'سكتش 4.5"': {
         "numbers": [247, 366],
         "category": "ورق حف",
         "trademark": "",
     },
-
     # Sponge paper (ورق اسفنج)
     "ورق اسفنج عادي": {
         "numbers": [207, 208, 209, 210, 234, 296],
@@ -238,7 +245,6 @@ MANUAL_GROUPS = {
         "category": "ورق حف",
         "trademark": "نورتن",
     },
-
     # Crocodile sandpaper rolls
     "ورق حف رول تمساح اسود": {
         "numbers": [269, 270, 271, 341, 343, 344, 345, 346],
@@ -255,7 +261,6 @@ MANUAL_GROUPS = {
         "category": "ورق حف",
         "trademark": "",
     },
-
     # Tape (تيب)
     "تيب سم": {
         "numbers": [171, 173, 172, 452],
@@ -272,7 +277,6 @@ MANUAL_GROUPS = {
         "category": "تيب",
         "trademark": "",
     },
-
     # Plaster corner / angle
     "زاوية جبص": {
         "numbers": [168, 331],
@@ -284,35 +288,30 @@ MANUAL_GROUPS = {
         "category": "زوايا",
         "trademark": "",
     },
-
     # Stencils
     "ستانسل Painto": {
         "numbers": [160, 161, 163, 158],
         "category": "ستانسل",
         "trademark": "Painto",
     },
-
     # Poles (عصا)
     "عصا": {
         "numbers": [148, 149, 150, 151, 152, 153, 154],
         "category": "عصي",
         "trademark": "",
     },
-
     # Plaster paper (ورق جبص)
     "ورق جبص": {
         "numbers": [169, 170, 288],
         "category": "ورق جبص",
         "trademark": "يوتا",
     },
-
     # Access panels (فتحة صيانه)
     "فتحة صيانه": {
         "numbers": [462, 463, 464, 465, 466, 479, 480, 481, 495],
         "category": "فتحات صيانه",
         "trademark": "",
     },
-
     # Multitina Level5
     "مالج ملتينه Level5": {
         "numbers": [473, 474, 475, 476],
@@ -324,21 +323,18 @@ MANUAL_GROUPS = {
         "category": "موالج",
         "trademark": "Level5",
     },
-
     # Silicone guns
     "فرد سلكون": {
         "numbers": [319, 330, 320, 369, 468],
         "category": "ادوات",
         "trademark": "",
     },
-
     # Masks
     "كمامة": {
         "numbers": [88, 314, 206, 235, 236, 355, 354, 353, 381],
         "category": "حماية",
         "trademark": "",
     },
-
     # Cups (كباية)
     "كباية اسود": {
         "numbers": [391, 392, 393],
@@ -350,21 +346,18 @@ MANUAL_GROUPS = {
         "category": "كبايات",
         "trademark": "",
     },
-
     # Screws
     "براغي جبص": {
         "numbers": [245, 254, 432, 429, 471],
         "category": "براغي",
         "trademark": "",
     },
-
     # Boots
     "بوت صغير مشمع": {
         "numbers": [419, 422],
         "category": "احذية",
         "trademark": "",
     },
-
     # Epoxy tools
     "قشاطة ابوكسي": {
         "numbers": [501, 502],
@@ -376,84 +369,72 @@ MANUAL_GROUPS = {
         "category": "ادوات",
         "trademark": "",
     },
-
     # Sponge rolls
     "رول حواف": {
         "numbers": [491, 492],
         "category": "رولات",
         "trademark": "",
     },
-
     # Paint sprays ATC
     "سبري ATC": {
         "numbers": [309, 447, 450, 451],
         "category": "سبري",
         "trademark": "ATC",
     },
-
     # Antiquing paint
     "بويه تعتيق": {
         "numbers": [242, 243, 244],
         "category": "دهان",
         "trademark": "",
     },
-
     # Fiberglass tape
     "ريشت يوتا": {
         "numbers": [167, 460],
         "category": "ريشت",
         "trademark": "يوتا",
     },
-
     # Thinners
     "تنر ايطالي": {
         "numbers": [402, 413],
         "category": "مواد",
         "trademark": "",
     },
-
     # Fiber paper
     "ورق فيبر": {
         "numbers": [233, 362],
         "category": "ورق حف",
         "trademark": "",
     },
-
     # Shaving blades
     "شفرة تنظيف": {
         "numbers": [91, 92, 93],
         "category": "ادوات",
         "trademark": "",
     },
-
     # Lazor leather
     "جلدة لازور": {
         "numbers": [103, 104, 105, 108, 224],
         "category": "جلود",
         "trademark": "",
     },
-
     # Trowels (مالج)
     "مالج Enox": {
         "numbers": [140, 141],
         "category": "موالج",
         "trademark": "Enox",
     },
-
     # Rollers 9" various brands
-    "رول 9\" ماركات": {
+    'رول 9" ماركات': {
         "numbers": [65, 66, 67, 68, 80],
         "category": "رولات",
         "trademark": "",
     },
-
     # Super glue
     "سوبر جلو": {
         "numbers": [289, 290],
         "category": "لواصق",
         "trademark": "",
     },
-
     # Decoration stamp (مطبة)
     "مطبة كابرس": {
         "numbers": [118, 119, 156, 184],
@@ -465,42 +446,36 @@ MANUAL_GROUPS = {
         "category": "ديكور",
         "trademark": "",
     },
-
     # Scrapers
     "مشرط": {
         "numbers": [95, 94, 323, 321, 356],
         "category": "ادوات",
         "trademark": "",
     },
-
     # Trowel pans (تكنه)
     "تكنه": {
         "numbers": [96, 145, 216, 281, 297],
         "category": "ادوات",
         "trademark": "",
     },
-
     # Rubber rollers
     "رول جومي": {
         "numbers": [73, 74, 79],
         "category": "رولات",
         "trademark": "",
     },
-
     # Paint screed (مالج روبه)
     "مالج ملتينه": {
         "numbers": [188, 189],
         "category": "موالج",
         "trademark": "",
     },
-
     # Lazor set
     "طقم لازور احمر": {
         "numbers": [106, 107],
         "category": "جلود",
         "trademark": "",
     },
-
     # Gypsum saws
     "منشار جبص": {
         "numbers": [249, 396],
@@ -508,6 +483,7 @@ MANUAL_GROUPS = {
         "trademark": "",
     },
 }
+
 
 def extract_size_from_name(name, group_name):
     """Extract the variant/size label from a product name."""
@@ -518,47 +494,48 @@ def extract_size_from_name(name, group_name):
         return raw + '"'
 
     # Try # sizes
-    m = re.search(r'(\d+)\s*#', name)
+    m = re.search(r"(\d+)\s*#", name)
     if m:
-        return '#' + m.group(1)
+        return "#" + m.group(1)
 
     # Try No. sizes
-    m = re.search(r'No\.?\s*(\d+\.?\d*)', name)
+    m = re.search(r"No\.?\s*(\d+\.?\d*)", name)
     if m:
-        return 'No.' + m.group(1)
+        return "No." + m.group(1)
 
     # Try dimension sizes like 10*3, 15*5, 3*12
-    m = re.search(r'(\d+\*\d+)', name)
+    m = re.search(r"(\d+\*\d+)", name)
     if m:
         return m.group(1)
 
     # Try cm sizes
-    m = re.search(r'(\d+)\s*سم', name)
+    m = re.search(r"(\d+)\s*سم", name)
     if m:
-        return m.group(1) + 'سم'
+        return m.group(1) + "سم"
 
     # Try م sizes (meters)
-    m = re.search(r'(\d+\.?\d*)\s*م(?!\w)', name)
+    m = re.search(r"(\d+\.?\d*)\s*م(?!\w)", name)
     if m:
-        return m.group(1) + 'م'
+        return m.group(1) + "م"
 
     # Try kg
-    m = re.search(r'(\d+\.?\d*)\s*كغم?', name)
+    m = re.search(r"(\d+\.?\d*)\s*كغم?", name)
     if m:
-        return m.group(1) + 'كغم'
+        return m.group(1) + "كغم"
 
     # Try liter
-    m = re.search(r'(\d+\.?\d*)\s*لتر', name)
+    m = re.search(r"(\d+\.?\d*)\s*لتر", name)
     if m:
-        return m.group(1) + 'لتر'
+        return m.group(1) + "لتر"
 
     # Try grit (2-3 digit standalone number)
-    m = re.search(r'\b(\d{2,3})\b', name)
+    m = re.search(r"\b(\d{2,3})\b", name)
     if m:
         return m.group(1)
 
     # Fallback: use full name
     return name
+
 
 def main():
     rows = parse_csv("tools.csv")
@@ -585,15 +562,17 @@ def main():
             base_cost = members[0]["cost"]
             total_stock = sum(m["qty"] for m in members)
 
-            groups.append({
-                "name": group_name,
-                "category": config["category"],
-                "trademark": config["trademark"],
-                "base_price": base_price,
-                "base_cost": base_cost,
-                "total_stock": total_stock,
-                "variants": members,
-            })
+            groups.append(
+                {
+                    "name": group_name,
+                    "category": config["category"],
+                    "trademark": config["trademark"],
+                    "base_price": base_price,
+                    "base_cost": base_cost,
+                    "total_stock": total_stock,
+                    "variants": members,
+                }
+            )
 
     # Standalone products (not in any group)
     standalone = [r for r in rows if r["number"] not in grouped_numbers]
@@ -603,7 +582,9 @@ def main():
     print(f"PRODUCT ANALYSIS SUMMARY")
     print(f"{'='*70}")
     print(f"Total CSV rows: {len(rows)}")
-    print(f"Grouped into product families: {len(grouped_numbers)} rows → {len(groups)} products")
+    print(
+        f"Grouped into product families: {len(grouped_numbers)} rows → {len(groups)} products"
+    )
     print(f"Standalone products: {len(standalone)}")
     print(f"Total products after merge: {len(groups) + len(standalone)}")
 
@@ -618,14 +599,19 @@ def main():
         for v in g["variants"]:
             modifier = round(v["price"] - g["base_price"], 2)
             mod_str = f"+{modifier}" if modifier > 0 else str(modifier)
-            print(f"│    #{v['number']:>3}  {v['size_label']:<12}  price={v['price']:<8}  cost={v['cost']:<10}  qty={v['qty']:<6}  modifier={mod_str}")
+            print(
+                f"│    #{v['number']:>3}  {v['size_label']:<12}  price={v['price']:<8}  cost={v['cost']:<10}  qty={v['qty']:<6}  modifier={mod_str}"
+            )
         print(f"└─")
 
     print(f"\n{'='*70}")
     print(f"STANDALONE PRODUCTS ({len(standalone)} items)")
     print(f"{'='*70}")
     for s in standalone:
-        print(f"  #{s['number']:>3}  {s['name']:<50}  price={s['price']:<8}  qty={s['qty']}")
+        print(
+            f"  #{s['number']:>3}  {s['name']:<50}  price={s['price']:<8}  qty={s['qty']}"
+        )
+
 
 if __name__ == "__main__":
     main()
