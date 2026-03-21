@@ -7,7 +7,7 @@ export type UserRole = "Admin" | "Designer" | "Sales" | "Customer";
 
 export function decodeJwt(
   token: string
-): { sub: string; role: UserRole; customer_id?: string } | null {
+): { sub: string; role: UserRole; customer_id?: string; username?: string } | null {
   try {
     const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
     const payload = JSON.parse(atob(b64));
@@ -15,6 +15,7 @@ export function decodeJwt(
       sub: payload.sub,
       role: payload.role as UserRole,
       customer_id: payload.customer_id,
+      username: payload.username,
     };
   } catch {
     return null;

@@ -50,7 +50,7 @@ export function StatementViewBase({
   showDraftBadge = false,
 }: StatementViewBaseProps) {
   const { t } = useTranslation();
-  const [preset, setPreset] = useState<FilterPreset>("zero");
+  const [preset, setPreset] = useState<FilterPreset>("month");
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
   const [generating, setGenerating] = useState(false);
 

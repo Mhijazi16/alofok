@@ -136,12 +136,23 @@ export function ExpenseCard({ categories, date, isAdmin = false, className }: Ex
 
   const deleteMutation = useMutation({
     mutationFn: salesApi.deleteExpense,
-    onSuccess: () => {
+    onMutate: async (expenseId) => {
+      await queryClient.cancelQueries({ queryKey: ["my-expenses", date] });
+      const previous = queryClient.getQueryData(["my-expenses", date]);
+      queryClient.setQueryData(["my-expenses", date], (old: any) =>
+        old?.filter((e: any) => e.id !== expenseId)
+      );
       toast({ title: t("expense.deleted"), variant: "default" });
-      invalidateQueries();
+      return { previous };
     },
-    onError: () => {
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["my-expenses", date], context.previous);
+      }
       toast({ title: t("toast.error"), variant: "error" });
+    },
+    onSettled: () => {
+      invalidateQueries();
     },
   });
 

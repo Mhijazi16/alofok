@@ -82,8 +82,28 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
 
   const statusMutation = useMutation({
     mutationFn: adminApi.updateLedgerStatus,
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["daily-ledger"] });
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["daily-ledger", dateStr] });
+      const previous = queryClient.getQueryData(["daily-ledger", dateStr]);
+      queryClient.setQueryData(["daily-ledger", dateStr], (old: any) => {
+        if (!old) return old;
+        const idSet = new Set(variables.ids);
+        const updateEntries = (entries: any[]) =>
+          entries.map((e: any) =>
+            idSet.has(e.id)
+              ? { ...e, status: variables.status, flag_notes: variables.flag_notes ?? e.flag_notes }
+              : e
+          );
+        const updateGroups = (groups: any[]) =>
+          groups.map((g: any) => ({ ...g, entries: updateEntries(g.entries) }));
+        return {
+          ...old,
+          incoming: updateGroups(old.incoming),
+          outgoing: updateGroups(old.outgoing),
+        };
+      });
+      setSelectedIds(new Set());
+      setOpenCardId(null);
       if (variables.status === "confirmed") {
         toast({ title: t("cash.confirmed"), variant: "success" });
       } else if (variables.status === "flagged") {
@@ -91,10 +111,17 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
       } else {
         toast({ title: t("cash.undone"), variant: "default" });
       }
-      setSelectedIds(new Set());
-      setOpenCardId(null);
+      return { previous };
     },
-    onError: () => toast({ title: t("toast.error"), variant: "error" }),
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["daily-ledger", dateStr], context.previous);
+      }
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["daily-ledger"] });
+    },
   });
 
   // ── Helpers ────────────────────────────────────────────────────────────────

@@ -51,7 +51,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
         )}
         {...props}
       >
-        <div className="flex h-16 items-center justify-around">
+        <div className="flex h-16 items-center">
           {visibleItems.map((item) => {
             const isActive = item.value === activeValue;
             const Icon = item.icon;

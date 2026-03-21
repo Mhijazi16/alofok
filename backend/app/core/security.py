@@ -21,6 +21,7 @@ def create_access_token(
     role: str,
     user_type: str = "staff",
     customer_id: str | None = None,
+    username: str | None = None,
 ) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -33,6 +34,8 @@ def create_access_token(
     }
     if customer_id:
         payload["customer_id"] = customer_id
+    if username:
+        payload["username"] = username
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
 
 

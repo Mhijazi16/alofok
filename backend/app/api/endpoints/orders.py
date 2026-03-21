@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter
 
-from app.api.deps import CurrentUser, OrderSvc, require_sales
+from app.api.deps import Cache, CurrentUser, OrderSvc, require_sales
 from app.schemas.transaction import OrderCreate, OrderUpdate, TransactionOut
 
 router = APIRouter()
@@ -12,9 +12,11 @@ router = APIRouter()
     "", response_model=TransactionOut, status_code=201, dependencies=[require_sales]
 )
 async def create_order(
-    body: OrderCreate, current_user: CurrentUser, service: OrderSvc
+    body: OrderCreate, current_user: CurrentUser, service: OrderSvc, cache: Cache
 ) -> TransactionOut:
-    return await service.create_order(body, uuid.UUID(current_user["sub"]))
+    result = await service.create_order(body, uuid.UUID(current_user["sub"]))
+    await cache.delete(f"insights:{body.customer_id}")
+    return result
 
 
 @router.put("/{order_id}", response_model=TransactionOut, dependencies=[require_sales])

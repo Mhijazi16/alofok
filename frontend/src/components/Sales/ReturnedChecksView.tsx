@@ -85,7 +85,7 @@ export function ReturnedChecksView({ customer, onBack }: ReturnedChecksViewProps
                             {formatCurrency(Math.abs(check.amount), check.currency)}
                           </span>
                           <Badge variant="destructive" className="text-[10px]">
-                            {t("checkStatus.Returned")}
+                            {t("checks.status.Returned")}
                           </Badge>
                         </div>
                         {/* Holder name */}

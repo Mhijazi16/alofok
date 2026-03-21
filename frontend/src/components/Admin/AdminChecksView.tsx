@@ -53,35 +53,68 @@ export function AdminChecksView() {
 
   const depositMutation = useMutation({
     mutationFn: (checkId: string) => adminApi.depositCheck(checkId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
+    onMutate: async (checkId) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter] });
+      const previous = queryClient.getQueryData<CheckOut[]>(["admin-checks", statusFilter]);
+      queryClient.setQueryData<CheckOut[]>(["admin-checks", statusFilter], (old) =>
+        old?.map((c) => (c.id === checkId ? { ...c, status: "Deposited" } : c))
+      );
       toast({ title: t("checks.depositSuccess"), variant: "success" });
+      return { previous };
     },
-    onError: () => {
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-checks", statusFilter], context.previous);
+      }
       toast({ title: t("toast.error"), variant: "error" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
     },
   });
 
   const undepositMutation = useMutation({
     mutationFn: (checkId: string) => adminApi.undepositCheck(checkId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
+    onMutate: async (checkId) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter] });
+      const previous = queryClient.getQueryData<CheckOut[]>(["admin-checks", statusFilter]);
+      queryClient.setQueryData<CheckOut[]>(["admin-checks", statusFilter], (old) =>
+        old?.map((c) => (c.id === checkId ? { ...c, status: "Pending" } : c))
+      );
       toast({ title: t("checks.undepositSuccess"), variant: "success" });
+      return { previous };
     },
-    onError: () => {
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-checks", statusFilter], context.previous);
+      }
       toast({ title: t("toast.error"), variant: "error" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
     },
   });
 
   const returnMutation = useMutation({
     mutationFn: ({ checkId, notes }: { checkId: string; notes?: string }) =>
       adminApi.returnCheck(checkId, notes),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
+    onMutate: async ({ checkId }) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter] });
+      const previous = queryClient.getQueryData<CheckOut[]>(["admin-checks", statusFilter]);
+      queryClient.setQueryData<CheckOut[]>(["admin-checks", statusFilter], (old) =>
+        old?.map((c) => (c.id === checkId ? { ...c, status: "Returned" } : c))
+      );
       toast({ title: t("checks.returnSuccess"), variant: "success" });
+      return { previous };
     },
-    onError: () => {
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-checks", statusFilter], context.previous);
+      }
       toast({ title: t("toast.error"), variant: "error" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-checks"] });
     },
   });
 

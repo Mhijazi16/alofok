@@ -77,13 +77,16 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
     mutationFn: salesApi.createPayment,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-route"] });
+      queryClient.invalidateQueries({ queryKey: ["my-customers"] });
       queryClient.invalidateQueries({ queryKey: ["insights", customer.id] });
       queryClient.invalidateQueries({ queryKey: ["statement", customer.id] });
       queryClient.invalidateQueries({ queryKey: ["daily-ledger"] });
+      setConfirmOpen(false);
       toast({ title: t("payment.paymentSuccess"), variant: "success" });
       onDone();
     },
     onError: () => {
+      setConfirmOpen(false);
       toast({ title: t("toast.error"), variant: "error" });
     },
   });
@@ -201,10 +204,10 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
       };
 
       await syncQueue.push("payment", payload);
+      setConfirmOpen(false);
       toast({ title: t("payment.paymentQueued"), variant: "success" });
       onDone();
     }
-    setConfirmOpen(false);
   };
 
   return (

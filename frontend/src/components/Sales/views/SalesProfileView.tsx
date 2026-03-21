@@ -8,6 +8,7 @@ import { logout } from "@/store/authSlice";
 
 interface SalesProfileViewProps {
   userId: string | null;
+  username: string | null;
   role: string | null;
   avatarSeed: string;
   onAvatarChange: (seed: string) => void;
@@ -15,6 +16,7 @@ interface SalesProfileViewProps {
 
 export function SalesProfileView({
   userId,
+  username,
   role,
   avatarSeed,
   onAvatarChange,
@@ -31,7 +33,7 @@ export function SalesProfileView({
           />
           <div className="min-w-0 flex-1">
             <p className="text-h3 font-bold text-foreground truncate">
-              {userId ?? "Sales"}
+              {username ?? userId ?? "Sales"}
             </p>
             <Badge variant="default" dot className="mt-1">
               {role ?? "Sales"}

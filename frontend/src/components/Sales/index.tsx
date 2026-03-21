@@ -48,6 +48,7 @@ export default function SalesRoot() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const userId = useAppSelector((s) => s.auth.userId);
+  const username = useAppSelector((s) => s.auth.username);
   const role = useAppSelector((s) => s.auth.role);
 
   const [view, setView] = useState<View>("route");
@@ -140,7 +141,7 @@ export default function SalesRoot() {
       }
       case "customers": return <AllCustomersView queryKey={["my-customers"]} queryFn={salesApi.getMyCustomers} onSelectCustomer={navigateToCustomer} onAddCustomer={() => { setEditingCustomer(undefined); setView("customerForm"); }} archiveFn={salesApi.archiveCustomer} />;
       case "cart": return <CartView cart={cart} updateCartQty={updateCartQty} removeFromCart={removeFromCart} clearCart={clearCart} cartTotal={cartTotal} onPlaceOrder={handlePlaceOrder} onBrowse={() => setView("catalog")} selectedCustomer={selectedCustomer} customers={allCustomers} onSelectCustomer={setSelectedCustomer} />;
-      case "profile": return <SalesProfileView userId={userId} role={role} avatarSeed={avatarSeed} onAvatarChange={setAvatarSeed} />;
+      case "profile": return <SalesProfileView userId={userId} username={username} role={role} avatarSeed={avatarSeed} onAvatarChange={setAvatarSeed} />;
       default: return null;
     }
   };
@@ -157,7 +158,7 @@ export default function SalesRoot() {
     switch (view) {
       case "customer": return <CustomerDashboard customer={selectedCustomer} onBack={navigateBack} onAction={handleCustomerAction} onEditCustomer={(c) => { setEditingCustomer(c); setView("customerForm"); }} />;
       case "order": return <OrderFlow customer={selectedCustomer} onBack={navigateBack} onDone={() => { clearCart(); setView("customer"); }} cart={cart} addToCart={addToCart} updateCartQty={updateCartQty} removeFromCart={removeFromCart} onViewCart={() => setView("cart")} onViewProduct={navigateToProduct} />;
-      case "payment": return <PaymentFlow customer={selectedCustomer} onBack={navigateBack} onDone={() => { queryClient.invalidateQueries({ queryKey: ["collections"] }); queryClient.invalidateQueries({ queryKey: ["route-day"] }); setView("customer"); }} />;
+      case "payment": return <PaymentFlow customer={selectedCustomer} onBack={navigateBack} onDone={() => { queryClient.invalidateQueries({ queryKey: ["collections"] }); queryClient.invalidateQueries({ queryKey: ["route-day"] }); queryClient.invalidateQueries({ queryKey: ["my-customers"] }); queryClient.invalidateQueries({ queryKey: ["my-route"] }); setView("customer"); }} />;
       case "statement": return <StatementView customer={selectedCustomer} onBack={navigateBack} />;
       case "returnedChecks": return <ReturnedChecksView customer={selectedCustomer} onBack={navigateBack} />;
       case "purchase": return <PurchaseFlow customer={selectedCustomer} onBack={navigateBack} onComplete={() => setView("customer")} />;

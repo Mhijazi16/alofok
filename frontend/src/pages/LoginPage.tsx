@@ -51,6 +51,7 @@ export default function LoginPage() {
         setCredentials({
           token: data.access_token,
           userId: decoded.sub,
+          username: decoded.username,
           role: decoded.role as UserRole,
           customerId: decoded.customer_id,
         })

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BarChart } from "@/components/ui/bar-chart";
@@ -125,13 +126,10 @@ export function Overview(_props: { onNavigate?: (view: string) => void }) {
   }
 
   return (
+    <>
+    <TopBar title={t("admin.title")} />
     <PageContainer>
       <div className="space-y-6">
-        {/* Page title */}
-        <h1 className="text-h2 font-bold text-foreground">
-          {t("admin.title")}
-        </h1>
-
         {/* KPI row */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
           <StatCard
@@ -261,5 +259,6 @@ export function Overview(_props: { onNavigate?: (view: string) => void }) {
         </div>
       </div>
     </PageContainer>
+    </>
   );
 }

@@ -30,7 +30,8 @@ const TopBar = React.forwardRef<HTMLElement, TopBarProps>(
         )}
         {...props}
       >
-        <div className="flex h-12 items-center gap-3 px-4 pt-safe">
+        <div className="pt-safe" />
+        <div className="flex h-12 items-center gap-3 px-4">
           {/* Back button */}
           {backButton && (
             <button

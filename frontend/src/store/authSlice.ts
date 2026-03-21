@@ -8,6 +8,7 @@ type UserRole = import("@/lib/jwt").UserRole;
 interface AuthState {
   token: string | null;
   userId: string | null;
+  username: string | null;
   role: UserRole | null;
   customerId: string | null;
 }
@@ -20,6 +21,7 @@ const decoded = storedToken ? decodeJwt(storedToken) : null;
 const initialState: AuthState = {
   token: storedToken,
   userId: decoded?.sub ?? null,
+  username: decoded?.username ?? null,
   role: decoded?.role ?? null,
   customerId: decoded?.customer_id ?? null,
 };
@@ -30,10 +32,11 @@ const authSlice = createSlice({
   reducers: {
     setCredentials(
       state,
-      action: PayloadAction<{ token: string; userId: string; role: UserRole; customerId?: string }>
+      action: PayloadAction<{ token: string; userId: string; username?: string; role: UserRole; customerId?: string }>
     ) {
       state.token = action.payload.token;
       state.userId = action.payload.userId;
+      state.username = action.payload.username ?? null;
       state.role = action.payload.role;
       state.customerId = action.payload.customerId ?? null;
       localStorage.setItem(TOKEN_KEY, action.payload.token);
@@ -42,6 +45,7 @@ const authSlice = createSlice({
       clearBankHistory(state.userId ?? "");
       state.token = null;
       state.userId = null;
+      state.username = null;
       state.role = null;
       state.customerId = null;
       localStorage.removeItem(TOKEN_KEY);
