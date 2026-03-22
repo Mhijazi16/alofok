@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Upload, Archive } from "lucide-react";
+import { Plus, Upload, Archive } from "@/lib/icons";
 
 import { adminApi } from "@/services/adminApi";
 import type { Customer } from "@/services/salesApi";

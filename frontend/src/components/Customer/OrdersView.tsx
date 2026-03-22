@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, ShoppingBag } from "lucide-react";
+import { FileText, ShoppingBag } from "@/lib/icons";
 import { customerApi } from "@/services/customerApi";
 import type { CustomerTransaction } from "@/services/customerApi";
 import { TopBar } from "@/components/ui/top-bar";

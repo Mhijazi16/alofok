@@ -15,7 +15,7 @@ import {
   Check,
   X,
   ArrowDownToLine,
-} from "lucide-react";
+} from "@/lib/icons";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
 import { TopBar } from "@/components/ui/top-bar";

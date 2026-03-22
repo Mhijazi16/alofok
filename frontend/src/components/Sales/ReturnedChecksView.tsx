@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ChevronLeft } from "lucide-react";
+import { AlertTriangle, ChevronLeft } from "@/lib/icons";
 import { salesApi, type Customer } from "@/services/salesApi";
 import type { CheckOut } from "@/services/adminApi";
 import { TopBar } from "@/components/ui/top-bar";

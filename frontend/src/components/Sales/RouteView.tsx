@@ -17,7 +17,7 @@ import {
   CheckSquare,
   Square,
   AlertTriangle,
-} from "lucide-react";
+} from "@/lib/icons";
 import { salesApi, type Customer, type OrderWithCustomer } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";

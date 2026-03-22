@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Landmark, AlertTriangle } from "lucide-react";
+import { Landmark, AlertTriangle } from "@/lib/icons";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BarChart } from "@/components/ui/bar-chart";
@@ -33,7 +34,7 @@ function daysOverdue(dueDateStr: string | null): number {
   return Math.max(diff, 0);
 }
 
-export function DebtStats() {
+export function DebtStats({ onBack }: { onBack?: () => void }) {
   const { t } = useTranslation();
 
   const { data, isLoading } = useQuery<DebtStatsOut>({
@@ -78,13 +79,10 @@ export function DebtStats() {
   }
 
   return (
+    <>
+    <TopBar title={t("admin.debtOverview")} backButton={onBack ? { onBack } : undefined} />
     <PageContainer>
       <div className="space-y-6">
-        {/* Title */}
-        <h1 className="text-h2 font-bold text-foreground">
-          {t("admin.debtOverview")}
-        </h1>
-
         {/* Total debt hero card */}
         <StatCard
           variant="gradient"
@@ -234,5 +232,6 @@ export function DebtStats() {
         </Card>
       </div>
     </PageContainer>
+    </>
   );
 }

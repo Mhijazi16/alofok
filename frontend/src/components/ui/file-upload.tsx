@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Upload, X, FileIcon, AlertCircle } from "lucide-react";
+import { Upload, X, FileIcon, AlertCircle } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 function formatFileSize(bytes: number): string {

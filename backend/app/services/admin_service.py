@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from sqlalchemy import func, select, text
@@ -13,6 +13,8 @@ from app.repositories.user_repository import UserRepository
 from app.schemas.admin import (
     CheckOut,
     CityDebtOut,
+    DailyBreakdownItem,
+    DailyBreakdownOut,
     DebtStatsOut,
     ImportResult,
     OverdueCheckOut,
@@ -214,6 +216,53 @@ class AdminService:
             )
             for row in rows
         ]
+
+    # ── Daily breakdown ─────────────────────────────────────────────────────
+
+    async def get_daily_breakdown(self, days: int = 7) -> DailyBreakdownOut:
+        start = date.today() - timedelta(days=days - 1)
+
+        rows = await self.db.execute(
+            text("""
+                SELECT
+                    DATE(created_at) as d,
+                    COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as total_orders,
+                    COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END), 0) as total_collected,
+                    COUNT(CASE WHEN amount > 0 THEN 1 END) as order_count,
+                    COUNT(CASE WHEN amount < 0 THEN 1 END) as collection_count
+                FROM transactions
+                WHERE is_deleted = false
+                  AND DATE(created_at) >= :start_date
+                GROUP BY DATE(created_at)
+                ORDER BY d
+            """),
+            {"start_date": start},
+        )
+
+        # Build complete date range (fill gaps with zeros)
+        result = []
+        for i in range(days):
+            d = start + timedelta(days=i)
+            result.append(
+                DailyBreakdownItem(
+                    date=d.isoformat(),
+                    total_orders=Decimal(0),
+                    total_collected=Decimal(0),
+                    order_count=0,
+                    collection_count=0,
+                )
+            )
+
+        for row in rows:
+            for item in result:
+                if item.date == str(row.d):
+                    item.total_orders = row.total_orders
+                    item.total_collected = row.total_collected
+                    item.order_count = row.order_count
+                    item.collection_count = row.collection_count
+                    break
+
+        return DailyBreakdownOut(days=result)
 
     # ── Customer import ──────────────────────────────────────────────────────
 

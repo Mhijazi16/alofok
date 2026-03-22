@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Package, PlusCircle, Copy, Trash2 } from "lucide-react";
+import { Package, PlusCircle, Copy, Trash2 } from "@/lib/icons";
 
 import { designerApi, type Product } from "@/services/designerApi";
 import { useToast } from "@/hooks/useToast";

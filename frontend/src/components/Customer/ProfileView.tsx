@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Phone, MapPin, DollarSign, User } from "lucide-react";
+import { Phone, MapPin, DollarSign, User } from "@/lib/icons";
 import { customerApi } from "@/services/customerApi";
 import { CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

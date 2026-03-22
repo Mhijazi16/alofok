@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftRight, Banknote, CalendarDays, Hash, StickyNote, User } from "lucide-react";
+import { ArrowLeftRight, Banknote, CalendarDays, Hash, StickyNote, User } from "@/lib/icons";
 import { salesApi, type Customer, type PaymentCreate } from "@/services/salesApi";
 import { formatCurrency } from "@/lib/format";
 import { syncQueue } from "@/lib/syncQueue";

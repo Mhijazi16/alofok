@@ -11,7 +11,7 @@ import {
   Box,
   Settings2,
   X,
-} from "lucide-react";
+} from "@/lib/icons";
 import type { Product } from "@/services/salesApi";
 import { getImageUrl } from "@/lib/image";
 import { TopBar } from "@/components/ui/top-bar";

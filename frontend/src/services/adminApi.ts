@@ -64,6 +64,20 @@ export interface CheckOut {
   related_transaction_id: string | null;
 }
 
+// ── Daily breakdown types ──
+
+export interface DailyBreakdownItem {
+  date: string;
+  total_orders: number;
+  total_collected: number;
+  order_count: number;
+  collection_count: number;
+}
+
+export interface DailyBreakdownOut {
+  days: DailyBreakdownItem[];
+}
+
 // ── Ledger types ──
 
 export interface LedgerEntry {
@@ -171,4 +185,9 @@ export const adminApi = {
 
   updateLedgerStatus: (payload: LedgerStatusPayload) =>
     api.patch<{ updated: number }>("/ledger/status", payload).then((r) => r.data),
+
+  getDailyBreakdown: (days = 7) =>
+    api
+      .get<DailyBreakdownOut>(`/admin/stats/daily-breakdown?days=${days}`)
+      .then((r) => r.data),
 };

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { User, ChevronDown, Check } from "lucide-react";
+import { User, ChevronDown, Check } from "@/lib/icons";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";

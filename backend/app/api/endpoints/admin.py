@@ -7,6 +7,7 @@ from app.api.deps import AdminSvc, CurrentUser, CustomerSvc, UserRepo, require_a
 from app.models.transaction import TransactionStatus
 from app.schemas.admin import (
     CheckOut,
+    DailyBreakdownOut,
     DebtStatsOut,
     ImportResult,
     SalesStatsOut,
@@ -28,6 +29,18 @@ async def sales_stats(
     service: AdminSvc,
 ) -> SalesStatsOut:
     return await service.get_sales_stats(start_date, end_date)
+
+
+@router.get(
+    "/stats/daily-breakdown",
+    response_model=DailyBreakdownOut,
+    dependencies=[require_admin],
+)
+async def daily_breakdown(
+    service: AdminSvc,
+    days: int = 7,
+) -> DailyBreakdownOut:
+    return await service.get_daily_breakdown(days)
 
 
 @router.get("/stats/debt", response_model=DebtStatsOut, dependencies=[require_admin])

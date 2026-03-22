@@ -65,3 +65,15 @@ class CheckOut(BaseModel):
     related_transaction_id: uuid.UUID | None
 
     model_config = {"from_attributes": True}
+
+
+class DailyBreakdownItem(BaseModel):
+    date: str
+    total_orders: Decimal
+    total_collected: Decimal
+    order_count: int
+    collection_count: int
+
+
+class DailyBreakdownOut(BaseModel):
+    days: list[DailyBreakdownItem]

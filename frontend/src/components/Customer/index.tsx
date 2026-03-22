@@ -11,7 +11,7 @@ import {
   Plus,
   Minus,
   Trash2,
-} from "lucide-react";
+} from "@/lib/icons";
 import { AppShell } from "@/components/layout/app-shell";
 import { TopBar } from "@/components/ui/top-bar";
 import { BottomNav } from "@/components/ui/bottom-nav";

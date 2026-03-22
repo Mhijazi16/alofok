@@ -1,6 +1,6 @@
 import * as React from "react";
-import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, X } from "@/lib/icons";
+import type { LucideIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 interface SidebarItem {

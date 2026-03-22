@@ -10,7 +10,7 @@ import {
   Tag,
   LayoutGrid,
   List,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   type Customer,
   type Product,

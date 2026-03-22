@@ -10,7 +10,7 @@ import {
   LayoutGrid,
   List,
   ShoppingCart,
-} from "lucide-react";
+} from "@/lib/icons";
 import { customerApi } from "@/services/customerApi";
 import type { Product, SelectedOption } from "@/services/salesApi";
 import { getCoverImage } from "@/lib/image";

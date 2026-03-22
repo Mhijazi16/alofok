@@ -1,6 +1,6 @@
 import { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { ChevronDown, RefreshCw } from "lucide-react";
+import { ChevronDown, RefreshCw } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 const DICEBEAR_URL = "https://api.dicebear.com/9.x/lorelei/svg?seed=";

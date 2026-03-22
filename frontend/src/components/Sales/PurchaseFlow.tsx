@@ -7,7 +7,7 @@ import {
   Minus,
   Trash2,
   ArrowDownToLine,
-} from "lucide-react";
+} from "@/lib/icons";
 import {
   salesApi,
   type Customer,

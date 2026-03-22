@@ -1,5 +1,5 @@
 import { Component, ReactNode } from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "@/lib/icons";
 
 interface ErrorBoundaryProps {
   children: ReactNode;

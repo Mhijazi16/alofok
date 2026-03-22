@@ -1,7 +1,7 @@
 import * as React from "react";
 import { DayPicker, type DateRange } from "react-day-picker";
 import * as Popover from "@radix-ui/react-popover";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "@/lib/icons";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

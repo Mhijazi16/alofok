@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, FileDown } from "lucide-react";
+import { FileText, FileDown } from "@/lib/icons";
 import { type DateRange } from "react-day-picker";
 import type { StatementPdfProps } from "@/components/shared/StatementPdf";
 import { toLocalDateStr } from "@/lib/utils";

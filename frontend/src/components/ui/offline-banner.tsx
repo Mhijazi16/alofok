@@ -1,5 +1,5 @@
 import * as React from "react";
-import { RefreshCw, WifiOff } from "lucide-react";
+import { RefreshCw, WifiOff } from "@/lib/icons";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 

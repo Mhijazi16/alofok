@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "@/lib/icons";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 

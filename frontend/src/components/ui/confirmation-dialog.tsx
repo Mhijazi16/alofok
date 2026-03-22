@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AlertTriangle, HelpCircle } from "lucide-react";
+import { AlertTriangle, HelpCircle } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import {
   Dialog,

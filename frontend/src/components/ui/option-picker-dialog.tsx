@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Minus, Package } from "lucide-react";
+import { Plus, Minus, Package } from "@/lib/icons";
 import {
   Dialog,
   DialogContent,

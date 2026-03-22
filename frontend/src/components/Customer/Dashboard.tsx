@@ -6,7 +6,7 @@ import {
   FileText,
   BookOpen,
   ChevronRight,
-} from "lucide-react";
+} from "@/lib/icons";
 import { customerApi } from "@/services/customerApi";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent } from "@/components/ui/card";

@@ -2,13 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  LayoutDashboard,
-  Users,
-  User,
-  Package,
-  FileCheck2,
-} from "lucide-react";
+import { ChartPieIcon, UsersIcon, UserIcon, HomeIcon, DollarSignIcon } from "@/components/ui/animated-icon";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { BottomNav } from "@/components/ui/bottom-nav";
@@ -125,11 +119,11 @@ export default function AdminPanel() {
   }, [selectedCustomer, cart, isOnline, orderMutation, clearCart, toast, t, deliveryDate]);
 
   const navItems = [
-    { icon: LayoutDashboard, label: t("nav.overview"), value: "overview" },
-    { icon: Package, label: t("nav.products"), value: "products" },
-    { icon: FileCheck2, label: t("nav.finance"), value: "finance" },
-    { icon: Users, label: t("nav.customers"), value: "customers" },
-    { icon: User, label: t("profile.title"), value: "profile" },
+    { icon: ChartPieIcon, label: t("nav.overview"), value: "overview" },
+    { icon: HomeIcon, label: t("nav.products"), value: "products" },
+    { icon: DollarSignIcon, label: t("nav.finance"), value: "finance" },
+    { icon: UsersIcon, label: t("nav.customers"), value: "customers" },
+    { icon: UserIcon, label: t("profile.title"), value: "profile" },
   ];
 
   const renderView = () => {
@@ -139,9 +133,9 @@ export default function AdminPanel() {
       case "finance":
         return <FinanceView onSelectionChange={setHideNav} />;
       case "sales":
-        return <SalesStats />;
+        return <SalesStats onBack={() => setActiveView("overview")} />;
       case "debt":
-        return <DebtStats />;
+        return <DebtStats onBack={() => setActiveView("overview")} />;
       case "checks":
         return <AdminChecksView />;
       case "customers":

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, X, GripVertical } from "lucide-react";
+import { Plus, Trash2, X, GripVertical } from "@/lib/icons";
 
 import {
   designerApi,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2, Undo2 } from "lucide-react";
+import { Trash2, Undo2 } from "@/lib/icons";
 import {
   Dialog,
   DialogContent,

@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { ShoppingCart, Banknote } from "lucide-react";
+import { ShoppingCart, Banknote } from "@/lib/icons";
 import { toLocalDateStr } from "@/lib/utils";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -40,7 +41,7 @@ function getDateRange(period: Period): { start: string; end: string } {
   return { start, end };
 }
 
-export function SalesStats() {
+export function SalesStats({ onBack }: { onBack?: () => void }) {
   const { t } = useTranslation();
   const [period, setPeriod] = useState<Period>("week");
   const dateRange = useMemo(() => getDateRange(period), [period]);
@@ -90,19 +91,16 @@ export function SalesStats() {
   }
 
   return (
+    <>
+    <TopBar title={t("admin.salesStats")} backButton={onBack ? { onBack } : undefined} />
     <PageContainer>
       <div className="space-y-6">
-        {/* Title */}
-        <h1 className="text-h2 font-bold text-foreground">
-          {t("admin.salesStats")}
-        </h1>
-
         {/* Period tabs */}
         <Tabs
           value={period}
           onValueChange={(v) => setPeriod(v as Period)}
         >
-          <TabsList variant="segment">
+          <TabsList variant="segment" className="w-full">
             <TabsTrigger value="week">{t("admin.period.week")}</TabsTrigger>
             <TabsTrigger value="month">{t("admin.period.month")}</TabsTrigger>
             <TabsTrigger value="year">{t("admin.period.year")}</TabsTrigger>
@@ -237,5 +235,6 @@ export function SalesStats() {
         </Tabs>
       </div>
     </PageContainer>
+    </>
   );
 }

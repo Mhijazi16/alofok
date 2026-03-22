@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Banknote, FileCheck2, RotateCcw } from "lucide-react";
+import { Banknote, FileCheck2, RotateCcw } from "@/lib/icons";
 import { adminApi, type CheckOut } from "@/services/adminApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent } from "@/components/ui/card";

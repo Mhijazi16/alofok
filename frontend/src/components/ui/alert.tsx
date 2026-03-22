@@ -7,7 +7,7 @@ import {
   XCircle,
   X,
   type LucideIcon,
-} from "lucide-react";
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva(

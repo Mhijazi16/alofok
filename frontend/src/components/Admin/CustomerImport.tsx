@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
-import { Download, Upload, CheckCircle } from "lucide-react";
+import { Download, Upload, CheckCircle } from "@/lib/icons";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";

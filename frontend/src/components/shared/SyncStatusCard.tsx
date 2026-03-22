@@ -7,7 +7,7 @@
 
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import { RefreshCw, Check, AlertCircle, Database, Clock } from "lucide-react";
+import { RefreshCw, Check, AlertCircle, Database, Clock } from "@/lib/icons";
 import { useCacheSync } from "@/hooks/useCacheSync";
 import type { SyncTimestamps, SyncItemStatus } from "@/hooks/useCacheSync";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

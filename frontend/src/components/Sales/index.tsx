@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MapPin, Package, User, Users, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "@/lib/icons";
+import { RouteIcon, UsersIcon, UserIcon, CartIcon, HomeIcon } from "@/components/ui/animated-icon";
 import { AppShell } from "@/components/layout/app-shell";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { OfflineBanner } from "@/components/ui/offline-banner";
@@ -124,11 +125,11 @@ export default function SalesRoot() {
 
   const isMainView = ["route", "catalog", "cart", "customers", "profile"].includes(view);
   const bottomNavItems = [
-    { icon: MapPin, label: t("nav.route"), value: "route" },
-    { icon: Users, label: t("nav.customers"), value: "customers" },
-    { icon: Package, label: t("nav.catalog"), value: "catalog" },
-    { icon: ShoppingCart, label: t("cart.title"), value: "cart", badge: cart.size || undefined },
-    { icon: User, label: t("nav.profile"), value: "profile" },
+    { icon: RouteIcon, label: t("nav.route"), value: "route" },
+    { icon: UsersIcon, label: t("nav.customers"), value: "customers" },
+    { icon: HomeIcon, label: t("nav.catalog"), value: "catalog" },
+    { icon: CartIcon, label: t("cart.title"), value: "cart", badge: cart.size || undefined },
+    { icon: UserIcon, label: t("nav.profile"), value: "profile" },
   ];
 
   const renderMainView = () => {

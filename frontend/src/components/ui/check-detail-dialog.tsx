@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, Banknote, RotateCcw, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Banknote, RotateCcw, X } from "@/lib/icons";
 import { getImageUrl } from "@/lib/image";
 import {
   Dialog,
