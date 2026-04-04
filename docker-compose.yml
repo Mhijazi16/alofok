@@ -40,6 +40,7 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
     volumes:
       - static_files:/app/static
+      - ./etl:/etl
     depends_on:
       db:
         condition: service_healthy
