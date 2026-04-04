@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { FadeIn } from "@/components/ui/fade-in";
 import {
   Dialog,
   DialogContent,
@@ -71,9 +72,8 @@ function ProductGridSkeleton() {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function ProductList({ onAdd }: ProductListProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { toast } = useToast();
-  const isAr = i18n.language === "ar";
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
@@ -144,6 +144,7 @@ export function ProductList({ onAdd }: ProductListProps) {
       />
 
       <PageContainer maxWidth="full">
+        <FadeIn animation="fade">
         {/* Stats row */}
         <div className="mb-4">
           <StatCard
@@ -192,9 +193,9 @@ export function ProductList({ onAdd }: ProductListProps) {
         {/* Product grid */}
         {!isLoading && !isError && filtered.length > 0 && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {filtered.map((product) => (
+            {filtered.map((product, idx) => (
+              <FadeIn key={product.id} delay={idx * 0.04} animation="scale" skip={idx >= 10}>
               <Card
-                key={product.id}
                 variant="interactive"
                 className="group relative cursor-pointer overflow-hidden"
                 onClick={() => {
@@ -275,9 +276,11 @@ export function ProductList({ onAdd }: ProductListProps) {
                   </p>
                 </CardContent>
               </Card>
+              </FadeIn>
             ))}
           </div>
         )}
+        </FadeIn>
       </PageContainer>
 
       {/* Single-product Delete Confirmation */}

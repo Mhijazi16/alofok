@@ -30,6 +30,7 @@ import { getUnitPrice } from "@/lib/cart";
 import { getCoverImage } from "@/lib/image";
 import { formatCurrency } from "@/lib/format";
 import { getProductName } from "@/lib/product";
+import { FadeIn } from "@/components/ui/fade-in";
 
 import { Dashboard } from "./Dashboard";
 import { CatalogView } from "./CatalogView";
@@ -68,7 +69,7 @@ function CartView({
 
   if (cartEntries.length === 0) {
     return (
-      <div className="animate-fade-in">
+      <FadeIn animation="fade">
         <TopBar title={t("cart.title")} />
         <EmptyState
           icon={ShoppingCart}
@@ -77,12 +78,12 @@ function CartView({
           action={{ label: t("portal.catalog"), onClick: onBrowse }}
           className="py-16"
         />
-      </div>
+      </FadeIn>
     );
   }
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("cart.title")}
         actions={
@@ -104,11 +105,10 @@ function CartView({
           {cartEntries.map(([key, ci], idx) => {
             const unitPrice = getUnitPrice(ci.product, ci.selectedOptions);
             return (
+              <FadeIn key={key} delay={idx * 0.06}>
               <Card
-                key={key}
                 variant="glass"
-                className="animate-slide-up overflow-hidden"
-                style={{ animationDelay: `${idx * 40}ms` }}
+                className="overflow-hidden"
               >
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
@@ -182,6 +182,7 @@ function CartView({
                   </div>
                 </CardContent>
               </Card>
+              </FadeIn>
             );
           })}
         </div>
@@ -222,7 +223,7 @@ function CartView({
           </Button>
         </div>
       </div>
-    </div>
+    </FadeIn>
   );
 }
 

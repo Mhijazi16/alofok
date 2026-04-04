@@ -1,11 +1,8 @@
 import json
 import logging
+import time
 from abc import ABC, abstractmethod
 from typing import Any
-
-import redis.asyncio as aioredis
-
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -33,55 +30,55 @@ class CacheBackend(ABC):
         """Remove all keys that start with the given prefix."""
 
 
-class RedisCache(CacheBackend):
-    def __init__(self, client: aioredis.Redis):
-        self._client = client
+class InMemoryCache(CacheBackend):
+    """Simple in-memory cache with TTL expiration."""
+
+    def __init__(self) -> None:
+        self._store: dict[str, tuple[Any, float]] = {}  # key → (value, expires_at)
+
+    def _evict_expired(self) -> None:
+        now = time.monotonic()
+        expired = [k for k, (_, exp) in self._store.items() if exp <= now]
+        for k in expired:
+            del self._store[k]
 
     async def get(self, key: str) -> Any | None:
-        try:
-            raw = await self._client.get(key)
-            return json.loads(raw) if raw is not None else None
-        except Exception:
-            logger.warning("Redis GET failed for key=%s", key, exc_info=True)
+        entry = self._store.get(key)
+        if entry is None:
             return None
+        value, expires_at = entry
+        if time.monotonic() >= expires_at:
+            del self._store[key]
+            return None
+        return value
 
     async def set(self, key: str, value: Any, ttl: int) -> None:
-        try:
-            await self._client.set(key, json.dumps(value), ex=ttl)
-        except Exception:
-            logger.warning("Redis SET failed for key=%s", key, exc_info=True)
+        self._store[key] = (value, time.monotonic() + ttl)
+        # Lazy eviction — clean up every 100 writes
+        if len(self._store) % 100 == 0:
+            self._evict_expired()
 
     async def delete(self, key: str) -> None:
-        try:
-            await self._client.delete(key)
-        except Exception:
-            logger.warning("Redis DELETE failed for key=%s", key, exc_info=True)
+        self._store.pop(key, None)
 
     async def invalidate_prefix(self, prefix: str) -> None:
-        try:
-            keys = await self._client.keys(f"{prefix}*")
-            if keys:
-                await self._client.delete(*keys)
-        except Exception:
-            logger.warning(
-                "Redis invalidate_prefix failed for prefix=%s", prefix, exc_info=True
-            )
+        keys = [k for k in self._store if k.startswith(prefix)]
+        for k in keys:
+            del self._store[k]
 
 
-# Module-level singleton — initialised in app lifespan
-_redis_client: aioredis.Redis | None = None
-_cache: RedisCache | None = None
+# Module-level singleton
+_cache: InMemoryCache | None = None
 
 
 async def init_cache() -> None:
-    global _redis_client, _cache
-    _redis_client = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
-    _cache = RedisCache(_redis_client)
+    global _cache
+    _cache = InMemoryCache()
 
 
 async def close_cache() -> None:
-    if _redis_client:
-        await _redis_client.aclose()
+    global _cache
+    _cache = None
 
 
 def get_cache() -> CacheBackend:

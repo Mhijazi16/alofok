@@ -5,6 +5,7 @@ import { Landmark, AlertTriangle } from "@/lib/icons";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
+import { FadeIn } from "@/components/ui/fade-in";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BarChart } from "@/components/ui/bar-chart";
@@ -82,6 +83,7 @@ export function DebtStats({ onBack }: { onBack?: () => void }) {
     <>
     <TopBar title={t("admin.debtOverview")} backButton={onBack ? { onBack } : undefined} />
     <PageContainer>
+      <FadeIn animation="fade">
       <div className="space-y-6">
         {/* Total debt hero card */}
         <StatCard
@@ -231,6 +233,7 @@ export function DebtStats({ onBack }: { onBack?: () => void }) {
           </CardContent>
         </Card>
       </div>
+      </FadeIn>
     </PageContainer>
     </>
   );

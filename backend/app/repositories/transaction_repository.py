@@ -156,10 +156,15 @@ class TransactionRepository:
         )
         return list(result.all())
 
-    async def create(self, txn: Transaction) -> Transaction:
+    async def create(
+        self, txn: Transaction, *, auto_commit: bool = True
+    ) -> Transaction:
         self._db.add(txn)
-        await self._db.commit()
-        await self._db.refresh(txn)
+        if auto_commit:
+            await self._db.commit()
+            await self._db.refresh(txn)
+        else:
+            await self._db.flush()
         return txn
 
     async def get_orders_for_customer(
@@ -212,9 +217,14 @@ class TransactionRepository:
         )
         return float(result.scalar())
 
-    async def update(self, txn: Transaction) -> Transaction:
-        await self._db.commit()
-        await self._db.refresh(txn)
+    async def update(
+        self, txn: Transaction, *, auto_commit: bool = True
+    ) -> Transaction:
+        if auto_commit:
+            await self._db.commit()
+            await self._db.refresh(txn)
+        else:
+            await self._db.flush()
         return txn
 
     async def create_many(self, txns: list[Transaction]) -> None:

@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { cn } from "@/lib/utils";
+import { FadeIn } from "@/components/ui/fade-in";
 
 interface PaymentFlowProps {
   customer: Customer;
@@ -211,7 +212,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   };
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("actions.pay")}
         subtitle={customer.name}
@@ -220,13 +221,14 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
 
       <div className="space-y-5 p-4">
         {/* Current balance */}
+        <FadeIn>
         <StatCard
           variant="glass"
           value={formatCurrency(customer.balance)}
           label={t("customer.balance")}
           icon={Banknote}
-          className="animate-slide-up"
         />
+        </FadeIn>
 
         {/* Payment Type Tabs */}
         <Tabs
@@ -298,7 +300,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
 
               {/* Exchange Rate (for USD / JOD) */}
               {currency !== "ILS" && (
-                <div className="space-y-2 animate-fade-in">
+                <FadeIn animation="fade"><div className="space-y-2">
                   <FormField label={t("payment.exchangeRate")}>
                     <div className="flex items-center gap-3">
                       <Input
@@ -330,12 +332,12 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       </span>
                     </div>
                   )}
-                </div>
+                </div></FadeIn>
               )}
 
               {/* Check-specific fields */}
               {paymentType === "Payment_Check" && (
-                <div className="space-y-4 animate-fade-in">
+                <FadeIn animation="fade"><div className="space-y-4">
                   {/* Photo capture — above CheckPreview */}
                   <CheckCapture
                     imageBlob={imageBlob}
@@ -444,7 +446,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                       onBlur={() => setFocusedField(null)}
                     />
                   </FormField>
-                </div>
+                </div></FadeIn>
               )}
 
               {/* Notes */}
@@ -459,7 +461,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
 
               {/* Payment Summary */}
               {parsedAmount > 0 && (
-                <Card variant="glass" className="animate-scale-in">
+                <FadeIn animation="scale">
+                <Card variant="glass">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-body-sm">
                       {t("payment.paymentSummary")}
@@ -591,6 +594,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                     </div>
                   </CardContent>
                 </Card>
+                </FadeIn>
               )}
 
               {/* Submit */}
@@ -620,6 +624,6 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
         onConfirm={handleSubmit}
         isLoading={paymentMutation.isPending}
       />
-    </div>
+    </FadeIn>
   );
 }

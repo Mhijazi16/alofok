@@ -7,13 +7,21 @@ from pydantic import BaseModel, Field
 from app.models.transaction import Currency, TransactionStatus, TransactionType
 
 
+class SelectedOptionSchema(BaseModel):
+    name: str
+    value: str
+    price: Decimal = Decimal(0)
+
+
 class OrderItemSchema(BaseModel):
     """Typed schema for order line items — replaces untyped list[dict]."""
 
     product_id: uuid.UUID
     quantity: int = Field(gt=0)
     unit_price: Decimal = Field(gt=0)
-    name: str | None = None  # optional product name for display
+    name: str | None = None
+    image_url: str | None = None
+    selected_options: list[SelectedOptionSchema] | None = None
 
 
 class CheckData(BaseModel):

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Banknote, FileCheck2, RotateCcw } from "@/lib/icons";
-import { adminApi, type CheckOut } from "@/services/adminApi";
+import { Banknote, FileCheck2, RotateCcw, ChevronLeft, ChevronRight } from "@/lib/icons";
+import { adminApi, type CheckOut, type PaginatedResponse } from "@/services/adminApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ import {
 import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
 import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
 import { useToast } from "@/hooks/useToast";
+import { FadeIn } from "@/components/ui/fade-in";
 
 type StatusFilter = "Pending" | "Deposited" | "Returned" | "all";
 
@@ -39,32 +40,43 @@ export function AdminChecksView() {
   const { toast } = useToast();
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("Pending");
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
   const [selectedCheck, setSelectedCheck] = useState<CheckOut | null>(null);
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [returnNotes, setReturnNotes] = useState("");
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
-  const { data: checks = [], isLoading } = useQuery({
-    queryKey: ["admin-checks", statusFilter],
+  const { data: checksResponse, isLoading } = useQuery({
+    queryKey: ["admin-checks", statusFilter, page, pageSize],
     queryFn: () =>
-      adminApi.getChecks(statusFilter === "all" ? undefined : statusFilter),
+      adminApi.getChecks(statusFilter === "all" ? undefined : statusFilter, page, pageSize),
   });
+
+  const checks = checksResponse?.items ?? [];
+  const totalPages = checksResponse?.total_pages ?? 1;
+
+  // Reset page when filter changes
+  const handleFilterChange = (v: string) => {
+    setStatusFilter(v as StatusFilter);
+    setPage(1);
+  };
 
   const depositMutation = useMutation({
     mutationFn: (checkId: string) => adminApi.depositCheck(checkId),
     onMutate: async (checkId) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter] });
-      const previous = queryClient.getQueryData<CheckOut[]>(["admin-checks", statusFilter]);
-      queryClient.setQueryData<CheckOut[]>(["admin-checks", statusFilter], (old) =>
-        old?.map((c) => (c.id === checkId ? { ...c, status: "Deposited" } : c))
+      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter, page, pageSize] });
+      const previous = queryClient.getQueryData<PaginatedResponse<CheckOut>>(["admin-checks", statusFilter, page, pageSize]);
+      queryClient.setQueryData<PaginatedResponse<CheckOut>>(["admin-checks", statusFilter, page, pageSize], (old) =>
+        old ? { ...old, items: old.items.map((c) => (c.id === checkId ? { ...c, status: "Deposited" } : c)) } : old
       );
       toast({ title: t("checks.depositSuccess"), variant: "success" });
       return { previous };
     },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(["admin-checks", statusFilter], context.previous);
+        queryClient.setQueryData(["admin-checks", statusFilter, page, pageSize], context.previous);
       }
       toast({ title: t("toast.error"), variant: "error" });
     },
@@ -76,17 +88,17 @@ export function AdminChecksView() {
   const undepositMutation = useMutation({
     mutationFn: (checkId: string) => adminApi.undepositCheck(checkId),
     onMutate: async (checkId) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter] });
-      const previous = queryClient.getQueryData<CheckOut[]>(["admin-checks", statusFilter]);
-      queryClient.setQueryData<CheckOut[]>(["admin-checks", statusFilter], (old) =>
-        old?.map((c) => (c.id === checkId ? { ...c, status: "Pending" } : c))
+      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter, page, pageSize] });
+      const previous = queryClient.getQueryData<PaginatedResponse<CheckOut>>(["admin-checks", statusFilter, page, pageSize]);
+      queryClient.setQueryData<PaginatedResponse<CheckOut>>(["admin-checks", statusFilter, page, pageSize], (old) =>
+        old ? { ...old, items: old.items.map((c) => (c.id === checkId ? { ...c, status: "Pending" } : c)) } : old
       );
       toast({ title: t("checks.undepositSuccess"), variant: "success" });
       return { previous };
     },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(["admin-checks", statusFilter], context.previous);
+        queryClient.setQueryData(["admin-checks", statusFilter, page, pageSize], context.previous);
       }
       toast({ title: t("toast.error"), variant: "error" });
     },
@@ -99,17 +111,17 @@ export function AdminChecksView() {
     mutationFn: ({ checkId, notes }: { checkId: string; notes?: string }) =>
       adminApi.returnCheck(checkId, notes),
     onMutate: async ({ checkId }) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter] });
-      const previous = queryClient.getQueryData<CheckOut[]>(["admin-checks", statusFilter]);
-      queryClient.setQueryData<CheckOut[]>(["admin-checks", statusFilter], (old) =>
-        old?.map((c) => (c.id === checkId ? { ...c, status: "Returned" } : c))
+      await queryClient.cancelQueries({ queryKey: ["admin-checks", statusFilter, page, pageSize] });
+      const previous = queryClient.getQueryData<PaginatedResponse<CheckOut>>(["admin-checks", statusFilter, page, pageSize]);
+      queryClient.setQueryData<PaginatedResponse<CheckOut>>(["admin-checks", statusFilter, page, pageSize], (old) =>
+        old ? { ...old, items: old.items.map((c) => (c.id === checkId ? { ...c, status: "Returned" } : c)) } : old
       );
       toast({ title: t("checks.returnSuccess"), variant: "success" });
       return { previous };
     },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(["admin-checks", statusFilter], context.previous);
+        queryClient.setQueryData(["admin-checks", statusFilter, page, pageSize], context.previous);
       }
       toast({ title: t("toast.error"), variant: "error" });
     },
@@ -119,14 +131,14 @@ export function AdminChecksView() {
   });
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar title={t("checks.title")} />
 
       <div className="space-y-4 p-4">
         {/* Status filter pills */}
         <Tabs
           value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+          onValueChange={handleFilterChange}
         >
           <TabsList variant="pills" className="w-full justify-between">
             <TabsTrigger value="Pending">{t("checks.filterPending")}</TabsTrigger>
@@ -228,6 +240,33 @@ export function AdminChecksView() {
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              {t("actions.previous") || "Previous"}
+            </Button>
+            <span className="text-caption text-muted-foreground">
+              {page} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              {t("actions.next") || "Next"}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Deposit confirmation dialog */}
@@ -312,6 +351,6 @@ export function AdminChecksView() {
           setReturnDialogOpen(true);
         }}
       />
-    </div>
+    </FadeIn>
   );
 }

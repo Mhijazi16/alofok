@@ -15,6 +15,7 @@ import {
   Check,
   X,
   ArrowDownToLine,
+  IconHoverZone,
 } from "@/lib/icons";
 import { salesApi, type Customer } from "@/services/salesApi";
 import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
@@ -29,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
+import { FadeIn } from "@/components/ui/fade-in";
 
 type CustomerAction = "order" | "payment" | "statement" | "check" | "purchase";
 
@@ -190,7 +192,7 @@ export function CustomerDashboard({
   ];
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={customer.name}
         subtitle={customer.city}
@@ -210,9 +212,10 @@ export function CustomerDashboard({
 
       <div className="space-y-5 p-4">
         {(customer.returned_checks_count ?? 0) > 0 && (
+          <FadeIn>
           <Card
             variant="glass"
-            className="border-warning/30 bg-warning/5 cursor-pointer animate-slide-up"
+            className="border-warning/30 bg-warning/5 cursor-pointer"
             onClick={() => {
               setReturnedCheckIdx(0);
               setReturnedCheckDialogOpen(true);
@@ -234,6 +237,7 @@ export function CustomerDashboard({
               </div>
             </CardContent>
           </Card>
+          </FadeIn>
         )}
 
         {/* Insight Stats — horizontal cards */}
@@ -246,9 +250,9 @@ export function CustomerDashboard({
         ) : (
           <div className="space-y-3">
             {/* Total Debt */}
-            <div
-              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden animate-slide-up transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
-              style={{ animationDelay: "0ms" }}
+            <FadeIn delay={0.1}>
+            <IconHoverZone
+              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
             >
               <div className="absolute inset-y-0 start-0 w-1 rounded-s-2xl bg-primary" />
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform group-hover:scale-110">
@@ -263,12 +267,13 @@ export function CustomerDashboard({
               <Badge variant={Number(insights?.total_debt ?? customer.balance) > 0 ? "danger" : "success"} size="sm">
                 {Number(insights?.total_debt ?? customer.balance) > 0 ? t("customer.riskHigh") : t("customer.riskLow")}
               </Badge>
-            </div>
+            </IconHoverZone>
+            </FadeIn>
 
             {/* Last Collection */}
-            <div
-              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden animate-slide-up transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
-              style={{ animationDelay: "60ms" }}
+            <FadeIn delay={0.25}>
+            <IconHoverZone
+              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
             >
               <div className="absolute inset-y-0 start-0 w-1 rounded-s-2xl bg-primary/60" />
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform group-hover:scale-110">
@@ -285,12 +290,13 @@ export function CustomerDashboard({
                   {formatDateShort(insights.last_payment_date)}
                 </span>
               )}
-            </div>
+            </IconHoverZone>
+            </FadeIn>
 
             {/* Collection Frequency */}
-            <div
-              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden animate-slide-up transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
-              style={{ animationDelay: "120ms" }}
+            <FadeIn delay={0.4}>
+            <IconHoverZone
+              className="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
             >
               <div className="absolute inset-y-0 start-0 w-1 rounded-s-2xl bg-primary/40" />
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform group-hover:scale-110">
@@ -307,15 +313,16 @@ export function CustomerDashboard({
                   {t("customer.daysAverage")}
                 </span>
               )}
-            </div>
+            </IconHoverZone>
+            </FadeIn>
 
             {/* Risk Score */}
-            <div
+            <FadeIn delay={0.55}>
+            <IconHoverZone
               className={cn(
-                "group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden animate-slide-up transition-all hover:shadow-lg",
+                "group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm overflow-hidden transition-all hover:shadow-lg",
                 insights?.risk_score === "red" ? "hover:border-destructive/40 hover:shadow-destructive/5" : insights?.risk_score === "yellow" ? "hover:border-warning/40 hover:shadow-warning/5" : "hover:border-success/40 hover:shadow-success/5"
               )}
-              style={{ animationDelay: "180ms" }}
             >
               <div className={cn(
                 "absolute inset-y-0 start-0 w-1 rounded-s-2xl",
@@ -338,7 +345,8 @@ export function CustomerDashboard({
                 label={riskLabel(insights?.risk_score)}
                 size="sm"
               />
-            </div>
+            </IconHoverZone>
+            </FadeIn>
           </div>
         )}
 
@@ -347,14 +355,14 @@ export function CustomerDashboard({
           {actionCards.map((ac, idx) => {
             const Icon = ac.icon;
             return (
+              <FadeIn key={ac.key} animation="scale" delay={0.7 + idx * 0.12}>
+              <IconHoverZone>
               <Card
-                key={ac.key}
                 variant="interactive"
                 className={cn(
-                  "flex flex-col items-center justify-center gap-3 p-5 animate-scale-in",
+                  "flex flex-col items-center justify-center gap-3 p-5",
                   ac.accent
                 )}
-                style={{ animationDelay: `${idx * 60}ms` }}
                 onClick={() => onAction(ac.key)}
               >
                 <div
@@ -369,6 +377,8 @@ export function CustomerDashboard({
                   {ac.label}
                 </span>
               </Card>
+              </IconHoverZone>
+              </FadeIn>
             );
           })}
         </div>
@@ -385,11 +395,9 @@ export function CustomerDashboard({
               </Badge>
             </h3>
             {drafts.map((draft, idx) => (
+              <FadeIn key={draft.id} delay={idx * 0.12}>
               <Card
-                key={draft.id}
                 variant="glass"
-                className="animate-slide-up"
-                style={{ animationDelay: `${idx * 40}ms` }}
               >
                 <CardContent className="flex items-center justify-between p-4">
                   <div className="min-w-0 flex-1">
@@ -433,6 +441,7 @@ export function CustomerDashboard({
                   </div>
                 </CardContent>
               </Card>
+              </FadeIn>
             ))}
           </div>
         ) : null}
@@ -517,6 +526,6 @@ export function CustomerDashboard({
           }
         />
       )}
-    </div>
+    </FadeIn>
   );
 }

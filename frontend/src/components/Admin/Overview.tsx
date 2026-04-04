@@ -13,6 +13,7 @@ import type { LucideIcon } from "@/lib/icons";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
+import { FadeIn, Stagger } from "@/components/ui/fade-in";
 import { BarChart } from "@/components/ui/bar-chart";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -124,9 +125,11 @@ export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }
     <>
       <TopBar title={t("admin.title")} />
       <PageContainer>
+        <FadeIn animation="fade">
         <div className="space-y-5" dir={isAr ? "rtl" : "ltr"}>
 
           {/* ── Hero: Revenue & Collections ── */}
+          <FadeIn delay={0}>
           <div className="relative overflow-hidden rounded-2xl">
             {/* Dark mode gradient — deep red tones matching primary #dc2626 */}
             <div className="absolute inset-0 hidden dark:block" style={{
@@ -189,9 +192,10 @@ export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }
               </div>
             </div>
           </div>
+          </FadeIn>
 
           {/* ── Metrics Grid ── */}
-          <div className="grid grid-cols-2 gap-3">
+          <Stagger interval={0.08} baseDelay={0.08} className="grid grid-cols-2 gap-3">
             <MetricCard
               icon={TrendingDown}
               value={formatCurrency(debtStats?.total_debt ?? 0)}
@@ -216,10 +220,11 @@ export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }
               label={t("admin.orderCount")}
               onClick={() => onNavigate?.("sales")}
             />
-          </div>
+          </Stagger>
 
           {/* ── Rep Performance ── */}
           {topReps.length > 0 && (
+            <FadeIn delay={0.4}>
             <div className="rounded-2xl border border-border bg-card p-4">
               <h3 className="text-body-sm font-semibold text-foreground mb-4">
                 {t("admin.repPerformance")}
@@ -241,9 +246,11 @@ export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }
                 })}
               </div>
             </div>
+            </FadeIn>
           )}
 
           {/* ── 7-day Chart ── */}
+          <FadeIn delay={0.48}>
           <div className="rounded-2xl border border-border bg-card p-4">
             <h3 className="text-body-sm font-semibold text-foreground mb-3">
               {t("admin.performanceChart")}
@@ -265,9 +272,11 @@ export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }
               <EmptyState preset="no-data" title={t("admin.noData")} className="py-6" />
             )}
           </div>
+          </FadeIn>
 
           {/* ── Debt by City ── */}
           {debtStats?.by_city && debtStats.by_city.length > 0 && (
+            <FadeIn delay={0.56}>
             <div className="rounded-2xl border border-border bg-card p-4">
               <h3 className="text-body-sm font-semibold text-foreground mb-4">
                 {t("admin.debtByCity")}
@@ -296,9 +305,11 @@ export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }
                 })}
               </div>
             </div>
+            </FadeIn>
           )}
 
         </div>
+        </FadeIn>
       </PageContainer>
     </>
   );

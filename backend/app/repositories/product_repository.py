@@ -29,6 +29,15 @@ class ProductRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_by_id_for_update(self, product_id: uuid.UUID) -> Product | None:
+        """Lock the row with FOR UPDATE to prevent race conditions."""
+        result = await self._db.execute(
+            select(Product)
+            .where(Product.id == product_id, Product.is_deleted.is_(False))
+            .with_for_update()
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_sku(self, sku: str) -> Product | None:
         result = await self._db.execute(
             select(Product).where(Product.sku == sku, Product.is_deleted.is_(False))

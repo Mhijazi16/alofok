@@ -5,7 +5,7 @@ import aiofiles
 from fastapi import APIRouter, File, UploadFile
 from pydantic import BaseModel
 
-from app.api.deps import Cache, CurrentUser, PaymentSvc, require_admin, require_sales
+from app.api.deps import CurrentUser, PaymentSvc, require_admin, require_sales
 from app.schemas.transaction import PaymentCreate, TransactionOut
 
 router = APIRouter()
@@ -38,11 +38,9 @@ async def upload_check_image(file: UploadFile = File(...)) -> dict:
     "", response_model=TransactionOut, status_code=201, dependencies=[require_sales]
 )
 async def create_payment(
-    body: PaymentCreate, current_user: CurrentUser, service: PaymentSvc, cache: Cache
+    body: PaymentCreate, current_user: CurrentUser, service: PaymentSvc
 ) -> TransactionOut:
-    result = await service.create_payment(body, uuid.UUID(current_user["sub"]))
-    await cache.delete(f"insights:{body.customer_id}")
-    return result
+    return await service.create_payment(body, uuid.UUID(current_user["sub"]))
 
 
 @router.put(
@@ -51,11 +49,9 @@ async def create_payment(
     dependencies=[require_admin],
 )
 async def return_check(
-    transaction_id: uuid.UUID, current_user: CurrentUser, service: PaymentSvc, cache: Cache
+    transaction_id: uuid.UUID, current_user: CurrentUser, service: PaymentSvc
 ) -> TransactionOut:
-    result = await service.return_check(transaction_id, uuid.UUID(current_user["sub"]))
-    await cache.delete(f"insights:{result.customer_id}")
-    return result
+    return await service.return_check(transaction_id, uuid.UUID(current_user["sub"]))
 
 
 @router.put(
@@ -94,10 +90,7 @@ async def return_check_admin(
     body: ReturnCheckBody,
     current_user: CurrentUser,
     service: PaymentSvc,
-    cache: Cache,
 ) -> TransactionOut:
-    result = await service.return_check(
+    return await service.return_check(
         transaction_id, uuid.UUID(current_user["sub"]), body.notes
     )
-    await cache.delete(f"insights:{result.customer_id}")
-    return result

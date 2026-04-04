@@ -42,5 +42,5 @@ class Customer(BaseMixin, Base):
     )
 
     sales_rep: Mapped["User | None"] = relationship(  # type: ignore[name-defined]
-        "User", foreign_keys=[assigned_to]
+        "User", foreign_keys=[assigned_to], lazy="selectin"
     )

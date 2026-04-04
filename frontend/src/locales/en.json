@@ -103,7 +103,13 @@
     "filter": "Filter",
     "export": "Export",
     "import": "Import",
-    "duplicate": "Duplicate"
+    "duplicate": "Duplicate",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "route": {
+    "noCustomers": "No customers today",
+    "noCustomersDesc": "No customer route has been assigned for this day yet."
   },
   "catalog": {
     "bestSellers": "Best Sellers",

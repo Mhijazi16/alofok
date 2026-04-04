@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/useToast";
 import { salesApi, type OrderWithCustomer } from "@/services/salesApi";
 import { getImageUrl } from "@/lib/image";
+import { Package } from "@/lib/icons";
 import { toLocalDateStr } from "@/lib/utils";
 
 interface OrderModalProps {
@@ -165,11 +166,17 @@ export function OrderModal({
                 {items.map((item, idx) => (
                   <Card key={idx} variant="glass" className="p-3">
                     <div className="flex gap-3">
-                      <img
-                        src={getImageUrl(item.image_url) ?? ""}
-                        alt={item.name}
-                        className="h-16 w-16 rounded object-cover"
-                      />
+                      {getImageUrl(item.image_url) ? (
+                        <img
+                          src={getImageUrl(item.image_url)!}
+                          alt={item.name}
+                          className="h-16 w-16 rounded-xl object-cover bg-muted"
+                        />
+                      ) : (
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted">
+                          <Package className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-body-sm font-semibold truncate">
                           {item.name}

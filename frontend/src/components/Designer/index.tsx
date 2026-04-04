@@ -96,7 +96,7 @@ export default function DesignerShell() {
           }
           onLogout={() => dispatch(logout())}
           logoutVariant="outline"
-          logoutClassName="w-full animate-slide-up border-destructive/30 text-destructive hover:bg-destructive/10"
+          logoutClassName="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
         />
       );
       break;

@@ -2,7 +2,6 @@ import uuid
 from decimal import Decimal
 
 from app.core.errors import HorizonException
-from decimal import Decimal
 
 from app.models.transaction import (
     Currency,
@@ -16,6 +15,7 @@ from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.admin import CheckOut
 from app.schemas.transaction import PaymentCreate, TransactionOut
+from app.utils.cache import CacheBackend
 
 _PAYMENT_TYPES = {TransactionType.Payment_Cash, TransactionType.Payment_Check}
 _CHECK_TYPES = {TransactionType.Payment_Check}
@@ -27,10 +27,16 @@ class PaymentService:
         customer_repo: CustomerRepository,
         transaction_repo: TransactionRepository,
         ledger_repo: LedgerRepository,
+        cache: CacheBackend,
     ):
         self._customers = customer_repo
         self._transactions = transaction_repo
         self._ledger = ledger_repo
+        self._cache = cache
+
+    async def _invalidate_customer_cache(self, customer_id: uuid.UUID) -> None:
+        await self._cache.delete(f"insights:{customer_id}")
+        await self._cache.invalidate_prefix("route:")
 
     async def create_payment(
         self, body: PaymentCreate, creator_id: uuid.UUID
@@ -87,11 +93,12 @@ class PaymentService:
             data=data_dict or None,
             notes=body.notes,
         )
+
+        # Atomic: flush all three, then commit together
+        txn = await self._transactions.create(txn, auto_commit=False)
         customer.balance -= ils_amount
         await self._customers.update_balance(customer)
-        txn = await self._transactions.create(txn)
 
-        # Auto-create ledger entry for this payment
         ledger_entry = CompanyLedger(
             direction="incoming",
             payment_method=(
@@ -105,6 +112,7 @@ class PaymentService:
             status="pending",
         )
         await self._ledger.create(ledger_entry)
+        await self._invalidate_customer_cache(body.customer_id)
 
         return TransactionOut.model_validate(txn)
 
@@ -142,7 +150,7 @@ class PaymentService:
             raise HorizonException(409, "Check is already marked as returned")
 
         check_txn.status = TransactionStatus.Returned
-        await self._transactions.update(check_txn)
+        await self._transactions.update(check_txn, auto_commit=False)
 
         original_amount = abs(check_txn.amount)
         return_txn = Transaction(
@@ -155,10 +163,12 @@ class PaymentService:
             notes=notes or f"Returned check #{check_txn.id}",
         )
 
+        # Atomic: flush return txn + balance update, then commit together
         customer = await self._customers.get_by_id(check_txn.customer_id)
         customer.balance += original_amount
         await self._customers.update_balance(customer)
-        await self._transactions.create_many([return_txn])
+        await self._transactions.create(return_txn)
+        await self._invalidate_customer_cache(check_txn.customer_id)
 
         return TransactionOut.model_validate(return_txn)
 

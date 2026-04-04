@@ -48,6 +48,16 @@ class CustomerService:
         self._cache = cache
         self._auth = auth_repo
 
+    async def verify_customer_access(
+        self, customer_id: uuid.UUID, user_id: uuid.UUID, role: str
+    ) -> None:
+        """Ensure the caller can access this customer. Admins can access any customer."""
+        if role == "Admin":
+            return
+        customer = await self._customers.get_by_id(customer_id)
+        if not customer or customer.assigned_to != user_id:
+            raise HorizonException(403, "Cannot access this customer")
+
     async def create_customer(
         self, data: CustomerCreate, user_id: uuid.UUID
     ) -> CustomerOut:

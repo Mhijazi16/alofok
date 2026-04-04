@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Upload, Archive } from "@/lib/icons";
+import { Plus, Upload, Archive, ChevronLeft, ChevronRight } from "@/lib/icons";
 
 import { adminApi } from "@/services/adminApi";
 import type { Customer } from "@/services/salesApi";
@@ -17,6 +17,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CustomerForm } from "@/components/Sales/CustomerForm";
 import { CustomerImport } from "./CustomerImport";
+import { FadeIn } from "@/components/ui/fade-in";
 
 // Helper to convert null to undefined for Avatar src
 const getAvatarSrc = (url: string | null | undefined): string | undefined => {
@@ -46,6 +47,8 @@ export function AdminCustomerPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDay, setSelectedDay] = useState<string>("All");
   const [archiveTarget, setArchiveTarget] = useState<Customer | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
 
   const archiveMutation = useMutation({
     mutationFn: adminApi.archiveCustomer,
@@ -61,10 +64,13 @@ export function AdminCustomerPanel() {
     },
   });
 
-  const { data: customers, isLoading } = useQuery({
-    queryKey: ["admin-customers"],
-    queryFn: adminApi.getAllCustomers,
+  const { data: customersResponse, isLoading } = useQuery({
+    queryKey: ["admin-customers", page, pageSize],
+    queryFn: () => adminApi.getAllCustomers(page, pageSize),
   });
+
+  const customers = customersResponse?.items;
+  const totalPages = customersResponse?.total_pages ?? 1;
 
   const { data: salesReps } = useQuery({
     queryKey: ["sales-reps"],
@@ -112,7 +118,7 @@ export function AdminCustomerPanel() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar title={t("nav.customers")} />
 
       <PageContainer>
@@ -226,6 +232,33 @@ export function AdminCustomerPanel() {
               })}
             </div>
           )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                {t("actions.previous") || "Previous"}
+              </Button>
+              <span className="text-caption text-muted-foreground">
+                {page} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                {t("actions.next") || "Next"}
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </PageContainer>
 
@@ -251,6 +284,6 @@ export function AdminCustomerPanel() {
       >
         <Plus className="h-6 w-6" />
       </Button>
-    </div>
+    </FadeIn>
   );
 }

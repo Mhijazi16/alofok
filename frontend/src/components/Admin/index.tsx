@@ -36,7 +36,7 @@ import { PaymentFlow } from "@/components/Sales/PaymentFlow";
 import { StatementView } from "@/components/Sales/StatementView";
 import { PurchaseFlow } from "@/components/Sales/PurchaseFlow";
 import { adminApi } from "@/services/adminApi";
-import { salesApi, type Customer, type Product as SalesProduct, type OrderItem, type CartItem } from "@/services/salesApi";
+import { salesApi, type Customer, type OrderItem } from "@/services/salesApi";
 import { getUnitPrice } from "@/lib/cart";
 import { syncQueue } from "@/lib/syncQueue";
 import { toLocalDateStr } from "@/lib/utils";
@@ -142,7 +142,7 @@ export default function AdminPanel() {
         return (
           <AllCustomersView
             queryKey={["admin-customers"]}
-            queryFn={adminApi.getAllCustomers}
+            queryFn={() => adminApi.getAllCustomers(1, 200).then((r) => r.items)}
             onSelectCustomer={(customer) => {
               setSelectedCustomer(customer);
               setActiveView("customerDetail");

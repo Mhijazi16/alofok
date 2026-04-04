@@ -100,6 +100,20 @@ const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(
       };
     }, [previewUrl]);
 
+    // Reset after upload completes (isUploading: true → false)
+    const prevUploading = React.useRef(isUploading);
+    React.useEffect(() => {
+      if (prevUploading.current && !isUploading) {
+        setSelectedFile(null);
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }
+        setError(null);
+      }
+      prevUploading.current = isUploading;
+    }, [isUploading, previewUrl]);
+
     const handleDragOver = (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();

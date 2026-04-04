@@ -31,6 +31,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { FadeIn } from "@/components/ui/fade-in";
 
 interface PurchaseFlowProps {
   customer: Customer;
@@ -180,7 +181,7 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
   const canSubmit = cart.size > 0 && cartEntries.every(([, ci]) => ci.unitPrice > 0 && ci.quantity > 0);
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("purchase.title")}
         subtitle={customer.name}
@@ -388,6 +389,6 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
         onConfirm={handleSubmit}
         variant="default"
       />
-    </div>
+    </FadeIn>
   );
 }

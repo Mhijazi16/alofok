@@ -3,9 +3,6 @@ from collections import defaultdict
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.errors import HorizonException
 from app.models.ledger import CompanyLedger
 from app.repositories.ledger_repository import LedgerRepository
@@ -17,8 +14,7 @@ from app.schemas.ledger import (
 
 
 class LedgerService:
-    def __init__(self, db: AsyncSession, ledger_repo: LedgerRepository):
-        self._db = db
+    def __init__(self, ledger_repo: LedgerRepository):
         self._repo = ledger_repo
 
     async def create_entry(
@@ -48,24 +44,7 @@ class LedgerService:
         return await self._repo.create(entry)
 
     async def get_daily_report(self, report_date: date) -> DailyLedgerReportOut:
-        rows = await self._db.execute(
-            text("""
-                SELECT
-                    cl.id, cl.direction, cl.payment_method, cl.amount,
-                    cl.category, cl.notes, cl.rep_id, cl.customer_id,
-                    cl.source_transaction_id, cl.status, cl.confirmed_at,
-                    cl.flag_notes, cl.date, cl.created_at,
-                    u.username AS rep_name,
-                    c.name AS customer_name
-                FROM company_ledger cl
-                JOIN users u ON u.id = cl.rep_id
-                LEFT JOIN customers c ON c.id = cl.customer_id
-                WHERE cl.date = :report_date
-                  AND cl.is_deleted = false
-                ORDER BY u.username, cl.created_at ASC
-            """),
-            {"report_date": report_date},
-        )
+        rows = await self._repo.get_daily_report_rows(report_date)
 
         incoming_map: dict[uuid.UUID, list[LedgerEntryOut]] = defaultdict(list)
         outgoing_map: dict[uuid.UUID, list[LedgerEntryOut]] = defaultdict(list)

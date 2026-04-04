@@ -18,5 +18,5 @@ class CustomerAuth(BaseMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     customer: Mapped["Customer"] = relationship(  # type: ignore[name-defined]
-        "Customer", foreign_keys=[customer_id]
+        "Customer", foreign_keys=[customer_id], lazy="selectin"
     )

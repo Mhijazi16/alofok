@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { TopBar } from "@/components/ui/top-bar";
+import { FadeIn } from "@/components/ui/fade-in";
 import { useTheme } from "@/hooks/useTheme";
 
 interface ProfileViewProps {
@@ -38,19 +39,20 @@ export function ProfileView({
   };
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar title={t("profile.title")} />
       <div className="space-y-4 p-4">
         {/* Identity (role-specific) */}
-        <Card variant="glass" className="animate-slide-up">
+        <FadeIn>
+        <Card variant="glass">
           {identitySlot}
         </Card>
+        </FadeIn>
 
         {/* Settings */}
+        <FadeIn delay={0.08}>
         <Card
           variant="glass"
-          className="animate-slide-up"
-          style={{ animationDelay: "60ms" }}
         >
           <CardHeader className="pb-2">
             <CardTitle className="text-body-sm text-muted-foreground">
@@ -124,32 +126,31 @@ export function ProfileView({
             </div>
           </CardContent>
         </Card>
+        </FadeIn>
 
         {/* Extra slot (e.g. SyncStatusCard) */}
         {extraSlot && (
-          <div
-            className="animate-slide-up"
-            style={{ animationDelay: "90ms" }}
-          >
+          <FadeIn delay={0.16}>
             {extraSlot}
-          </div>
+          </FadeIn>
         )}
 
         {/* Logout */}
+        <FadeIn delay={0.24}>
         <Button
           variant={logoutVariant}
           size="lg"
           className={
             logoutClassName ??
-            "w-full animate-slide-up"
+            "w-full"
           }
-          style={{ animationDelay: "150ms" }}
           onClick={onLogout}
         >
           <LogOut className="h-4 w-4" />
           {t("auth.logout")}
         </Button>
+        </FadeIn>
       </div>
-    </div>
+    </FadeIn>
   );
 }

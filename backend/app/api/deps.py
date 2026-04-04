@@ -13,6 +13,7 @@ from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.product_repository import ProductRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.repositories.user_repository import UserRepository
+from app.repositories.admin_repository import AdminRepository
 from app.services.admin_service import AdminService
 from app.services.ledger_service import LedgerService
 from app.services.auth_service import AuthService
@@ -165,9 +166,9 @@ def get_customer_service(
 
 
 def get_order_service(
-    customer_repo: CustomerRepo, transaction_repo: TransactionRepo
+    customer_repo: CustomerRepo, transaction_repo: TransactionRepo, cache: Cache
 ) -> OrderService:
-    return OrderService(customer_repo, transaction_repo)
+    return OrderService(customer_repo, transaction_repo, cache)
 
 
 def get_customer_auth_service(
@@ -188,8 +189,9 @@ def get_payment_service(
     customer_repo: CustomerRepo,
     transaction_repo: TransactionRepo,
     ledger_repo: LedgerRepo,
+    cache: Cache,
 ) -> PaymentService:
-    return PaymentService(customer_repo, transaction_repo, ledger_repo)
+    return PaymentService(customer_repo, transaction_repo, ledger_repo, cache)
 
 
 def get_purchase_service(
@@ -201,12 +203,19 @@ def get_purchase_service(
     return PurchaseService(customer_repo, transaction_repo, product_repo, ledger_repo)
 
 
-def get_admin_service(db: DbSession) -> AdminService:
-    return AdminService(db)
+def get_admin_repo(db: DbSession) -> AdminRepository:
+    return AdminRepository(db)
 
 
-def get_ledger_service(db: DbSession, ledger_repo: LedgerRepo) -> LedgerService:
-    return LedgerService(db, ledger_repo)
+AdminRepo = Annotated[AdminRepository, Depends(get_admin_repo)]
+
+
+def get_admin_service(admin_repo: AdminRepo, user_repo: UserRepo) -> AdminService:
+    return AdminService(admin_repo, user_repo)
+
+
+def get_ledger_service(ledger_repo: LedgerRepo) -> LedgerService:
+    return LedgerService(ledger_repo)
 
 
 AdminSvc = Annotated[AdminService, Depends(get_admin_service)]

@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
+import { FadeIn } from "@/components/ui/fade-in";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AdminChecksView } from "./AdminChecksView";
 import { DailyCashReportView } from "./DailyCashReportView";
@@ -17,6 +18,7 @@ export function FinanceView({ onSelectionChange }: FinanceViewProps) {
     <>
       <TopBar title={t("nav.finance")} />
       <PageContainer>
+      <FadeIn animation="fade">
       <div className="space-y-4" dir={i18n.language === "ar" ? "rtl" : "ltr"}>
 
         <Tabs defaultValue="cashReport">
@@ -34,6 +36,7 @@ export function FinanceView({ onSelectionChange }: FinanceViewProps) {
           </TabsContent>
         </Tabs>
       </div>
+      </FadeIn>
     </PageContainer>
     </>
   );

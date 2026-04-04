@@ -139,10 +139,17 @@ async def collections(
     return {"total": total}
 
 
-@router.get("/{customer_id}/insights", response_model=CustomerInsightsOut)
+@router.get(
+    "/{customer_id}/insights",
+    response_model=CustomerInsightsOut,
+    dependencies=[require_sales],
+)
 async def customer_insights(
-    customer_id: uuid.UUID, service: CustomerSvc
+    customer_id: uuid.UUID, current_user: CurrentUser, service: CustomerSvc
 ) -> CustomerInsightsOut:
+    await service.verify_customer_access(
+        customer_id, uuid.UUID(current_user["sub"]), current_user["role"]
+    )
     return await service.get_insights(customer_id)
 
 
@@ -165,8 +172,14 @@ async def customer_statement(
     dependencies=[require_sales],
 )
 async def customer_returned_checks(
-    customer_id: uuid.UUID, service: PaymentSvc
+    customer_id: uuid.UUID,
+    current_user: CurrentUser,
+    service: PaymentSvc,
+    customer_svc: CustomerSvc,
 ) -> list[CheckOut]:
+    await customer_svc.verify_customer_access(
+        customer_id, uuid.UUID(current_user["sub"]), current_user["role"]
+    )
     return await service.get_customer_returned_checks(customer_id)
 
 

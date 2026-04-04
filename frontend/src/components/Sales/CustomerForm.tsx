@@ -35,6 +35,7 @@ const PALESTINIAN_CITIES = [
 ];
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Button } from "@/components/ui/button";
+import { FadeIn } from "@/components/ui/fade-in";
 
 const VISIT_DAYS = [
   { value: "Sun", ar: "الأحد", en: "Sunday" },
@@ -184,7 +185,7 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
   };
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={isEdit ? t("customer.editCustomer") : t("customer.addNew")}
         backButton={{ onBack }}
@@ -363,6 +364,6 @@ export function CustomerForm({ customer, onDone, onBack, salesReps, createFn }: 
           {t("actions.save")}
         </Button>
       </div>
-    </div>
+    </FadeIn>
   );
 }

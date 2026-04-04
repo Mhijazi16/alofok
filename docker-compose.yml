@@ -13,12 +13,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7-alpine
-    restart: always
-    ports:
-      - "6379:6379"
-
   backend:
     build:
       context: ./backend
@@ -30,10 +24,8 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:password@db/horizon
-      - REDIS_URL=redis://redis:6379
     depends_on:
       - db
-      - redis
 
 volumes:
   postgres_data:

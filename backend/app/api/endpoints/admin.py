@@ -1,7 +1,7 @@
 from datetime import date
 import uuid
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Query, UploadFile
 
 from app.api.deps import AdminSvc, CurrentUser, CustomerSvc, UserRepo, require_admin
 from app.models.transaction import TransactionStatus
@@ -69,11 +69,23 @@ async def eod_report(
     return await service.trigger_eod_report(report_date)
 
 
-@router.get(
-    "/customers", response_model=list[CustomerOut], dependencies=[require_admin]
-)
-async def list_all_customers(service: CustomerSvc) -> list[CustomerOut]:
-    return await service.get_all_customers_admin()
+@router.get("/customers", response_model=dict, dependencies=[require_admin])
+async def list_all_customers(
+    service: CustomerSvc,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+) -> dict:
+    customers = await service.get_all_customers_admin()
+    total = len(customers)
+    start = (page - 1) * page_size
+    end = start + page_size
+    return {
+        "items": customers[start:end],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size,
+    }
 
 
 @router.post(
@@ -125,9 +137,21 @@ async def list_sales_reps(repo: UserRepo) -> list[SalesRepOut]:
     return [SalesRepOut.model_validate(r) for r in reps]
 
 
-@router.get("/checks", response_model=list[CheckOut], dependencies=[require_admin])
+@router.get("/checks", response_model=dict, dependencies=[require_admin])
 async def list_checks(
     service: AdminSvc,
     status: TransactionStatus | None = None,
-) -> list[CheckOut]:
-    return await service.get_all_checks(status)
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+) -> dict:
+    checks = await service.get_all_checks(status)
+    total = len(checks)
+    start = (page - 1) * page_size
+    end = start + page_size
+    return {
+        "items": checks[start:end],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size,
+    }

@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import select, update
+from sqlalchemy import select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.ledger import CompanyLedger
@@ -73,3 +73,24 @@ class LedgerRepository:
         )
         await self._db.commit()
         return result.rowcount
+
+    async def get_daily_report_rows(self, report_date: date) -> list[dict]:
+        rows = await self._db.execute(
+            text("""
+                SELECT
+                    cl.id, cl.direction, cl.payment_method, cl.amount,
+                    cl.category, cl.notes, cl.rep_id, cl.customer_id,
+                    cl.source_transaction_id, cl.status, cl.confirmed_at,
+                    cl.flag_notes, cl.date, cl.created_at,
+                    u.username AS rep_name,
+                    c.name AS customer_name
+                FROM company_ledger cl
+                JOIN users u ON u.id = cl.rep_id
+                LEFT JOIN customers c ON c.id = cl.customer_id
+                WHERE cl.date = :report_date
+                  AND cl.is_deleted = false
+                ORDER BY u.username, cl.created_at ASC
+            """),
+            {"report_date": report_date},
+        )
+        return list(rows)

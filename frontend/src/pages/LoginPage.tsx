@@ -11,6 +11,7 @@ import { customerApi } from "@/services/customerApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { FadeIn } from "@/components/ui/fade-in";
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
@@ -78,7 +79,8 @@ export default function LoginPage() {
       </button>
 
       {/* Login card */}
-      <div className="glass-strong w-full max-w-sm animate-scale-in rounded-2xl p-8">
+      <FadeIn animation="scale" className="w-full max-w-md">
+      <div className="glass-strong w-full rounded-2xl p-8">
         {/* Logo + branding */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <img
@@ -119,16 +121,18 @@ export default function LoginPage() {
 
         {/* Error badge */}
         {error && (
-          <div className="mb-4 flex justify-center animate-slide-up">
+          <FadeIn>
+          <div className="mb-4 flex justify-center">
             <Badge variant="destructive" size="lg">
               {error}
             </Badge>
           </div>
+          </FadeIn>
         )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="animate-slide-up" style={{ animationDelay: "50ms", animationFillMode: "both" }}>
+          <FadeIn delay={0.08}>
             {loginMode === "staff" ? (
               <Input
                 inputSize="lg"
@@ -152,9 +156,9 @@ export default function LoginPage() {
                 autoComplete="tel"
               />
             )}
-          </div>
+          </FadeIn>
 
-          <div className="animate-slide-up" style={{ animationDelay: "120ms", animationFillMode: "both" }}>
+          <FadeIn delay={0.16}>
             <Input
               inputSize="lg"
               type="password"
@@ -165,9 +169,9 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
             />
-          </div>
+          </FadeIn>
 
-          <div className="animate-slide-up" style={{ animationDelay: "190ms", animationFillMode: "both" }}>
+          <FadeIn delay={0.24}>
             <Button
               type="submit"
               variant="gradient"
@@ -177,9 +181,10 @@ export default function LoginPage() {
             >
               {t("auth.login")}
             </Button>
-          </div>
+          </FadeIn>
         </form>
       </div>
+      </FadeIn>
     </div>
   );
 }

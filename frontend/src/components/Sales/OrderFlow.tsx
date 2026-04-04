@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Separator } from "@/components/ui/separator";
+import { FadeIn } from "@/components/ui/fade-in";
 
 interface OrderFlowProps {
   customer: Customer;
@@ -130,11 +131,10 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
     const withOptions = hasOptions(product);
 
     return (
+      <FadeIn key={product.id} delay={idx * 0.04} skip={idx >= 10}>
       <Card
-        key={product.id}
         variant="interactive"
-        className="animate-slide-up overflow-hidden"
-        style={{ animationDelay: `${idx * 40}ms` }}
+        className="overflow-hidden"
       >
         <CardContent className="p-3">
           <div className="flex items-center gap-3">
@@ -232,6 +232,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
           </div>
         </CardContent>
       </Card>
+      </FadeIn>
     );
   };
 
@@ -325,7 +326,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
   };
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("actions.order")}
         subtitle={customer.name}
@@ -403,6 +404,6 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
           setPickerProduct(null);
         }}
       />
-    </div>
+    </FadeIn>
   );
 }

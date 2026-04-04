@@ -103,7 +103,13 @@
     "filter": "تصفية",
     "export": "تصدير",
     "import": "استيراد",
-    "duplicate": "تكرار"
+    "duplicate": "تكرار",
+    "previous": "السابق",
+    "next": "التالي"
+  },
+  "route": {
+    "noCustomers": "لا يوجد عملاء اليوم",
+    "noCustomersDesc": "لم يتم تعيين عملاء لهذا اليوم بعد."
   },
   "catalog": {
     "bestSellers": "الأكثر مبيعاً",

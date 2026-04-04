@@ -38,8 +38,8 @@ class DailyCashConfirmation(BaseMixin, Base):
     flag_notes: Mapped[str | None] = mapped_column(String, nullable=True)
 
     rep: Mapped["User"] = relationship(  # type: ignore[name-defined]
-        "User", foreign_keys=[rep_id]
+        "User", foreign_keys=[rep_id], lazy="selectin"
     )
     confirmer: Mapped["User | None"] = relationship(  # type: ignore[name-defined]
-        "User", foreign_keys=[confirmed_by]
+        "User", foreign_keys=[confirmed_by], lazy="selectin"
     )

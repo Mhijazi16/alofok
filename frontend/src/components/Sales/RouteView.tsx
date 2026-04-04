@@ -32,6 +32,7 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useToast } from "@/hooks/useToast";
 import { toLocalDateStr } from "@/lib/utils";
 import { ExpenseCard, REP_CATEGORIES } from "@/components/shared/ExpenseCard";
+import { FadeIn } from "@/components/ui/fade-in";
 import { OrderModal } from "./OrderModal";
 
 interface RouteViewProps {
@@ -270,7 +271,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
   const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("customer.todayRoute")}
         subtitle={todayLabel}
@@ -384,7 +385,13 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
             search.trim() ? (
               <EmptyState preset="no-results" />
             ) : (
-              <EmptyState preset="empty-route" />
+              <FadeIn animation="scale">
+                <EmptyState
+                  preset="empty-route"
+                  title={t("route.noCustomers")}
+                  description={t("route.noCustomersDesc")}
+                />
+              </FadeIn>
             )
           ) : (
             <div className="space-y-2">
@@ -398,11 +405,10 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                       : "danger";
 
                 return (
+                  <FadeIn key={customer.id} delay={idx * 0.06} skip={idx >= 15}>
                   <Card
-                    key={customer.id}
                     variant="interactive"
-                    className="animate-slide-up p-4"
-                    style={{ animationDelay: `${idx * 50}ms` }}
+                    className="p-4"
                     onClick={() => onSelectCustomer(customer)}
                   >
                     <div className="flex items-center gap-3">
@@ -431,6 +437,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                       </div>
                     </div>
                   </Card>
+                  </FadeIn>
                 );
               })}
             </div>
@@ -461,11 +468,10 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                 const isDelivered = !!(order as any).delivered_date;
                 const isSelected = selectedOrderIds.has(order.id);
                 return (
+                  <FadeIn key={order.id} delay={idx * 0.06}>
                   <Card
-                    key={order.id}
                     variant="glass"
-                    className={`animate-slide-up overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
-                    style={{ animationDelay: `${idx * 50}ms` }}
+                    className={`overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
                   >
                     <div className="flex">
                       <div className={`w-1 shrink-0 rounded-s-xl ${isDelivered ? "bg-emerald-500" : "bg-amber-500/60"}`} />
@@ -486,13 +492,13 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                           }}
                         >
                           {selectionMode && (
-                            <div className="shrink-0 animate-fade-in">
+                            <FadeIn animation="fade" className="shrink-0">
                               {isSelected ? (
                                 <CheckSquare className="h-5 w-5 text-primary" />
                               ) : (
                                 <Square className="h-5 w-5 text-muted-foreground" />
                               )}
-                            </div>
+                            </FadeIn>
                           )}
                           <div className="min-w-0 flex-1">
                             <p className="text-body-sm font-semibold text-foreground truncate">
@@ -558,6 +564,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                       </div>
                     </div>
                   </Card>
+                  </FadeIn>
                 );
               })}
             </div>
@@ -610,11 +617,10 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                     const isSelected = selectedOrderIds.has(order.id);
 
                     return (
+                      <FadeIn key={order.id} delay={idx * 0.06}>
                       <Card
-                        key={order.id}
                         variant="glass"
-                        className={`animate-slide-up overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
-                        style={{ animationDelay: `${idx * 50}ms` }}
+                        className={`overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
                       >
                         {/* Accent stripe */}
                         <div className="flex">
@@ -636,13 +642,13 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                               }}
                             >
                               {selectionMode && (
-                                <div className="shrink-0 animate-fade-in">
+                                <FadeIn animation="fade" className="shrink-0">
                                   {isSelected ? (
                                     <CheckSquare className="h-5 w-5 text-primary" />
                                   ) : (
                                     <Square className="h-5 w-5 text-muted-foreground" />
                                   )}
-                                </div>
+                                </FadeIn>
                               )}
                               <div className="min-w-0 flex-1">
                                 <p className="text-body-sm font-semibold text-foreground truncate">
@@ -708,6 +714,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                           </div>
                         </div>
                       </Card>
+                      </FadeIn>
                     );
                   })}
                 </div>
@@ -750,11 +757,10 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                       const isSelected = selectedOrderIds.has(order.id);
 
                       return (
+                        <FadeIn key={order.id} delay={idx * 0.06}>
                         <Card
-                          key={order.id}
                           variant="glass"
-                          className={`animate-slide-up overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
-                          style={{ animationDelay: `${idx * 50}ms` }}
+                          className={`overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
                         >
                           {/* Accent stripe */}
                           <div className="flex">
@@ -776,13 +782,13 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                                 }}
                               >
                                 {selectionMode && (
-                                  <div className="shrink-0 animate-fade-in">
+                                  <FadeIn animation="fade" className="shrink-0">
                                     {isSelected ? (
                                       <CheckSquare className="h-5 w-5 text-primary" />
                                     ) : (
                                       <Square className="h-5 w-5 text-muted-foreground" />
                                     )}
-                                  </div>
+                                  </FadeIn>
                                 )}
                                 <div className="min-w-0 flex-1">
                                   <p className="text-body-sm font-semibold text-foreground truncate">
@@ -848,6 +854,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                             </div>
                           </div>
                         </Card>
+                        </FadeIn>
                       );
                     })}
                   </div>
@@ -858,7 +865,8 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
 
         {/* ── Bulk Action Bar ── */}
         {selectionMode && (
-          <div className="fixed bottom-6 inset-x-0 z-50 animate-slide-up">
+          <FadeIn>
+          <div className="fixed bottom-6 inset-x-0 z-50">
             <div className="mx-4 flex items-center gap-2 rounded-xl border border-border/50 bg-card/95 p-3 shadow-lg backdrop-blur-md">
               <Button
                 variant="ghost"
@@ -895,6 +903,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
               </Button>
             </div>
           </div>
+          </FadeIn>
         )}
       </div>
 
@@ -949,6 +958,6 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
         onConfirm={handleBulkConfirm}
         isLoading={isBulkPending}
       />
-    </div>
+    </FadeIn>
   );
 }

@@ -117,6 +117,16 @@ export interface LedgerStatusPayload {
   flag_notes?: string;
 }
 
+// ── Paginated response wrapper ──
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
 export const adminApi = {
@@ -149,8 +159,12 @@ export const adminApi = {
       .then((r) => r.data);
   },
 
-  getAllCustomers: () =>
-    api.get<Customer[]>("/admin/customers").then((r) => r.data),
+  getAllCustomers: (page = 1, pageSize = 50) =>
+    api
+      .get<PaginatedResponse<Customer>>("/admin/customers", {
+        params: { page, page_size: pageSize },
+      })
+      .then((r) => r.data),
 
   createCustomer: (body: AdminCustomerCreate) =>
     api.post<Customer>("/admin/customers", body).then((r) => r.data),
@@ -164,9 +178,11 @@ export const adminApi = {
   archiveCustomer: (id: string) =>
     api.patch(`/admin/customers/${id}/archive`).then((r) => r.data),
 
-  getChecks: (status?: "Pending" | "Deposited" | "Returned") =>
+  getChecks: (status?: "Pending" | "Deposited" | "Returned", page = 1, pageSize = 50) =>
     api
-      .get<CheckOut[]>("/admin/checks", { params: status ? { status } : {} })
+      .get<PaginatedResponse<CheckOut>>("/admin/checks", {
+        params: { ...(status ? { status } : {}), page, page_size: pageSize },
+      })
       .then((r) => r.data),
 
   depositCheck: (checkId: string) =>

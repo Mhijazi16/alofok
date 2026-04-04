@@ -6,6 +6,7 @@ import { toLocalDateStr } from "@/lib/utils";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
+import { FadeIn } from "@/components/ui/fade-in";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -94,6 +95,7 @@ export function SalesStats({ onBack }: { onBack?: () => void }) {
     <>
     <TopBar title={t("admin.salesStats")} backButton={onBack ? { onBack } : undefined} />
     <PageContainer>
+      <FadeIn animation="fade">
       <div className="space-y-6">
         {/* Period tabs */}
         <Tabs
@@ -234,6 +236,7 @@ export function SalesStats({ onBack }: { onBack?: () => void }) {
           </TabsContent>
         </Tabs>
       </div>
+      </FadeIn>
     </PageContainer>
     </>
   );

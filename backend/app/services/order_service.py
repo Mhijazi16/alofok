@@ -7,6 +7,7 @@ from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.transaction import OrderCreate, OrderUpdate, TransactionOut
+from app.utils.cache import CacheBackend
 
 
 class OrderService:
@@ -14,9 +15,15 @@ class OrderService:
         self,
         customer_repo: CustomerRepository,
         transaction_repo: TransactionRepository,
+        cache: CacheBackend,
     ):
         self._customers = customer_repo
         self._transactions = transaction_repo
+        self._cache = cache
+
+    async def _invalidate_customer_cache(self, customer_id: uuid.UUID) -> None:
+        await self._cache.delete(f"insights:{customer_id}")
+        await self._cache.invalidate_prefix("route:")
 
     async def confirm_draft(
         self, order_id: uuid.UUID, confirmer_id: uuid.UUID
@@ -36,6 +43,7 @@ class OrderService:
         customer.balance += txn.amount
         await self._customers.update_balance(customer)
         txn = await self._transactions.update(txn)
+        await self._invalidate_customer_cache(txn.customer_id)
         return TransactionOut.model_validate(txn)
 
     async def reject_draft(
@@ -76,9 +84,13 @@ class OrderService:
             notes=body.notes,
             delivery_date=body.delivery_date,
         )
+
+        # Atomic: flush both, then commit together
+        txn = await self._transactions.create(txn, auto_commit=False)
         customer.balance += total
         await self._customers.update_balance(customer)
-        txn = await self._transactions.create(txn)
+        await self._customers.commit()
+        await self._invalidate_customer_cache(body.customer_id)
         return TransactionOut.model_validate(txn)
 
     async def update_order(
@@ -143,6 +155,9 @@ class OrderService:
             await self._customers.update_balance(new_customer)
 
         txn = await self._transactions.update(txn)
+        await self._invalidate_customer_cache(txn.customer_id)
+        if txn.customer_id != old_customer.id:
+            await self._invalidate_customer_cache(old_customer.id)
         return TransactionOut.model_validate(txn)
 
     async def confirm_delivery(
@@ -175,11 +190,12 @@ class OrderService:
         if customer is None:
             raise HorizonException(404, "Customer not found")
 
+        # Atomic: flush balance + soft-delete, then commit together
         customer.balance -= txn.amount
         await self._customers.update_balance(customer)
-
         txn.is_deleted = True
         txn = await self._transactions.update(txn)
+        await self._invalidate_customer_cache(txn.customer_id)
         return TransactionOut.model_validate(txn)
 
     async def undeliver_order(

@@ -12,6 +12,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { FadeIn } from "@/components/ui/fade-in";
 
 interface DashboardProps {
   onNavigate: (view: string) => void;
@@ -63,9 +64,9 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   ];
 
   return (
-    <div className="animate-fade-in space-y-5 p-4">
+    <FadeIn animation="fade" className="space-y-5 p-4">
       {/* Greeting */}
-      <div className="animate-slide-up space-y-0.5">
+      <FadeIn className="space-y-0.5">
         <p className="text-caption text-muted-foreground">{t("portal.welcome")}</p>
         {isLoading ? (
           <Skeleton variant="text" className="h-7 w-40" />
@@ -74,19 +75,18 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             {profile?.name ?? t("portal.customer")}
           </h1>
         )}
-      </div>
+      </FadeIn>
 
       {/* Balance Card */}
       {isLoading ? (
-        <Skeleton variant="card" className="h-28 animate-slide-up" />
+        <FadeIn delay={0.08}><Skeleton variant="card" className="h-28" /></FadeIn>
       ) : (
+        <FadeIn delay={0.08}>
         <StatCard
           variant="gradient"
           value={formatCurrency(profile?.balance ?? 0)}
           label={t("portal.currentBalance")}
           icon={DollarSign}
-          className="animate-slide-up"
-          style={{ animationDelay: "60ms" }}
           footer={
             profile?.city ? (
               <span className="text-caption text-foreground/70">
@@ -96,13 +96,11 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             ) : undefined
           }
         />
+        </FadeIn>
       )}
 
       {/* Quick Actions */}
-      <div
-        className="animate-slide-up space-y-2"
-        style={{ animationDelay: "120ms" }}
-      >
+      <FadeIn delay={0.16} className="space-y-2">
         <p className="text-body-sm font-medium text-muted-foreground px-0.5">
           {t("portal.quickActions")}
         </p>
@@ -110,14 +108,12 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           {quickActions.map((action, idx) => {
             const Icon = action.icon;
             return (
+              <FadeIn key={action.view} animation="scale" delay={idx * 0.06}>
               <Card
-                key={action.view}
                 variant="interactive"
                 className={cn(
-                  "animate-scale-in",
                   action.accent
                 )}
-                style={{ animationDelay: `${(idx + 2) * 60}ms` }}
                 onClick={() => onNavigate(action.view)}
               >
                 <CardContent className="flex items-center gap-4 p-4">
@@ -135,10 +131,11 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                   <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 rtl:rotate-180" />
                 </CardContent>
               </Card>
+              </FadeIn>
             );
           })}
         </div>
-      </div>
-    </div>
+      </FadeIn>
+    </FadeIn>
   );
 }

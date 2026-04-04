@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { getProductName } from "@/lib/product";
+import { FadeIn } from "@/components/ui/fade-in";
 
 interface CatalogViewProps {
   addToCart: (product: Product, qty?: number, selectedOptions?: SelectedOption[]) => void;
@@ -114,11 +115,10 @@ export function CatalogView({
     const withOptions = hasOptions(product);
 
     return (
+      <FadeIn key={product.id} delay={idx * 0.04} skip={idx >= 10}>
       <Card
-        key={product.id}
         variant="interactive"
-        className="animate-slide-up overflow-hidden"
-        style={{ animationDelay: `${idx * 35}ms` }}
+        className="overflow-hidden"
       >
         <CardContent className="p-3">
           <div className="flex items-center gap-3">
@@ -229,6 +229,7 @@ export function CatalogView({
           </div>
         </CardContent>
       </Card>
+      </FadeIn>
     );
   };
 
@@ -328,7 +329,7 @@ export function CatalogView({
   };
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("portal.catalog")}
         actions={
@@ -385,13 +386,13 @@ export function CatalogView({
 
       {/* Floating cart FAB */}
       {cartSize > 0 && (
+        <FadeIn animation="scale">
         <Button
           variant="default"
           onClick={onViewCart}
           className={cn(
             "fixed bottom-24 end-4 z-50 flex items-center gap-2 rounded-2xl",
-            "px-4 py-3 shadow-lg shadow-primary/30 h-auto",
-            "animate-scale-in"
+            "px-4 py-3 shadow-lg shadow-primary/30 h-auto"
           )}
         >
           <ShoppingCart className="h-5 w-5" />
@@ -399,6 +400,7 @@ export function CatalogView({
             {t("portal.cartItems", { count: cartSize })}
           </span>
         </Button>
+        </FadeIn>
       )}
 
       <OptionPickerDialog
@@ -409,6 +411,6 @@ export function CatalogView({
           setPickerProduct(null);
         }}
       />
-    </div>
+    </FadeIn>
   );
 }

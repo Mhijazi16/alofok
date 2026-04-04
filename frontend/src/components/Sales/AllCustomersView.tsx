@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { FadeIn } from "@/components/ui/fade-in";
 import { useToast } from "@/hooks/useToast";
 import type { Customer } from "@/services/salesApi";
 
@@ -116,11 +117,10 @@ export function AllCustomersView({
     const onClick = showInteractive ? () => onSelectCustomer(customer) : undefined;
 
     return (
+      <FadeIn key={customer.id} delay={idx * 0.06} skip={idx >= 15}>
       <Card
-        key={customer.id}
         variant={cardClass as any}
-        className="animate-slide-up p-4"
-        style={{ animationDelay: `${idx * 40}ms` }}
+        className="p-4"
         onClick={onClick}
       >
         <div className="flex items-center gap-3">
@@ -152,11 +152,12 @@ export function AllCustomersView({
           </div>
         </div>
       </Card>
+      </FadeIn>
     );
   };
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("customer.allCustomers")}
         subtitle={!isLoading ? `${customers?.length ?? 0} ${t("customer.totalCustomers").toLowerCase()}` : undefined}
@@ -258,6 +259,6 @@ export function AllCustomersView({
           onConfirm={() => archiveTarget && archiveMutation.mutate(archiveTarget.id)}
         />
       )}
-    </div>
+    </FadeIn>
   );
 }

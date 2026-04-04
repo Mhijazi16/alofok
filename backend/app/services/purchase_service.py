@@ -1,11 +1,8 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import select
-
 from app.core.errors import HorizonException
 from app.models.ledger import CompanyLedger
-from app.models.product import Product
 from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.ledger_repository import LedgerRepository
@@ -49,21 +46,15 @@ class PurchaseService:
             notes=body.notes,
         )
 
-        # Credit customer (reduce debt)
+        # Atomic: flush transaction + balance + stock updates, commit via ledger.create
+        txn = await self._transactions.create(txn, auto_commit=False)
+
         customer.balance -= total
         await self._customers.update_balance(customer)
 
-        txn = await self._transactions.create(txn)
-
         # Update stock and WAC for each product
         for item in body.items:
-            # Use FOR UPDATE to prevent race conditions on concurrent purchases
-            result = await self._products._db.execute(
-                select(Product)
-                .where(Product.id == item.product_id, Product.is_deleted.is_(False))
-                .with_for_update()
-            )
-            product = result.scalar_one_or_none()
+            product = await self._products.get_by_id_for_update(item.product_id)
             if product is None:
                 raise HorizonException(404, f"Product {item.product_id} not found")
 
@@ -81,7 +72,7 @@ class PurchaseService:
 
             await self._products.update(product)
 
-        # Create outgoing ledger entry with item summary
+        # Create outgoing ledger entry with item summary — this commits everything
         item_summary = ", ".join(f"{item.quantity}x {item.name}" for item in body.items)
         ledger_entry = CompanyLedger(
             direction="outgoing",

@@ -44,19 +44,20 @@ import { UploadIcon } from "@/components/ui/animated-icons/upload";
 import { UsersIcon } from "@/components/ui/animated-icons/users";
 import { UserIcon } from "@/components/ui/animated-icons/user";
 import { XIcon } from "@/components/ui/animated-icons/x";
-import { RotateCCWIcon } from "@/components/ui/animated-icons/rotate-ccw";
 import { FileTextIcon } from "@/components/ui/animated-icons/file-text";
 import { HandCoinsIcon } from "@/components/ui/animated-icons/hand-coins";
+import { BadgeAlertIcon } from "@/components/ui/animated-icons/badge-alert";
+import { CalendarDaysIcon } from "@/components/ui/animated-icons/calendar-days";
+import { ShieldCheckIcon } from "@/components/ui/animated-icons/shield-check";
+import { SquarePenIcon } from "@/components/ui/animated-icons/square-pen";
+import { UndoIcon } from "@/components/ui/animated-icons/undo";
+import { HandGrabIcon } from "@/components/ui/animated-icons/hand-grab";
 
 // ── Lucide-react originals for icons without animated equivalents ──
 import {
   AlertCircle as _AlertCircle,
-  AlertTriangle as _AlertTriangle,
   ArrowLeftRight as _ArrowLeftRight,
   Archive as _Archive,
-  Banknote as _Banknote,
-  Calendar as _Calendar,
-  CalendarDays as _CalendarDays,
   Camera as _Camera,
   Circle as _Circle,
   ChevronsUpDown as _ChevronsUpDown,
@@ -115,9 +116,6 @@ import {
   CreditCard as _CreditCard,
   CheckCircle2 as _CheckCircle2,
   Banknote as _BanknoteIcon,
-    ArrowDownToLine as _ArrowDownToLine,
-    Pencil as _Pencil,
-    Shield as _Shield,
     List as _List,
     LayoutGrid as _LayoutGrid,
     ArrowUpRight as _ArrowUpRight,
@@ -135,28 +133,151 @@ function extractSize(cls?: string): number {
   return m ? parseFloat(m[1]) * 4 : 24;
 }
 
+/** Replay interval when hovering/tapping (ms) */
+const HOVER_REPLAY_MS = 1200;
+/** How long the loop plays on mobile after a tap (ms) */
+const TOUCH_LOOP_DURATION = 3000;
+
+/** Context to allow parent cards to trigger icon hover animation */
+const IconHoverContext = React.createContext(false);
+
+/**
+ * Wrap a card/container with this to make all animated icons inside
+ * replay their animation while the container is hovered (desktop)
+ * or tapped (mobile — loops for a few seconds then stops).
+ */
+export function IconHoverZone({
+  children,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const [active, setActive] = React.useState(false);
+  const touchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTouchTimer = React.useCallback(() => {
+    if (touchTimer.current) {
+      clearTimeout(touchTimer.current);
+      touchTimer.current = null;
+    }
+  }, []);
+
+  // Desktop hover
+  const onMouseEnter = React.useCallback(() => setActive(true), []);
+  const onMouseLeave = React.useCallback(() => setActive(false), []);
+
+  // Mobile tap — activate for a few seconds
+  const onTouchStart = React.useCallback(() => {
+    clearTouchTimer();
+    setActive(true);
+    touchTimer.current = setTimeout(() => setActive(false), TOUCH_LOOP_DURATION);
+  }, [clearTouchTimer]);
+
+  React.useEffect(() => clearTouchTimer, [clearTouchTimer]);
+
+  return (
+    <div
+      className={className}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onTouchStart={onTouchStart}
+      {...props}
+    >
+      <IconHoverContext.Provider value={active}>
+        {children}
+      </IconHoverContext.Provider>
+    </div>
+  );
+}
+
 /**
  * Creates a drop-in replacement component that wraps a lucide-animated icon.
  * Matches lucide-react API: accepts className with h-X w-X sizing.
- * Auto-animates on mount.
+ * - Auto-animates once on mount (800ms delay — after FadeIn completes).
+ * - Loops animation while inside an active <IconHoverZone>.
+ * - Also loops on direct hover (desktop) or tap (mobile).
  */
 function makeAnimated(
   AnimatedComp: React.ForwardRefExoticComponent<any>,
   displayName: string,
 ) {
-  const Wrapper = React.forwardRef<HTMLDivElement, { className?: string }>(
-    ({ className, ...props }, outerRef) => {
+  const Wrapper = React.forwardRef<SVGSVGElement, { className?: string; strokeWidth?: string | number; [key: string]: any }>(
+    ({ className, strokeWidth: _sw, ...props }, outerRef) => {
       const iconRef = React.useRef<AnimatedIconHandle>(null);
+      const intervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+      const touchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+      const parentActive = React.useContext(IconHoverContext);
 
+      // Auto-animate once on mount (800ms so FadeIn has time to reveal)
       React.useEffect(() => {
-        const t = setTimeout(() => iconRef.current?.startAnimation(), 300);
+        const t = setTimeout(() => iconRef.current?.startAnimation(), 800);
         return () => clearTimeout(t);
+      }, []);
+
+      const replay = React.useCallback(() => {
+        const h = iconRef.current;
+        if (!h) return;
+        h.stopAnimation();
+        requestAnimationFrame(() => h.startAnimation());
+      }, []);
+
+      const startLoop = React.useCallback(() => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        replay();
+        intervalRef.current = setInterval(replay, HOVER_REPLAY_MS);
+      }, [replay]);
+
+      const stopLoop = React.useCallback(() => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      }, []);
+
+      // React to parent IconHoverZone active state
+      React.useEffect(() => {
+        if (parentActive) {
+          startLoop();
+        } else {
+          stopLoop();
+        }
+        return stopLoop;
+      }, [parentActive, startLoop, stopLoop]);
+
+      // Cleanup on unmount
+      React.useEffect(() => {
+        return () => {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          if (touchTimer.current) clearTimeout(touchTimer.current);
+        };
       }, []);
 
       const size = extractSize(className);
 
+      // Direct hover (desktop)
+      const onMouseEnter = React.useCallback(() => {
+        if (!parentActive) startLoop();
+      }, [parentActive, startLoop]);
+      const onMouseLeave = React.useCallback(() => {
+        if (!parentActive) stopLoop();
+      }, [parentActive, stopLoop]);
+
+      // Direct tap (mobile) — loop for a few seconds
+      const onTouchStart = React.useCallback(() => {
+        if (parentActive) return; // already handled by parent
+        if (touchTimer.current) clearTimeout(touchTimer.current);
+        startLoop();
+        touchTimer.current = setTimeout(stopLoop, TOUCH_LOOP_DURATION);
+      }, [parentActive, startLoop, stopLoop]);
+
       return (
-        <div ref={outerRef} className={cn("inline-flex shrink-0", className)} {...props}>
+        <div
+          ref={outerRef as any}
+          className={cn("inline-flex shrink-0", className)}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onTouchStart={onTouchStart}
+          {...props}
+        >
           <AnimatedComp ref={iconRef} size={size} />
         </div>
       );
@@ -197,18 +318,22 @@ export const Upload = makeAnimated(UploadIcon, "Upload");
 export const Users = makeAnimated(UsersIcon, "Users");
 export const User = makeAnimated(UserIcon, "User");
 export const X = makeAnimated(XIcon, "X");
-export const RotateCcw = makeAnimated(RotateCCWIcon, "RotateCcw");
+export const RotateCcw = makeAnimated(UndoIcon, "RotateCcw");
 export const FileText = makeAnimated(FileTextIcon, "FileText");
 export const Banknote = makeAnimated(HandCoinsIcon, "Banknote");
+export const AlertTriangle = makeAnimated(BadgeAlertIcon, "AlertTriangle");
+export const Calendar = makeAnimated(CalendarDaysIcon, "Calendar");
+export const CalendarDays = makeAnimated(CalendarDaysIcon, "CalendarDays");
+export const Shield = makeAnimated(ShieldCheckIcon, "Shield");
+export const Pencil = makeAnimated(SquarePenIcon, "Pencil");
 
 // ── Pass-through originals (no animated equivalent) ──
 export const AlertCircle = _AlertCircle;
-export const AlertTriangle = _AlertTriangle;
+// AlertTriangle is now animated (uses BadgeAlertIcon)
 export const ArrowLeftRight = _ArrowLeftRight;
 export const Archive = _Archive;
 // Banknote is now animated (uses HandCoinsIcon)
-export const Calendar = _Calendar;
-export const CalendarDays = _CalendarDays;
+// Calendar and CalendarDays are now animated (uses CalendarDaysIcon)
 export const Camera = _Camera;
 export const Circle = _Circle;
 export const ChevronsUpDown = _ChevronsUpDown;
@@ -267,9 +392,9 @@ export const ArrowUpCircle = _ArrowUpCircle;
 export const ArrowDownCircle = _ArrowDownCircle;
 export const CreditCard = _CreditCard;
 export const CheckCircle2 = _CheckCircle2;
-export const ArrowDownToLine = _ArrowDownToLine;
-export const Pencil = _Pencil;
-export const Shield = _Shield;
+export const ArrowDownToLine = makeAnimated(HandGrabIcon, "ArrowDownToLine");
+// Pencil is now animated (uses SquarePenIcon)
+// Shield is now animated (uses ShieldCheckIcon)
 export const List = _List;
 export const LayoutGrid = _LayoutGrid;
 export const ArrowUpRight = _ArrowUpRight;

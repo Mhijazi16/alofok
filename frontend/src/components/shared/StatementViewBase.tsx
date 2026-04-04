@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FadeIn } from "@/components/ui/fade-in";
 
 type FilterPreset = "zero" | "week" | "month" | "year" | "custom";
 
@@ -216,7 +217,7 @@ export function StatementViewBase({
   };
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("statement.title")}
         subtitle={subtitle}
@@ -278,13 +279,14 @@ export function StatementViewBase({
 
         {/* Opening Balance */}
         {!isLoading && (
+          <FadeIn>
           <StatCard
             variant="glass"
             value={formatCurrency(openingBalance)}
             label={t("statement.openingBalance")}
             icon={FileText}
-            className="animate-slide-up"
           />
+          </FadeIn>
         )}
 
         {/* Transactions Timeline */}
@@ -306,22 +308,20 @@ export function StatementViewBase({
               const amountSign = tx.amount >= 0 ? "+" : "";
 
               return (
+                <FadeIn key={tx.id} delay={idx * 0.06}>
                 <TimelineItem
-                  key={tx.id}
                   variant={txTypeVariant(tx.type)}
                   title={`${amountSign}${formatCurrency(tx.amount)}`}
                   timestamp={formatDate(tx.created_at)}
                   isLast={idx === entries.length - 1}
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${idx * 40}ms` }}
                 >
                   <div className="mt-1 space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant={txBadgeVariant(tx.type)} size="sm">
-                        {t(
+                        {String(t(
                           `statement.transactionTypes.${tx.type}`,
                           tx.type
-                        )}
+                        ))}
                       </Badge>
                       <Badge variant="outline" size="sm">
                         {tx.currency}
@@ -339,7 +339,7 @@ export function StatementViewBase({
                           }
                           size="sm"
                         >
-                          {t(`checks.status.${tx.status}`, tx.status)}
+                          {String(t(`checks.status.${tx.status}`, tx.status))}
                         </Badge>
                       )}
                       {tx.type === "Payment_Check" && (
@@ -373,6 +373,7 @@ export function StatementViewBase({
                     )}
                   </div>
                 </TimelineItem>
+                </FadeIn>
               );
             })}
           </Timeline>
@@ -380,15 +381,16 @@ export function StatementViewBase({
 
         {/* Closing Balance */}
         {!isLoading && entries.length > 0 && (
+          <FadeIn>
           <StatCard
             variant="gradient"
             value={formatCurrency(closingBalance)}
             label={t("statement.closingBalance")}
             icon={FileText}
-            className="animate-slide-up"
           />
+          </FadeIn>
         )}
       </div>
-    </div>
+    </FadeIn>
   );
 }

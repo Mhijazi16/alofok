@@ -14,7 +14,9 @@ class AuthService:
         user = await self._users.get_by_username(username)
         if user is None or not verify_password(password, user.password_hash):
             raise HorizonException(401, "Invalid credentials")
-        token = create_access_token(subject=str(user.id), role=user.role.value, username=user.username)
+        token = create_access_token(
+            subject=str(user.id), role=user.role.value, username=user.username
+        )
         return TokenOut(access_token=token)
 
     async def get_me(self, user_id: uuid.UUID) -> UserOut:

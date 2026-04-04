@@ -11,6 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CheckPhotoThumbnail } from "@/components/ui/check-photo-thumbnail";
 import { CheckDetailDialog } from "@/components/ui/check-detail-dialog";
+import { FadeIn } from "@/components/ui/fade-in";
 import type { CheckData } from "@/services/salesApi";
 
 interface ReturnedChecksViewProps {
@@ -44,7 +45,7 @@ export function ReturnedChecksView({ customer, onBack }: ReturnedChecksViewProps
     checks && selectedIndex !== null ? checks[selectedIndex] ?? null : null;
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar
         title={t("actions.returnedCheck")}
         subtitle={customer.name}
@@ -150,6 +151,6 @@ export function ReturnedChecksView({ customer, onBack }: ReturnedChecksViewProps
             : undefined
         }
       />
-    </div>
+    </FadeIn>
   );
 }

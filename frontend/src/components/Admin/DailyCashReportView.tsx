@@ -31,6 +31,7 @@ import {
 import { SwipeableCard } from "@/components/ui/swipeable-card";
 import { useToast } from "@/hooks/useToast";
 import { ExpenseCard, ADMIN_CATEGORIES } from "@/components/shared/ExpenseCard";
+import { FadeIn } from "@/components/ui/fade-in";
 import { adminApi } from "@/services/adminApi";
 import type { LedgerEntry, RepLedgerGroup } from "@/services/adminApi";
 import { toLocalDateStr } from "@/lib/utils";
@@ -339,7 +340,11 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
       <h3 className="text-body-sm font-semibold text-muted-foreground px-1">
         {group.rep_name}
       </h3>
-      {group.entries.map((entry) => renderLedgerCard(entry, direction))}
+      {group.entries.map((entry, idx) => (
+        <FadeIn key={entry.id} delay={idx * 0.05}>
+          {renderLedgerCard(entry, direction)}
+        </FadeIn>
+      ))}
     </div>
   );
 
@@ -359,6 +364,7 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
   const hasData = hasIncoming || hasOutgoing || true; // Always show for ExpenseCard
 
   return (
+    <FadeIn animation="fade">
     <div className="space-y-5 max-w-2xl mx-auto" dir={isAr ? "rtl" : "ltr"}>
       {/* ── Date Navigation ── */}
       <div className="flex items-center justify-center gap-3" dir="ltr">
@@ -398,6 +404,7 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
         <>
           {/* ── Incoming Section ── */}
           {hasIncoming && (
+            <FadeIn delay={0.08}>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ArrowDownCircle className="h-5 w-5 text-emerald-400" />
@@ -407,11 +414,13 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
               </div>
               {report!.incoming.map((g) => renderRepGroup(g, "incoming"))}
             </div>
+            </FadeIn>
           )}
 
           {hasIncoming && <Separator />}
 
           {/* ── Outgoing Section ── */}
+          <FadeIn delay={hasIncoming ? 0.2 : 0.08}>
           <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ArrowUpCircle className="h-5 w-5 text-red-400" />
@@ -422,6 +431,7 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
               <ExpenseCard categories={ADMIN_CATEGORIES} date={toLocalDateStr(reportDate)} isAdmin />
               {hasOutgoing && report!.outgoing.map((g) => renderRepGroup(g, "outgoing"))}
             </div>
+          </FadeIn>
         </>
       )}
 
@@ -500,5 +510,6 @@ export function DailyCashReportView({ onSelectionChange }: DailyCashReportViewPr
         </DialogContent>
       </Dialog>
     </div>
+    </FadeIn>
   );
 }

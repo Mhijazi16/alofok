@@ -77,8 +77,8 @@ class Expense(BaseMixin, Base):
     flag_notes: Mapped[str | None] = mapped_column(String, nullable=True)
 
     creator: Mapped["User"] = relationship(  # type: ignore[name-defined]
-        "User", foreign_keys=[created_by]
+        "User", foreign_keys=[created_by], lazy="selectin"
     )
     confirmer: Mapped["User | None"] = relationship(  # type: ignore[name-defined]
-        "User", foreign_keys=[confirmed_by]
+        "User", foreign_keys=[confirmed_by], lazy="selectin"
     )

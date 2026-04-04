@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate, formatTime } from "@/lib/format";
+import { FadeIn } from "@/components/ui/fade-in";
 
 export function OrdersView() {
   const { t } = useTranslation();
@@ -56,7 +57,7 @@ export function OrdersView() {
   };
 
   return (
-    <div className="animate-fade-in">
+    <FadeIn animation="fade">
       <TopBar title={t("portal.myOrders")} />
 
       <div className="space-y-3 p-4">
@@ -73,11 +74,10 @@ export function OrdersView() {
           />
         ) : (
           orders.map((order, idx) => (
+            <FadeIn key={order.id} delay={idx * 0.06}>
             <Card
-              key={order.id}
               variant="glass"
-              className="animate-slide-up overflow-hidden"
-              style={{ animationDelay: `${idx * 40}ms` }}
+              className="overflow-hidden"
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -113,9 +113,10 @@ export function OrdersView() {
                 </div>
               </CardContent>
             </Card>
+            </FadeIn>
           ))
         )}
       </div>
-    </div>
+    </FadeIn>
   );
 }

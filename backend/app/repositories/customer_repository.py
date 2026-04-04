@@ -145,3 +145,6 @@ class CustomerRepository:
 
     async def update_balance(self, customer: Customer) -> None:
         await self._db.flush()  # persist balance change within the current transaction
+
+    async def commit(self) -> None:
+        await self._db.commit()

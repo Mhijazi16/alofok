@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
+import { FadeIn } from "@/components/ui/fade-in";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -120,7 +121,8 @@ export function SyncStatusCard() {
   const { syncState, syncAll } = useCacheSync();
 
   return (
-    <Card variant="glass" className="animate-slide-up">
+    <FadeIn>
+    <Card variant="glass">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-body-sm text-muted-foreground">
           <RefreshCw className="h-4 w-4" />
@@ -181,5 +183,6 @@ export function SyncStatusCard() {
         </Button>
       </CardContent>
     </Card>
+    </FadeIn>
   );
 }

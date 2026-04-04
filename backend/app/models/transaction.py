@@ -79,14 +79,15 @@ class Transaction(BaseMixin, Base):
     )
 
     customer: Mapped["Customer"] = relationship(  # type: ignore[name-defined]
-        "Customer", foreign_keys=[customer_id]
+        "Customer", foreign_keys=[customer_id], lazy="selectin"
     )
     creator: Mapped["User | None"] = relationship(  # type: ignore[name-defined]
-        "User", foreign_keys=[created_by]
+        "User", foreign_keys=[created_by], lazy="selectin"
     )
     related_transaction: Mapped["Transaction | None"] = relationship(
         "Transaction",
         foreign_keys=[related_transaction_id],
         remote_side="Transaction.id",
         uselist=False,
+        lazy="selectin",
     )

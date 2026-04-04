@@ -69,7 +69,7 @@ class Product(BaseMixin, Base):
 
     # --- relationships ---
     creator: Mapped["User"] = relationship(  # type: ignore[name-defined]
-        "User", foreign_keys=[created_by]
+        "User", foreign_keys=[created_by], lazy="selectin"
     )
     options: Mapped[list["ProductOption"]] = relationship(  # type: ignore[name-defined]
         "ProductOption",
