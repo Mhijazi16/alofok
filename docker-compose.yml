@@ -1,6 +1,8 @@
 services:
   caddy:
-    image: caddy:2-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
     restart: always
     ports:
       - "80:80"
@@ -12,7 +14,7 @@ services:
     environment:
       DOMAIN: ${DOMAIN:-localhost}
     depends_on:
-      - frontend
+      - backend
 
   db:
     image: postgres:15-alpine
@@ -44,17 +46,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_URL: /api
-    restart: always
-    volumes:
-      - static_files:/app/static:ro
-    depends_on:
-      - backend
 
 volumes:
   postgres_data:

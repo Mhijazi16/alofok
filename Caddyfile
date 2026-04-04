@@ -1,3 +1,21 @@
 {$DOMAIN:localhost} {
-    reverse_proxy frontend:80
+    # API proxy
+    handle /api/* {
+        uri strip_prefix /api
+        reverse_proxy backend:8000
+    }
+
+    # Static files (uploads, avatars, product images)
+    handle /static/* {
+        reverse_proxy backend:8000
+    }
+
+    # SPA — serve built frontend, fallback to index.html
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+
+    encode gzip
 }
