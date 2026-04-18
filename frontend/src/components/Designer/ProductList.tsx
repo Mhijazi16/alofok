@@ -5,7 +5,7 @@ import { Package, PlusCircle, Copy, Trash2 } from "@/lib/icons";
 
 import { designerApi, type Product } from "@/services/designerApi";
 import { useToast } from "@/hooks/useToast";
-import { getCoverImage } from "@/lib/image";
+import { getCoverImage, sortProductsByImage } from "@/lib/image";
 import { getProductName } from "@/lib/product";
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
@@ -114,17 +114,20 @@ export function ProductList({ onAdd }: ProductListProps) {
     },
   });
 
-  // Filtered products based on search
+  // Filtered products based on search, sorted with images first
   const filtered = useMemo(() => {
     if (!products) return [];
-    if (!search.trim()) return products;
-    const q = search.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.name_ar.toLowerCase().includes(q) ||
-        p.name_en.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q)
-    );
+    const list = !search.trim()
+      ? products
+      : products.filter((p) => {
+          const q = search.toLowerCase();
+          return (
+            p.name_ar.toLowerCase().includes(q) ||
+            p.name_en.toLowerCase().includes(q) ||
+            p.sku.toLowerCase().includes(q)
+          );
+        });
+    return sortProductsByImage(list);
   }, [products, search]);
 
   const productName = (p: Product) => getProductName(p);

@@ -16,7 +16,7 @@ import {
   type PurchaseCreate,
 } from "@/services/salesApi";
 import { syncQueue } from "@/lib/syncQueue";
-import { getCoverImage } from "@/lib/image";
+import { getCoverImage, sortProductsByImage } from "@/lib/image";
 import { formatCurrency } from "@/lib/format";
 import { getProductName } from "@/lib/product";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
@@ -68,14 +68,17 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
 
   const filtered = useMemo(() => {
     if (!products) return [];
-    if (!search.trim()) return products;
-    const q = search.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.name_ar.toLowerCase().includes(q) ||
-        p.name_en.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q)
-    );
+    const list = !search.trim()
+      ? products
+      : products.filter((p) => {
+          const q = search.toLowerCase();
+          return (
+            p.name_ar.toLowerCase().includes(q) ||
+            p.name_en.toLowerCase().includes(q) ||
+            p.sku.toLowerCase().includes(q)
+          );
+        });
+    return sortProductsByImage(list);
   }, [products, search]);
 
 
