@@ -26,7 +26,8 @@
     "settings": "Settings",
     "addProduct": "Add Product",
     "checks": "Checks",
-    "finance": "Finance"
+    "finance": "Finance",
+    "orders": "Orders"
   },
   "customer": {
     "balance": "Balance",
@@ -58,6 +59,12 @@
     "archiveConfirmTitle": "Archive Customer",
     "archiveConfirmDesc": "Are you sure you want to archive {{name}}? They will no longer appear in your customer lists.",
     "archiveSuccess": "Customer archived successfully",
+    "hiddenBadge": "Hidden",
+    "hideFromSales": "Hide from sales rep",
+    "showToSales": "Show to sales rep",
+    "visibilityUpdated": "Customer visibility updated",
+    "changeCity": "Change city",
+    "cityUpdated": "Customer city updated",
     "addNew": "Add Customer",
     "editCustomer": "Edit Customer",
     "tapToSetLocation": "Tap map to set location",
@@ -105,14 +112,23 @@
     "import": "Import",
     "duplicate": "Duplicate",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "clear": "Clear",
+    "discount": "Discount"
   },
   "route": {
     "noCustomers": "No customers today",
-    "noCustomersDesc": "No customer route has been assigned for this day yet."
+    "noCustomersDesc": "No customer route has been assigned for this day yet.",
+    "pageLabel": "Page {{page}}"
+  },
+  "pwa": {
+    "installTitle": "Install Alofok",
+    "installHint": "Add it to your home screen for a full-screen app",
+    "installIosHint": "Tap Share, then “Add to Home Screen”",
+    "install": "Install"
   },
   "catalog": {
-    "bestSellers": "Best Sellers",
+    "bestSellers": "Featured",
     "discounted": "Discounted",
     "search": "Search products...",
     "addToOrder": "Add to Order",
@@ -141,7 +157,8 @@
     "placeOrder": "Place Order",
     "itemCount": "{{count}} items",
     "selectCustomer": "Please select a customer first",
-    "clearCart": "Clear Cart"
+    "clearCart": "Clear Cart",
+    "discount": "Discount"
   },
   "payment": {
     "cash": "Cash",
@@ -168,7 +185,11 @@
       "ILS": "ILS",
       "USD": "USD",
       "JOD": "JOD"
-    }
+    },
+    "checkNumber": "Cheque Number",
+    "paymentDeleted": "Payment deleted",
+    "deletePayment": "Delete Payment",
+    "deletePaymentConfirm": "Delete the {{amount}} payment from {{name}}? This will restore their balance."
   },
   "statement": {
     "title": "Account Statement",
@@ -286,6 +307,9 @@
     "confirmDelete": "This action cannot be undone. All product data will be permanently removed.",
     "deletedSuccess": "Product deleted successfully",
     "duplicatedSuccess": "Product duplicated successfully",
+    "star": "Add to featured",
+    "unstar": "Remove from featured",
+    "starUpdated": "Featured products updated",
     "delete": "Delete Product",
     "detailsTab": "Details",
     "editTab": "Edit"
@@ -591,5 +615,118 @@
     "forbidden": "You don't have access to this resource",
     "unauthorized": "Your session has expired. Please sign in again",
     "serverError": "Server error. Please try again later"
+  },
+  "collections": {
+    "title": "Today's Payments",
+    "subtitle": "Total collected: {{amount}}",
+    "empty": "No payments collected on this day yet"
+  },
+  "orders": {
+    "title": "Orders",
+    "count": "{{count}} orders",
+    "today": "Today",
+    "last7": "Last 7 days",
+    "last30": "Last 30 days",
+    "all": "All time",
+    "allReps": "All reps",
+    "totalValue": "Total value",
+    "empty": "No orders in this period",
+    "itemsCount": "{{count}} items",
+    "newOrder": "New order",
+    "newOrderDesc": "{{rep}} · {{customer}}",
+    "countWithPending": "{{count}} orders · {{pending}} to deliver",
+    "new": "NEW",
+    "allStatuses": "All statuses",
+    "statusPending": "Pending delivery",
+    "statusDelivered": "Delivered",
+    "delivered": "Delivered",
+    "pending": "Pending",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "yesterday": "Yesterday",
+    "deliveredOn": "Delivered {{date}}",
+    "scheduledFor": "Scheduled for {{date}}",
+    "notDeliveredYet": "Not delivered yet"
+  },
+  "briefing": {
+    "greeting": "Good morning 👋",
+    "customersToday": "stops on today's route",
+    "ordersTitle": "Orders to deliver",
+    "ordersToDeliver": "orders scheduled today",
+    "ordersValue": "Total order value",
+    "whoTitle": "Who's expecting you",
+    "whoHint": "Customers with a delivery today",
+    "noOrders": "No deliveries scheduled for today",
+    "collectTitle": "To collect",
+    "collectHint": "Outstanding balance across today's stops",
+    "toCollect": "owed across the route",
+    "next": "Next",
+    "back": "Back",
+    "start": "Start my day",
+    "letsGo": "Let's go",
+    "close": "Close",
+    "step": "Step {{current}} of {{total}}",
+    "successTitle": "Have a great day!",
+    "successHint": "You've got this 💪"
+  },
+  "adminBriefing": {
+    "greeting": "Good morning 👋",
+    "yesterdaySummary": "Here's how yesterday went",
+    "collectedLabel": "collected yesterday",
+    "whoTitle": "Who paid",
+    "whoHint": "Customers who paid yesterday",
+    "noPayments": "No payments collected yesterday",
+    "ordersTitle": "Orders",
+    "ordersLabel": "orders placed yesterday",
+    "ordersValue": "Total order value",
+    "expensesTitle": "Expenses",
+    "expensesHint": "What was spent yesterday",
+    "expensesLabel": "spent yesterday",
+    "netLabel": "Net (collected − spent)",
+    "next": "Next",
+    "back": "Back",
+    "start": "Got it",
+    "done": "Let's go",
+    "close": "Close",
+    "step": "Step {{current}} of {{total}}",
+    "successTitle": "You're all caught up!",
+    "successHint": "Have a productive day 💪",
+    "moreDetails": "more details",
+    "lessDetails": "less",
+    "cash": "Cash",
+    "check": "Check",
+    "paymentsCount": "{{count}} payments",
+    "byRep": "By rep",
+    "expenseCat": {
+      "Fuel": "Fuel",
+      "Food": "Food",
+      "Accommodation": "Accommodation",
+      "Supplies": "Supplies",
+      "Transport": "Transport",
+      "Maintenance": "Maintenance",
+      "Marketing": "Marketing",
+      "Utilities": "Utilities",
+      "Other": "Other",
+      "Gifts": "Gifts",
+      "CarWash": "Car wash",
+      "Electricity": "Electricity",
+      "Internet": "Internet",
+      "CarRepair": "Car repair",
+      "Salaries": "Salaries"
+    }
+  },
+  "discount": {
+    "title": "Apply discount",
+    "subtitle": "Reduce this customer's outstanding balance",
+    "currentBalance": "Current balance",
+    "amount": "Discount amount (₪)",
+    "exceeds": "Discount can't exceed the outstanding balance",
+    "note": "Note (optional)",
+    "notePlaceholder": "e.g. settling, rounding…",
+    "newBalance": "New balance",
+    "apply": "Apply discount",
+    "applied": "Discount applied",
+    "queued": "Discount queued — will sync when online"
   }
 }

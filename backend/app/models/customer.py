@@ -37,6 +37,12 @@ class Customer(BaseMixin, Base):
     is_walkin: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default="false", nullable=False
     )
+    # When True, the customer is hidden from the sales rep's route/lists
+    # (admin-only visibility toggle). Admin views and financial stats still
+    # include them.
+    hidden_from_sales: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false", nullable=False
+    )
     assigned_to: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )

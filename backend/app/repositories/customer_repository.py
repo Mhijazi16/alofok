@@ -23,7 +23,11 @@ class CustomerRepository:
     async def get_by_day(self, day: AssignedDay) -> list[Customer]:
         result = await self._db.execute(
             select(Customer)
-            .where(Customer.assigned_day == day, Customer.is_deleted.is_(False))
+            .where(
+                Customer.assigned_day == day,
+                Customer.is_deleted.is_(False),
+                Customer.hidden_from_sales.is_(False),
+            )
             .order_by(Customer.name)
         )
         return list(result.scalars().all())
@@ -39,6 +43,7 @@ class CustomerRepository:
             Customer.assigned_day == day,
             Customer.assigned_to == rep_id,
             Customer.is_deleted.is_(False),
+            Customer.hidden_from_sales.is_(False),
         )
 
         if delivery_date is None:
@@ -64,6 +69,7 @@ class CustomerRepository:
             .where(
                 Customer.id.in_(select(combined.c.id)),
                 Customer.is_deleted.is_(False),
+                Customer.hidden_from_sales.is_(False),
             )
             .order_by(Customer.name)
         )
@@ -75,6 +81,7 @@ class CustomerRepository:
             .where(
                 Customer.assigned_to == rep_id,
                 Customer.is_deleted.is_(False),
+                Customer.hidden_from_sales.is_(False),
             )
             .order_by(Customer.name)
         )

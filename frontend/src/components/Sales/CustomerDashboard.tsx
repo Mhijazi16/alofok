@@ -15,6 +15,7 @@ import {
   Check,
   X,
   ArrowDownToLine,
+  Tag,
   IconHoverZone,
 } from "@/lib/icons";
 import { salesApi, type Customer } from "@/services/salesApi";
@@ -32,7 +33,13 @@ import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { FadeIn } from "@/components/ui/fade-in";
 
-type CustomerAction = "order" | "payment" | "statement" | "check" | "purchase";
+type CustomerAction =
+  | "order"
+  | "payment"
+  | "statement"
+  | "check"
+  | "purchase"
+  | "discount";
 
 interface CustomerDashboardProps {
   customer: Customer;
@@ -167,6 +174,13 @@ export function CustomerDashboard({
       label: t("actions.pay"),
       accent: "hover:border-success/50",
       iconBg: "bg-success/15 text-success",
+    },
+    {
+      key: "discount",
+      icon: Tag,
+      label: t("actions.discount"),
+      accent: "hover:border-amber-500/50",
+      iconBg: "bg-amber-500/15 text-amber-500",
     },
     {
       key: "statement",

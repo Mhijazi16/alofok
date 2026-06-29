@@ -217,6 +217,31 @@ class TransactionRepository:
         )
         return float(result.scalar())
 
+    async def get_payments_by_rep_with_customer(
+        self,
+        rep_id: uuid.UUID,
+        start: datetime,
+        end: datetime,
+    ) -> list[tuple[Transaction, str]]:
+        """Return (payment, customer_name) for a rep within a date range — newest first."""
+        from app.models.customer import Customer
+
+        result = await self._db.execute(
+            select(Transaction, Customer.name)
+            .join(Customer, Transaction.customer_id == Customer.id)
+            .where(
+                Transaction.created_by == rep_id,
+                Transaction.type.in_(
+                    [TransactionType.Payment_Cash, TransactionType.Payment_Check]
+                ),
+                Transaction.is_deleted.is_(False),
+                Transaction.created_at >= start,
+                Transaction.created_at < end,
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        return list(result.all())
+
     async def update(
         self, txn: Transaction, *, auto_commit: bool = True
     ) -> Transaction:

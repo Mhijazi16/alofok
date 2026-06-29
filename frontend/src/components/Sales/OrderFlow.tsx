@@ -17,7 +17,7 @@ import {
   type CartItem,
   type SelectedOption,
 } from "@/services/salesApi";
-import { getCoverImage, sortProductsByImage } from "@/lib/image";
+import { getCoverImage, sortProductsByName } from "@/lib/image";
 import { formatCurrency } from "@/lib/format";
 import { getProductName } from "@/lib/product";
 import { cartKey } from "@/lib/cart";
@@ -85,7 +85,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
             p.sku.toLowerCase().includes(q)
           );
         });
-    return sortProductsByImage(list);
+    return sortProductsByName(list);
   }, [products, search]);
 
   const bestSellers = useMemo(
@@ -137,7 +137,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
       <FadeIn key={product.id} delay={idx * 0.04} skip={idx >= 10}>
       <Card
         variant="interactive"
-        className="overflow-hidden"
+        className="overflow-hidden [content-visibility:auto] [contain-intrinsic-size:auto_96px]"
       >
         <CardContent className="p-3">
           <div className="flex items-center gap-3">
@@ -148,6 +148,8 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
                   src={getCoverImage(product)!}
                   alt={productName(product)}
                   className="h-full w-full rounded-xl object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <Package className="h-6 w-6 text-muted-foreground" />
@@ -241,25 +243,31 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
 
   const renderGridCard = (product: Product) => {
     const name = getProductName(product);
+    const key = cartKey(product.id);
+    const inCart = cart.get(key);
     const totalQty = productCartQty(product.id);
+    const withOptions = hasOptions(product);
 
     return (
       <div
         key={product.id}
-        className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:bg-card-hover active:scale-[0.98]"
-        onClick={() => onViewProduct?.(product)}
+        className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:bg-card-hover [content-visibility:auto] [contain-intrinsic-size:auto_400px]"
       >
-        <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+        <div
+          className="relative aspect-[3/4] cursor-pointer overflow-hidden bg-muted active:scale-[0.99]"
+          onClick={() => onViewProduct?.(product)}
+        >
           {getCoverImage(product) ? (
             <img
               src={getCoverImage(product)!}
               alt={name}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <Package className="h-12 w-12 text-muted-foreground/30" />
+              <Package className="h-16 w-16 text-muted-foreground/30" />
             </div>
           )}
           <div className="absolute top-2 start-2 flex flex-col gap-1">
@@ -278,27 +286,68 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
             )}
           </div>
           {totalQty > 0 && (
-            <div className="absolute top-2 end-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+            <div className="absolute top-2 end-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold shadow">
               {totalQty}
             </div>
           )}
         </div>
-        <div className="p-3">
-          <p className="text-body-sm font-medium text-foreground truncate">{name}</p>
-          <div className="flex items-center gap-2 mt-1">
+        <div className="flex flex-1 flex-col gap-2 p-3">
+          <p
+            className="text-body font-semibold text-foreground line-clamp-2 min-h-[2.6em] cursor-pointer"
+            onClick={() => onViewProduct?.(product)}
+          >
+            {name}
+          </p>
+          <div className="flex items-center gap-2">
             {product.discounted_price ? (
               <>
-                <span className="text-primary font-bold text-body-sm">
+                <span className="text-primary font-bold text-body-lg">
                   {formatCurrency(product.discounted_price)}
                 </span>
-                <span className="text-muted-foreground line-through text-caption">
+                <span className="text-muted-foreground line-through text-body-sm">
                   {formatCurrency(product.price)}
                 </span>
               </>
             ) : (
-              <span className="text-primary font-bold text-body-sm">
+              <span className="text-primary font-bold text-body-lg">
                 {formatCurrency(product.price)}
               </span>
+            )}
+          </div>
+
+          {/* Add / quantity controls — add to cart without opening the product */}
+          <div className="mt-auto pt-1">
+            {!withOptions && inCart ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-11 w-11 shrink-0"
+                  onClick={() => applyQtyDelta(key, -1)}
+                >
+                  <Minus className="h-5 w-5" />
+                </Button>
+                <span className="flex-1 text-center text-body-lg font-bold text-foreground">
+                  {inCart.quantity}
+                </span>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-11 w-11 shrink-0"
+                  onClick={() => applyQtyDelta(key, 1)}
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="glass"
+                className="h-11 w-full font-semibold"
+                onClick={() => handleAddClick(product)}
+              >
+                <Plus className="h-5 w-5 me-1.5" />
+                {t("actions.add")}
+              </Button>
             )}
           </div>
         </div>
@@ -316,7 +365,7 @@ export function OrderFlow({ customer, onBack, onDone: _onDone, cart, addToCart, 
       <div className="space-y-2">
         <Separator label={title} />
         {viewMode === "grid" ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {items.map((p) => renderGridCard(p))}
           </div>
         ) : (

@@ -1,8 +1,15 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Users, UserPlus, Archive } from "@/lib/icons";
+import { ChevronLeft, ChevronRight, Users, UserPlus, Archive, Eye, EyeOff, MapPin } from "@/lib/icons";
 import { Card } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +32,10 @@ interface AllCustomersViewProps {
   onAddCustomer: () => void;
   showInteractive?: boolean;
   archiveFn?: (id: string) => Promise<unknown>;
+  /** Admin-only: when provided, renders a per-customer hide/show-from-sales toggle. */
+  visibilityFn?: (id: string, hidden: boolean) => Promise<unknown>;
+  /** Admin-only: when provided, renders a per-customer city-switch dropdown. */
+  cityChangeFn?: (id: string, city: string) => Promise<unknown>;
 }
 
 export function AllCustomersView({
@@ -34,6 +45,8 @@ export function AllCustomersView({
   onAddCustomer,
   showInteractive = true,
   archiveFn,
+  visibilityFn,
+  cityChangeFn,
 }: AllCustomersViewProps) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -57,10 +70,47 @@ export function AllCustomersView({
     },
   });
 
+  const visibilityMutation = useMutation({
+    mutationFn: ({ id, hidden }: { id: string; hidden: boolean }) =>
+      visibilityFn!(id, hidden),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["my-route"] });
+      queryClient.invalidateQueries({ queryKey: ["route-day"] });
+      toast({ title: t("customer.visibilityUpdated"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  const cityMutation = useMutation({
+    mutationFn: ({ id, city }: { id: string; city: string }) =>
+      cityChangeFn!(id, city),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["my-route"] });
+      queryClient.invalidateQueries({ queryKey: ["route-day"] });
+      toast({ title: t("customer.cityUpdated"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
   const { data: customers, isLoading } = useQuery({
     queryKey,
     queryFn,
   });
+
+  // Distinct cities already in use — the options for the quick city-switch.
+  const availableCities = useMemo(
+    () =>
+      Array.from(
+        new Set((customers ?? []).map((c) => c.city).filter(Boolean))
+      ).sort((a, b) => a.localeCompare(b, "ar")),
+    [customers]
+  );
 
   const filtered = useMemo(() => {
     if (!customers) return [];
@@ -120,7 +170,7 @@ export function AllCustomersView({
       <FadeIn key={customer.id} delay={idx * 0.06} skip={idx >= 15}>
       <Card
         variant={cardClass as any}
-        className="p-4"
+        className={`p-4 ${customer.hidden_from_sales ? "opacity-60" : ""}`}
         onClick={onClick}
       >
         <div className="flex items-center gap-3">
@@ -135,9 +185,76 @@ export function AllCustomersView({
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {customer.hidden_from_sales && (
+              <Badge variant="outline" size="sm">
+                {t("customer.hiddenBadge")}
+              </Badge>
+            )}
             <Badge variant={balanceVariant} dot size="sm">
               {formatCurrency(customer.balance)}
             </Badge>
+            {visibilityFn && (
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={visibilityMutation.isPending}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  visibilityMutation.mutate({
+                    id: customer.id,
+                    hidden: !customer.hidden_from_sales,
+                  });
+                }}
+                title={
+                  customer.hidden_from_sales
+                    ? t("customer.showToSales")
+                    : t("customer.hideFromSales")
+                }
+                className="h-7 w-7 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
+              >
+                {customer.hidden_from_sales ? (
+                  <EyeOff className="h-3.5 w-3.5" />
+                ) : (
+                  <Eye className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            )}
+            {cityChangeFn && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={cityMutation.isPending}
+                    onClick={(e) => e.stopPropagation()}
+                    title={t("customer.changeCity")}
+                    className="h-7 w-7 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  >
+                    <MapPin className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="max-h-72 overflow-y-auto"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DropdownMenuRadioGroup
+                    value={customer.city}
+                    onValueChange={(city) => {
+                      if (city !== customer.city) {
+                        cityMutation.mutate({ id: customer.id, city });
+                      }
+                    }}
+                  >
+                    {availableCities.map((city) => (
+                      <DropdownMenuRadioItem key={city} value={city}>
+                        {city}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             {archiveFn && (
               <Button
                 variant="ghost"

@@ -231,7 +231,8 @@ export function Overview({ onNavigate }: { onNavigate?: (view: string) => void }
               </h3>
               <div className="space-y-4">
                 {topReps.map((rep, idx) => {
-                  const pct = Math.round((rep.total_collected / (topReps[0]?.total_collected || 1)) * 100);
+                  const top = Number(topReps[0]?.total_collected) || 0;
+                  const pct = top > 0 ? Math.round((Number(rep.total_collected) / top) * 100) : 0;
                   return (
                     <div key={rep.user_id}>
                       <div className="flex items-center justify-between mb-1.5">

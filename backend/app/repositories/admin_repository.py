@@ -1,3 +1,4 @@
+import uuid
 from datetime import date, datetime, time
 from decimal import Decimal
 
@@ -104,6 +105,104 @@ class AdminRepository:
             {"start": start_dt, "end": end_dt},
         )
         return [dict(r._mapping) for r in rows]
+
+    async def get_day_payments(
+        self, start_dt: datetime, end_dt: datetime
+    ) -> list[dict]:
+        """Every payment collected in the window, customer + rep + method."""
+        rows = await self._db.execute(
+            text("""
+                SELECT
+                    c.name     AS customer_name,
+                    u.username AS rep_name,
+                    t.type     AS type,
+                    ABS(t.amount) AS amount
+                FROM transactions t
+                JOIN customers c ON t.customer_id = c.id
+                LEFT JOIN users u ON t.created_by = u.id
+                WHERE t.is_deleted = false
+                  AND t.created_at >= :start
+                  AND t.created_at <= :end
+                  AND t.type IN ('Payment_Cash','Payment_Check')
+                ORDER BY ABS(t.amount) DESC
+            """),
+            {"start": start_dt, "end": end_dt},
+        )
+        return [dict(r._mapping) for r in rows]
+
+    async def get_day_orders_total(
+        self, start_dt: datetime, end_dt: datetime
+    ) -> dict:
+        """Sum + count of (non-draft) orders created in the window."""
+        row = await self._db.execute(
+            text("""
+                SELECT
+                    COALESCE(SUM(t.amount), 0) AS total,
+                    COUNT(t.id)                AS cnt
+                FROM transactions t
+                WHERE t.is_deleted = false
+                  AND t.is_draft = false
+                  AND t.type = 'Order'
+                  AND t.created_at >= :start
+                  AND t.created_at <= :end
+            """),
+            {"start": start_dt, "end": end_dt},
+        )
+        return dict(row.one()._mapping)
+
+    async def get_day_expenses(self, day: date) -> list[dict]:
+        """Expenses logged for the given day, grouped by category."""
+        rows = await self._db.execute(
+            text("""
+                SELECT
+                    category               AS category,
+                    COALESCE(SUM(amount), 0) AS amount,
+                    COUNT(id)              AS count
+                FROM expenses
+                WHERE is_deleted = false
+                  AND date = :day
+                GROUP BY category
+                ORDER BY amount DESC
+            """),
+            {"day": day},
+        )
+        return [dict(r._mapping) for r in rows]
+
+    async def get_all_orders(
+        self,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        rep_id: uuid.UUID | None = None,
+        customer_id: uuid.UUID | None = None,
+    ) -> list[tuple]:
+        """All reps' orders joined with customer name + rep username — newest first."""
+        query = (
+            select(
+                Transaction,
+                Customer.name.label("customer_name"),
+                User.username.label("rep_name"),
+            )
+            .join(Customer, Transaction.customer_id == Customer.id)
+            .outerjoin(User, Transaction.created_by == User.id)
+            .where(
+                Transaction.type == TransactionType.Order,
+                Transaction.is_deleted.is_(False),
+                Transaction.is_draft.is_(False),
+                Customer.is_deleted.is_(False),
+            )
+            .order_by(Transaction.created_at.desc())
+        )
+        if start is not None:
+            query = query.where(Transaction.created_at >= start)
+        if end is not None:
+            query = query.where(Transaction.created_at < end)
+        if rep_id is not None:
+            query = query.where(Transaction.created_by == rep_id)
+        if customer_id is not None:
+            query = query.where(Transaction.customer_id == customer_id)
+
+        result = await self._db.execute(query)
+        return list(result.all())
 
     async def get_all_checks(
         self, status: TransactionStatus | None = None

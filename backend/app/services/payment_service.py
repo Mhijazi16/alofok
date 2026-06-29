@@ -14,11 +14,13 @@ from app.repositories.customer_repository import CustomerRepository
 from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.admin import CheckOut
-from app.schemas.transaction import PaymentCreate, TransactionOut
+from app.schemas.transaction import DiscountCreate, PaymentCreate, TransactionOut
 from app.utils.cache import CacheBackend
 
 _PAYMENT_TYPES = {TransactionType.Payment_Cash, TransactionType.Payment_Check}
 _CHECK_TYPES = {TransactionType.Payment_Check}
+# Transactions a rep is allowed to soft-delete (reverse) themselves.
+_REVERSIBLE_TYPES = _PAYMENT_TYPES | {TransactionType.Discount}
 
 
 class PaymentService:
@@ -114,6 +116,86 @@ class PaymentService:
         await self._ledger.create(ledger_entry)
         await self._invalidate_customer_cache(body.customer_id)
 
+        return TransactionOut.model_validate(txn)
+
+    async def create_discount(
+        self, body: DiscountCreate, creator_id: uuid.UUID
+    ) -> TransactionOut:
+        """Forgive part of a customer's outstanding balance (settling / fractions).
+
+        Recorded as a negative ``Discount`` transaction — it reduces the balance
+        but is never counted as money collected and writes no ledger entry.
+        """
+        if body.amount <= 0:
+            raise HorizonException(400, "amount must be positive")
+
+        customer = await self._customers.get_by_id(body.customer_id)
+        if customer is None:
+            raise HorizonException(404, "Customer not found")
+
+        # A discount only settles what's owed — never push the balance into credit.
+        if body.amount > customer.balance:
+            raise HorizonException(
+                400, "Discount cannot exceed the customer's outstanding balance"
+            )
+
+        txn = Transaction(
+            customer_id=body.customer_id,
+            created_by=creator_id,
+            type=TransactionType.Discount,
+            currency=Currency.ILS,
+            amount=-body.amount,  # negative — reduces debt, not a payment
+            notes=body.notes,
+        )
+
+        # Atomic: flush txn + balance, then commit together.
+        txn = await self._transactions.create(txn, auto_commit=False)
+        customer.balance -= body.amount
+        await self._customers.update_balance(customer)
+        await self._customers.commit()
+        await self._invalidate_customer_cache(body.customer_id)
+
+        return TransactionOut.model_validate(txn)
+
+    async def delete_payment(
+        self, transaction_id: uuid.UUID, user_id: uuid.UUID
+    ) -> TransactionOut:
+        """Soft-delete a payment or discount the rep entered and reverse its effects."""
+        txn = await self._transactions.get_by_id(transaction_id)
+        if txn is None or txn.type not in _REVERSIBLE_TYPES:
+            raise HorizonException(404, "Payment not found")
+        if txn.created_by != user_id:
+            raise HorizonException(403, "You can only delete entries you created")
+        if (
+            txn.type in _CHECK_TYPES
+            and txn.status is not None
+            and txn.status != TransactionStatus.Pending
+        ):
+            raise HorizonException(
+                409, "This check has already been processed and cannot be deleted"
+            )
+
+        # Block deletion once admin has confirmed the money in the daily cash report.
+        ledger_entry = await self._ledger.get_by_source_transaction(txn.id)
+        if ledger_entry is not None and ledger_entry.status == "confirmed":
+            raise HorizonException(
+                409, "Payment already confirmed by admin and cannot be deleted"
+            )
+
+        customer = await self._customers.get_by_id(txn.customer_id)
+        if customer is None:
+            raise HorizonException(404, "Customer not found")
+
+        # Atomic: reverse balance + soft-delete txn, then commit together.
+        # txn.amount is negative (a payment), so subtracting it restores the debt.
+        customer.balance -= txn.amount
+        await self._customers.update_balance(customer)
+        txn.is_deleted = True
+        txn = await self._transactions.update(txn, auto_commit=False)
+        if ledger_entry is not None:
+            await self._ledger.soft_delete(ledger_entry.id)
+        await self._transactions.update(txn)  # commit
+        await self._invalidate_customer_cache(txn.customer_id)
         return TransactionOut.model_validate(txn)
 
     async def deposit_check(

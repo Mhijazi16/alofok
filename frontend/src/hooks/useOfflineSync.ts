@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { syncQueue } from "@/lib/syncQueue";
 import { checkImageQueue } from "@/lib/checkImageQueue";
-import { salesApi, type OrderCreate, type PaymentCreate, type PurchaseCreate, type CheckData } from "@/services/salesApi";
+import { salesApi, type OrderCreate, type PaymentCreate, type PurchaseCreate, type CheckData, type DiscountCreate } from "@/services/salesApi";
 
 /**
  * Extended payment payload shape used internally when an image was captured offline.
@@ -31,6 +31,8 @@ export function useOfflineSync() {
           await salesApi.createOrder(item.payload as OrderCreate);
         } else if (item.type === "purchase") {
           await salesApi.createPurchase(item.payload as PurchaseCreate);
+        } else if (item.type === "discount") {
+          await salesApi.createDiscount(item.payload as DiscountCreate);
         } else {
           const payload = item.payload as OfflinePaymentPayload;
           let finalPayload: PaymentCreate = payload;

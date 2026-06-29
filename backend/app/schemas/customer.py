@@ -51,6 +51,7 @@ class CustomerOut(BaseModel):
     avatar_url: str | None = None
     notes: str | None = None
     assigned_to: uuid.UUID | None = None
+    hidden_from_sales: bool = False
     returned_checks_count: int = 0
 
     model_config = {"from_attributes": True}
@@ -86,6 +87,7 @@ class CustomerUpdate(BaseModel):
     avatar_url: str | None = None
     notes: str | None = None
     assigned_to: uuid.UUID | None = None
+    hidden_from_sales: bool | None = None
 
     @field_validator("assigned_day", mode="before")
     @classmethod

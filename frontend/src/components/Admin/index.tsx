@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChartPieIcon, UsersIcon, UserIcon, HomeIcon, DollarSignIcon } from "@/components/ui/animated-icon";
+import { ShoppingBag } from "@/lib/icons";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { BottomNav } from "@/components/ui/bottom-nav";
@@ -35,6 +36,8 @@ import { OrderFlow } from "@/components/Sales/OrderFlow";
 import { PaymentFlow } from "@/components/Sales/PaymentFlow";
 import { StatementView } from "@/components/Sales/StatementView";
 import { PurchaseFlow } from "@/components/Sales/PurchaseFlow";
+import { OrdersView } from "./OrdersView";
+import { AdminBriefing } from "./AdminBriefing";
 import { adminApi } from "@/services/adminApi";
 import { salesApi, type Customer, type OrderItem } from "@/services/salesApi";
 import { getUnitPrice } from "@/lib/cart";
@@ -47,6 +50,7 @@ type AdminView =
   | "customers" | "addCustomer" | "customerDetail" | "editCustomer"
   | "order" | "payment" | "statement" | "purchase"
   | "products" | "addProduct"
+  | "orders"
   | "cashReport"
   | "profile";
 
@@ -66,6 +70,67 @@ export default function AdminPanel() {
 
   const [activeView, setActiveView] = useState<AdminView>("overview");
   const [hideNav, setHideNav] = useState(false);
+
+  // ── New-order notifications (in-app: badge on the Orders tab + toast) ──
+  const ORDERS_SEEN_KEY = "alofok-admin-orders-seen";
+  const [ordersSeenAt, setOrdersSeenAt] = useState<number>(() => {
+    const raw = localStorage.getItem(ORDERS_SEEN_KEY);
+    const ms = raw ? Date.parse(raw) : NaN;
+    return Number.isFinite(ms) ? ms : Date.now();
+  });
+  // Poll a recent window so the badge updates even off the Orders tab. A 7-day
+  // window keeps a week-away admin from under-counting while staying bounded.
+  const { data: recentOrders } = useQuery({
+    queryKey: ["admin-orders-poll"],
+    queryFn: () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 7);
+      return adminApi.getOrders({ start_date: toLocalDateStr(since), limit: 100 });
+    },
+    refetchInterval: 45_000,
+    refetchOnWindowFocus: true,
+  });
+  const unreadOrders = (recentOrders ?? []).filter(
+    (o) => Date.parse(o.created_at) > ordersSeenAt
+  );
+  const unreadOrderCount = unreadOrders.length;
+
+  // Toast when new orders arrive (after the first poll, so we don't toast on
+  // load — and not while the admin is already looking at the Orders tab).
+  const prevUnread = useRef<number | null>(null);
+  useEffect(() => {
+    if (recentOrders === undefined) return;
+    if (activeView === "orders") {
+      prevUnread.current = unreadOrderCount;
+      return;
+    }
+    if (prevUnread.current !== null && unreadOrderCount > prevUnread.current) {
+      const newest = unreadOrders[0];
+      toast({
+        title: t("orders.newOrder"),
+        description: newest
+          ? t("orders.newOrderDesc", {
+              rep: newest.rep_name ?? "",
+              customer: newest.customer_name,
+            })
+          : undefined,
+        variant: "default",
+      });
+    }
+    prevUnread.current = unreadOrderCount;
+  }, [unreadOrderCount, recentOrders, unreadOrders, toast, t, activeView]);
+
+  // Mark orders as seen while the admin is on the Orders tab — on entry and on
+  // each poll — so the badge clears and stays cleared while they're viewing.
+  useEffect(() => {
+    if (activeView === "orders") {
+      const now = Date.now();
+      setOrdersSeenAt(now);
+      localStorage.setItem(ORDERS_SEEN_KEY, new Date(now).toISOString());
+      prevUnread.current = 0;
+    }
+  }, [activeView, recentOrders]);
+
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
   const [avatarSeed, setAvatarSeed] = useState(
@@ -120,6 +185,7 @@ export default function AdminPanel() {
 
   const navItems = [
     { icon: ChartPieIcon, label: t("nav.overview"), value: "overview" },
+    { icon: ShoppingBag, label: t("nav.orders"), value: "orders", badge: unreadOrderCount || undefined },
     { icon: HomeIcon, label: t("nav.products"), value: "products" },
     { icon: DollarSignIcon, label: t("nav.finance"), value: "finance" },
     { icon: UsersIcon, label: t("nav.customers"), value: "customers" },
@@ -138,6 +204,8 @@ export default function AdminPanel() {
         return <DebtStats onBack={() => setActiveView("overview")} />;
       case "checks":
         return <AdminChecksView />;
+      case "orders":
+        return <OrdersView />;
       case "customers":
         return (
           <AllCustomersView
@@ -149,6 +217,8 @@ export default function AdminPanel() {
             }}
             onAddCustomer={() => setActiveView("addCustomer")}
             showInteractive={true}
+            visibilityFn={adminApi.setCustomerVisibility}
+            cityChangeFn={adminApi.setCustomerCity}
           />
         );
       case "customerDetail":
@@ -275,7 +345,7 @@ export default function AdminPanel() {
     }
   };
 
-  const isMainView = ["overview", "customers", "products", "addProduct", "finance", "checks", "profile"].includes(activeView);
+  const isMainView = ["overview", "orders", "customers", "products", "addProduct", "finance", "checks", "profile"].includes(activeView);
 
   const bottomNavActiveValue =
     activeView === "sales" || activeView === "debt" ? "overview"
@@ -299,6 +369,9 @@ export default function AdminPanel() {
       <div className="w-full">
         {renderView()}
       </div>
+
+      {/* Morning briefing: once-per-day summary of yesterday */}
+      <AdminBriefing />
 
       {/* Order Confirmation Dialog with Delivery Date */}
       <Dialog open={confirmOpen} onOpenChange={(open) => { setConfirmOpen(open); if (!open) setDeliveryDate(undefined); }}>

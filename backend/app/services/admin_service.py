@@ -1,5 +1,6 @@
 import csv
 import io
+import uuid
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
@@ -8,10 +9,14 @@ from app.models.transaction import TransactionStatus
 from app.repositories.admin_repository import AdminRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.admin import (
+    AdminOrderOut,
     CheckOut,
     CityDebtOut,
     DailyBreakdownItem,
     DailyBreakdownOut,
+    DayExpenseCategory,
+    DayPaymentRow,
+    DaySummaryOut,
     DebtStatsOut,
     ImportResult,
     OverdueCheckOut,
@@ -125,6 +130,94 @@ class AdminService:
             )
             for row in rows
         ]
+
+    # ── Orders (admin oversight of all reps' orders) ─────────────────────────
+
+    async def get_orders(
+        self,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        rep_id: uuid.UUID | None = None,
+        customer_id: uuid.UUID | None = None,
+        limit: int | None = None,
+    ) -> list[AdminOrderOut]:
+        start = datetime.combine(start_date, time.min) if start_date else None
+        # end is exclusive in the repo, so use the start of the day after end_date
+        end = (
+            datetime.combine(end_date + timedelta(days=1), time.min)
+            if end_date
+            else None
+        )
+        rows = await self._repo.get_all_orders(start, end, rep_id, customer_id)
+        if limit is not None:
+            rows = rows[:limit]
+        return [
+            AdminOrderOut(
+                id=row.Transaction.id,
+                customer_id=row.Transaction.customer_id,
+                customer_name=row.customer_name,
+                rep_id=row.Transaction.created_by,
+                rep_name=row.rep_name,
+                type=row.Transaction.type,
+                currency=row.Transaction.currency,
+                amount=row.Transaction.amount,
+                status=row.Transaction.status,
+                notes=row.Transaction.notes,
+                created_at=row.Transaction.created_at,
+                delivery_date=row.Transaction.delivery_date,
+                delivered_date=row.Transaction.delivered_date,
+                is_draft=row.Transaction.is_draft,
+                items=(row.Transaction.data or {}).get("items", []),
+                subtotal=(row.Transaction.data or {}).get("subtotal"),
+                discount=(row.Transaction.data or {}).get("discount"),
+            )
+            for row in rows
+        ]
+
+    # ── Day summary (admin morning briefing) ─────────────────────────────────
+
+    async def get_day_summary(self, target: date) -> DaySummaryOut:
+        start_dt = datetime.combine(target, time.min)
+        end_dt = datetime.combine(target, time.max)
+
+        pay_rows = await self._repo.get_day_payments(start_dt, end_dt)
+        orders = await self._repo.get_day_orders_total(start_dt, end_dt)
+        exp_rows = await self._repo.get_day_expenses(target)
+
+        payments = [
+            DayPaymentRow(
+                customer_name=r["customer_name"],
+                rep_name=r["rep_name"],
+                amount=r["amount"],
+                method="cash" if r["type"] == "Payment_Cash" else "check",
+            )
+            for r in pay_rows
+        ]
+        collected_total = sum((p.amount for p in payments), Decimal(0))
+
+        expenses_by_category = [
+            DayExpenseCategory(
+                category=r["category"], amount=r["amount"], count=r["count"]
+            )
+            for r in exp_rows
+        ]
+        expenses_total = sum(
+            (e.amount for e in expenses_by_category), Decimal(0)
+        )
+        expenses_count = sum(e.count for e in expenses_by_category)
+
+        return DaySummaryOut(
+            date=target,
+            collected_total=collected_total,
+            collection_count=len(payments),
+            payments=payments,
+            orders_total=orders["total"],
+            orders_count=orders["cnt"],
+            expenses_total=expenses_total,
+            expenses_count=expenses_count,
+            expenses_by_category=expenses_by_category,
+            net=collected_total - expenses_total,
+        )
 
     # ── Daily breakdown ─────────────────────────────────────────────────────
 

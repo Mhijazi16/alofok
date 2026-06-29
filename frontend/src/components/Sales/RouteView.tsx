@@ -1,4 +1,12 @@
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import {
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+  useEffect,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -18,7 +26,7 @@ import {
   Square,
   AlertTriangle,
 } from "@/lib/icons";
-import { salesApi, type Customer, type OrderWithCustomer } from "@/services/salesApi";
+import { salesApi, type Customer, type OrderWithCustomer, type CollectionPayment } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
 import { StatCard } from "@/components/ui/stat-card";
 import { SearchInput } from "@/components/ui/search-input";
@@ -29,6 +37,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/useToast";
 import { toLocalDateStr } from "@/lib/utils";
 import { ExpenseCard, REP_CATEGORIES } from "@/components/shared/ExpenseCard";
@@ -76,6 +91,169 @@ const formatCurrency = (val: number) =>
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   });
+
+const CARDS_PER_PAGE = 6;
+const SWIPE_THRESHOLD = 50;
+
+/**
+ * Paginates the route's customer cards so reps don't endlessly scroll.
+ * Swipe left/right (RTL-aware) to flip pages; a dots indicator shows position.
+ */
+function CustomerPager({
+  customers,
+  isRTL,
+  onSelectCustomer,
+  ChevronIcon,
+}: {
+  customers: Customer[];
+  isRTL: boolean;
+  onSelectCustomer: (customer: Customer) => void;
+  ChevronIcon: typeof ChevronLeft;
+}) {
+  const { t } = useTranslation();
+  // [pageIndex, slideDirection] — direction drives the enter/exit x offset.
+  const [[page, dir], setPage] = useState<[number, number]>([0, 0]);
+  const pageCount = Math.max(1, Math.ceil(customers.length / CARDS_PER_PAGE));
+
+  // Clamp when the list shrinks (search typed, day switched).
+  const safePage = Math.min(page, pageCount - 1);
+  useEffect(() => {
+    if (page !== safePage) setPage([safePage, 0]);
+  }, [safePage, page]);
+
+  const pageItems = customers.slice(
+    safePage * CARDS_PER_PAGE,
+    safePage * CARDS_PER_PAGE + CARDS_PER_PAGE
+  );
+
+  const paginate = useCallback(
+    (delta: number) => {
+      setPage(([p]) => {
+        const next = Math.min(Math.max(p + delta, 0), pageCount - 1);
+        return next === p ? [p, 0] : [next, delta];
+      });
+    },
+    [pageCount]
+  );
+
+  // ── Swipe detection (mirrors swipeable-card.tsx) ──
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const swiped = useRef(false);
+
+  const handlePointerDown = useCallback((e: ReactPointerEvent) => {
+    startX.current = e.clientX;
+    startY.current = e.clientY;
+    swiped.current = false;
+  }, []);
+
+  const handlePointerUp = useCallback(
+    (e: ReactPointerEvent) => {
+      const dx = e.clientX - startX.current;
+      const dy = Math.abs(e.clientY - startY.current);
+      if (Math.abs(dx) <= SWIPE_THRESHOLD || dy > Math.abs(dx)) return;
+      swiped.current = true; // suppress the click that follows a swipe
+      // dx<0 = swipe left, dx>0 = swipe right; RTL inverts next/prev.
+      const forward = isRTL ? dx > 0 : dx < 0;
+      paginate(forward ? 1 : -1);
+    },
+    [isRTL, paginate]
+  );
+
+  // RTL flips the horizontal travel so "forward" moves the natural way.
+  const rtlSign = isRTL ? -1 : 1;
+  const enterX = (dir > 0 ? 60 : dir < 0 ? -60 : 0) * rtlSign;
+
+  return (
+    <div>
+      <div
+        className="overflow-hidden touch-pan-y"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onClickCapture={(e) => {
+          if (swiped.current) {
+            e.stopPropagation(); // don't open a customer right after a swipe
+            swiped.current = false;
+          }
+        }}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={safePage}
+            initial={{ opacity: 0, x: enterX }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -enterX }}
+            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="space-y-2"
+          >
+            {pageItems.map((customer) => {
+              const balanceNum = Number(customer.balance);
+              const balanceVariant: "success" | "warning" | "danger" =
+                balanceNum <= 0
+                  ? "success"
+                  : balanceNum < 5000
+                    ? "warning"
+                    : "danger";
+
+              return (
+                <Card
+                  key={customer.id}
+                  variant="interactive"
+                  className="p-4"
+                  onClick={() => onSelectCustomer(customer)}
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar src={customer.avatar_url ?? undefined} name={customer.name} size="md" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-h4 font-semibold text-foreground truncate">
+                        {customer.name}
+                      </p>
+                      <p className="text-caption text-muted-foreground truncate">
+                        {customer.city}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {(customer.returned_checks_count ?? 0) > 0 && (
+                        <div className="flex items-center gap-1">
+                          <AlertTriangle className="h-3.5 w-3.5 text-warning" />
+                          <Badge variant="warning" size="sm">
+                            {customer.returned_checks_count}
+                          </Badge>
+                        </div>
+                      )}
+                      <Badge variant={balanceVariant} dot>
+                        {formatCurrency(balanceNum)}
+                      </Badge>
+                      <ChevronIcon className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* ── Dots indicator ── */}
+      {pageCount > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-1.5">
+          {Array.from({ length: pageCount }).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={t("route.pageLabel", { page: i + 1 })}
+              aria-current={i === safePage}
+              onClick={() => setPage([i, i > safePage ? 1 : -1])}
+              className={`h-1.5 rounded-full transition-all duration-200 ${
+                i === safePage ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function RouteView({ onSelectCustomer }: RouteViewProps) {
   const { t, i18n } = useTranslation();
@@ -263,6 +441,33 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
     queryFn: () => salesApi.getCollections(selectedDate),
   });
 
+  // ── Today's payments popup (tap the collections stat) ──
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
+  const [paymentToDelete, setPaymentToDelete] = useState<CollectionPayment | null>(null);
+
+  const { data: collectionPayments, isLoading: collectionsLoading } = useQuery({
+    queryKey: ["collections-details", selectedDate],
+    queryFn: () => salesApi.getCollectionsDetails(selectedDate),
+    enabled: collectionsOpen,
+  });
+
+  const deletePaymentMutation = useMutation({
+    mutationFn: (id: string) => salesApi.deletePayment(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["collections-details"] });
+      queryClient.invalidateQueries({ queryKey: ["route-day"] });
+      queryClient.invalidateQueries({ queryKey: ["my-customers"] });
+      queryClient.invalidateQueries({ queryKey: ["my-route"] });
+      setPaymentToDelete(null);
+      toast({ title: t("payment.paymentDeleted"), variant: "success" });
+    },
+    onError: () => {
+      setPaymentToDelete(null);
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
   const todayLabel = new Date().toLocaleDateString(
     isRTL ? "ar-EG" : "en-US",
     { month: "long", day: "numeric" }
@@ -347,6 +552,13 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
             value={formatCurrency(todayCollections ?? 0)}
             label={t("customer.todayCollections")}
             icon={Wallet}
+            role="button"
+            tabIndex={0}
+            onClick={() => setCollectionsOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") setCollectionsOpen(true);
+            }}
+            className="cursor-pointer hover:bg-card-hover active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
 
@@ -394,53 +606,12 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
               </FadeIn>
             )
           ) : (
-            <div className="space-y-2">
-              {filtered.map((customer, idx) => {
-                const balanceNum = Number(customer.balance);
-                const balanceVariant: "success" | "warning" | "danger" =
-                  balanceNum <= 0
-                    ? "success"
-                    : balanceNum < 5000
-                      ? "warning"
-                      : "danger";
-
-                return (
-                  <FadeIn key={customer.id} delay={idx * 0.06} skip={idx >= 15}>
-                  <Card
-                    variant="interactive"
-                    className="p-4"
-                    onClick={() => onSelectCustomer(customer)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar src={customer.avatar_url ?? undefined} name={customer.name} size="md" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-h4 font-semibold text-foreground truncate">
-                          {customer.name}
-                        </p>
-                        <p className="text-caption text-muted-foreground truncate">
-                          {customer.city}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {(customer.returned_checks_count ?? 0) > 0 && (
-                          <div className="flex items-center gap-1">
-                            <AlertTriangle className="h-3.5 w-3.5 text-warning" />
-                            <Badge variant="warning" size="sm">
-                              {customer.returned_checks_count}
-                            </Badge>
-                          </div>
-                        )}
-                        <Badge variant={balanceVariant} dot>
-                          {formatCurrency(balanceNum)}
-                        </Badge>
-                        <ChevronIcon className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </div>
-                  </Card>
-                  </FadeIn>
-                );
-              })}
-            </div>
+            <CustomerPager
+              customers={filtered}
+              isRTL={isRTL}
+              onSelectCustomer={onSelectCustomer}
+              ChevronIcon={ChevronIcon}
+            />
           )}
         </div>
 
@@ -957,6 +1128,98 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
         variant={bulkAction === "delete" ? "destructive" : "default"}
         onConfirm={handleBulkConfirm}
         isLoading={isBulkPending}
+      />
+
+      {/* ── Today's collections breakdown ── */}
+      <Dialog open={collectionsOpen} onOpenChange={setCollectionsOpen}>
+        <DialogContent className="max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{t("collections.title")}</DialogTitle>
+            <DialogDescription>
+              {t("collections.subtitle", {
+                amount: formatCurrency(todayCollections ?? 0),
+              })}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto -mx-2 px-2">
+            {collectionsLoading ? (
+              <div className="space-y-2 py-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} variant="card" className="h-16" />
+                ))}
+              </div>
+            ) : !collectionPayments || collectionPayments.length === 0 ? (
+              <EmptyState
+                icon={Wallet}
+                title={t("collections.empty")}
+                className="py-10"
+              />
+            ) : (
+              <div className="space-y-2 py-1">
+                {collectionPayments.map((p) => (
+                  <Card key={p.id} className="p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
+                        {p.type === "Payment_Check" ? (
+                          <Receipt className="h-5 w-5" />
+                        ) : (
+                          <Wallet className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-body-sm font-semibold text-foreground truncate">
+                          {p.customer_name}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <Badge variant={p.type === "Payment_Check" ? "info" : "success"} size="sm">
+                            {p.type === "Payment_Check" ? t("payment.check") : t("payment.cash")}
+                          </Badge>
+                          <span className="text-caption text-muted-foreground">
+                            {formatTime(p.created_at, i18n.language)}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-body-sm font-bold text-foreground" dir="ltr">
+                        ₪ {formatCurrency(Math.abs(p.amount))}
+                      </span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-9 w-9 shrink-0 text-destructive"
+                        onClick={() => setPaymentToDelete(p)}
+                        title={t("payment.deletePayment")}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmationDialog
+        open={!!paymentToDelete}
+        onOpenChange={(open) => { if (!open) setPaymentToDelete(null); }}
+        title={t("payment.deletePayment")}
+        description={
+          paymentToDelete
+            ? t("payment.deletePaymentConfirm", {
+                name: paymentToDelete.customer_name,
+                amount: formatCurrency(Math.abs(paymentToDelete.amount)),
+              })
+            : ""
+        }
+        confirmLabel={t("actions.delete")}
+        cancelLabel={t("actions.cancel")}
+        variant="destructive"
+        onConfirm={() => {
+          if (paymentToDelete) deletePaymentMutation.mutate(paymentToDelete.id);
+        }}
+        isLoading={deletePaymentMutation.isPending}
       />
     </FadeIn>
   );

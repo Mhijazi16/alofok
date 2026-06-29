@@ -26,7 +26,8 @@
     "settings": "الإعدادات",
     "addProduct": "إضافة منتج",
     "checks": "الشيكات",
-    "finance": "المالية"
+    "finance": "المالية",
+    "orders": "الطلبات"
   },
   "customer": {
     "balance": "الرصيد",
@@ -58,6 +59,12 @@
     "archiveConfirmTitle": "أرشفة العميل",
     "archiveConfirmDesc": "هل أنت متأكد من أرشفة {{name}}؟ لن يظهر بعد الآن في قوائم العملاء.",
     "archiveSuccess": "تم أرشفة العميل بنجاح",
+    "hiddenBadge": "مخفي",
+    "hideFromSales": "إخفاء عن المندوب",
+    "showToSales": "إظهار للمندوب",
+    "visibilityUpdated": "تم تحديث ظهور العميل",
+    "changeCity": "تغيير المدينة",
+    "cityUpdated": "تم تحديث مدينة العميل",
     "addNew": "إضافة عميل",
     "editCustomer": "تعديل العميل",
     "tapToSetLocation": "اضغط على الخريطة لتحديد الموقع",
@@ -105,14 +112,23 @@
     "import": "استيراد",
     "duplicate": "تكرار",
     "previous": "السابق",
-    "next": "التالي"
+    "next": "التالي",
+    "clear": "مسح",
+    "discount": "خصم"
   },
   "route": {
     "noCustomers": "لا يوجد عملاء اليوم",
-    "noCustomersDesc": "لم يتم تعيين عملاء لهذا اليوم بعد."
+    "noCustomersDesc": "لم يتم تعيين عملاء لهذا اليوم بعد.",
+    "pageLabel": "صفحة {{page}}"
+  },
+  "pwa": {
+    "installTitle": "ثبّت تطبيق أفق",
+    "installHint": "أضفه إلى الشاشة الرئيسية لتجربة تطبيق كاملة",
+    "installIosHint": "اضغط زر المشاركة ثم «أضف إلى الشاشة الرئيسية»",
+    "install": "تثبيت"
   },
   "catalog": {
-    "bestSellers": "الأكثر مبيعاً",
+    "bestSellers": "المميزة",
     "discounted": "العروض",
     "search": "بحث في المنتجات...",
     "addToOrder": "إضافة للطلب",
@@ -141,7 +157,8 @@
     "placeOrder": "تأكيد الطلب",
     "itemCount": "{{count}} عناصر",
     "selectCustomer": "يرجى اختيار عميل أولاً",
-    "clearCart": "إفراغ السلة"
+    "clearCart": "إفراغ السلة",
+    "discount": "خصم"
   },
   "payment": {
     "cash": "نقدي",
@@ -168,7 +185,11 @@
       "ILS": "شيكل",
       "USD": "دولار",
       "JOD": "دينار"
-    }
+    },
+    "checkNumber": "رقم الشيك",
+    "paymentDeleted": "تم حذف الدفعة",
+    "deletePayment": "حذف الدفعة",
+    "deletePaymentConfirm": "حذف دفعة {{amount}} من {{name}}؟ سيتم استرجاع رصيده."
   },
   "statement": {
     "title": "كشف الحساب",
@@ -286,6 +307,9 @@
     "confirmDelete": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بيانات المنتج بشكل دائم.",
     "deletedSuccess": "تم حذف المنتج بنجاح",
     "duplicatedSuccess": "تم تكرار المنتج بنجاح",
+    "star": "إضافة إلى المميزة",
+    "unstar": "إزالة من المميزة",
+    "starUpdated": "تم تحديث المنتجات المميزة",
     "delete": "حذف المنتج",
     "detailsTab": "التفاصيل",
     "editTab": "تعديل"
@@ -591,5 +615,118 @@
     "forbidden": "ليس لديك صلاحية للوصول",
     "unauthorized": "انتهت جلستك. يرجى تسجيل الدخول مجدداً",
     "serverError": "خطأ في الخادم. يرجى المحاولة لاحقاً"
+  },
+  "collections": {
+    "title": "دفعات اليوم",
+    "subtitle": "إجمالي المحصّل: {{amount}}",
+    "empty": "لا توجد دفعات محصّلة في هذا اليوم بعد"
+  },
+  "orders": {
+    "title": "الطلبات",
+    "count": "{{count}} طلب",
+    "today": "اليوم",
+    "last7": "آخر ٧ أيام",
+    "last30": "آخر ٣٠ يوم",
+    "all": "كل الفترات",
+    "allReps": "كل المندوبين",
+    "totalValue": "القيمة الإجمالية",
+    "empty": "لا توجد طلبات في هذه الفترة",
+    "itemsCount": "{{count}} صنف",
+    "newOrder": "طلب جديد",
+    "newOrderDesc": "{{rep}} · {{customer}}",
+    "countWithPending": "{{count}} طلب · {{pending}} للتسليم",
+    "new": "جديد",
+    "allStatuses": "كل الحالات",
+    "statusPending": "بانتظار التسليم",
+    "statusDelivered": "تم التسليم",
+    "delivered": "تم التسليم",
+    "pending": "قيد الانتظار",
+    "justNow": "الآن",
+    "minutesAgo": "قبل {{count}} د",
+    "hoursAgo": "قبل {{count}} س",
+    "yesterday": "أمس",
+    "deliveredOn": "تم التسليم {{date}}",
+    "scheduledFor": "مجدول لـ {{date}}",
+    "notDeliveredYet": "لم يُسلَّم بعد"
+  },
+  "briefing": {
+    "greeting": "صباح الخير 👋",
+    "customersToday": "محطة في مسار اليوم",
+    "ordersTitle": "طلبات للتسليم",
+    "ordersToDeliver": "طلب مجدول اليوم",
+    "ordersValue": "إجمالي قيمة الطلبات",
+    "whoTitle": "من ينتظرك اليوم",
+    "whoHint": "العملاء الذين لديهم تسليم اليوم",
+    "noOrders": "لا توجد تسليمات مجدولة اليوم",
+    "collectTitle": "للتحصيل",
+    "collectHint": "إجمالي الرصيد المستحق في محطات اليوم",
+    "toCollect": "مستحقة على المسار",
+    "next": "التالي",
+    "back": "السابق",
+    "start": "ابدأ يومي",
+    "letsGo": "هيا بنا",
+    "close": "إغلاق",
+    "step": "الخطوة {{current}} من {{total}}",
+    "successTitle": "يوماً موفقاً!",
+    "successHint": "أنت قادر 💪"
+  },
+  "adminBriefing": {
+    "greeting": "صباح الخير 👋",
+    "yesterdaySummary": "إليك ملخص يوم أمس",
+    "collectedLabel": "حُصِّلت أمس",
+    "whoTitle": "من دفع",
+    "whoHint": "العملاء الذين دفعوا أمس",
+    "noPayments": "لا توجد دفعات أمس",
+    "ordersTitle": "الطلبات",
+    "ordersLabel": "طلب تم أمس",
+    "ordersValue": "إجمالي قيمة الطلبات",
+    "expensesTitle": "المصروفات",
+    "expensesHint": "ما صُرف أمس",
+    "expensesLabel": "صُرفت أمس",
+    "netLabel": "الصافي (المُحصَّل − المصروف)",
+    "next": "التالي",
+    "back": "رجوع",
+    "start": "تمام",
+    "done": "لنبدأ",
+    "close": "إغلاق",
+    "step": "خطوة {{current}} من {{total}}",
+    "successTitle": "أنت على اطلاع كامل!",
+    "successHint": "نتمنى لك يومًا موفقًا 💪",
+    "moreDetails": "مزيد من التفاصيل",
+    "lessDetails": "إخفاء",
+    "cash": "نقدًا",
+    "check": "شيك",
+    "paymentsCount": "{{count}} دفعة",
+    "byRep": "حسب المندوب",
+    "expenseCat": {
+      "Fuel": "وقود",
+      "Food": "طعام",
+      "Accommodation": "إقامة",
+      "Supplies": "مستلزمات",
+      "Transport": "نقل",
+      "Maintenance": "صيانة",
+      "Marketing": "تسويق",
+      "Utilities": "مرافق",
+      "Other": "أخرى",
+      "Gifts": "هدايا",
+      "CarWash": "غسيل سيارة",
+      "Electricity": "كهرباء",
+      "Internet": "إنترنت",
+      "CarRepair": "تصليح سيارة",
+      "Salaries": "رواتب"
+    }
+  },
+  "discount": {
+    "title": "تطبيق خصم",
+    "subtitle": "خفّض الرصيد المستحق على هذا العميل",
+    "currentBalance": "الرصيد الحالي",
+    "amount": "قيمة الخصم (₪)",
+    "exceeds": "لا يمكن أن يتجاوز الخصم الرصيد المستحق",
+    "note": "ملاحظة (اختياري)",
+    "notePlaceholder": "مثال: تسوية، تقريب…",
+    "newBalance": "الرصيد الجديد",
+    "apply": "تطبيق الخصم",
+    "applied": "تم تطبيق الخصم",
+    "queued": "تم وضع الخصم في قائمة الانتظار — سيُزامن عند الاتصال"
   }
 }

@@ -53,6 +53,17 @@ class LedgerRepository:
         )
         return list(result.scalars().all())
 
+    async def get_by_source_transaction(
+        self, source_transaction_id: uuid.UUID
+    ) -> CompanyLedger | None:
+        result = await self._db.execute(
+            select(CompanyLedger).where(
+                CompanyLedger.source_transaction_id == source_transaction_id,
+                CompanyLedger.is_deleted.is_(False),
+            )
+        )
+        return result.scalars().first()
+
     async def soft_delete(self, entry_id: uuid.UUID) -> bool:
         result = await self._db.execute(
             update(CompanyLedger)

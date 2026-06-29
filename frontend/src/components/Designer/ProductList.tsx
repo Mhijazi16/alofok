@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Package, PlusCircle, Copy, Trash2 } from "@/lib/icons";
+import { Package, PlusCircle, Copy, Trash2, Star } from "@/lib/icons";
 
 import { designerApi, type Product } from "@/services/designerApi";
 import { useToast } from "@/hooks/useToast";
-import { getCoverImage, sortProductsByImage } from "@/lib/image";
+import { getCoverImage, sortProductsByName } from "@/lib/image";
 import { getProductName } from "@/lib/product";
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
@@ -114,7 +114,21 @@ export function ProductList({ onAdd }: ProductListProps) {
     },
   });
 
-  // Filtered products based on search, sorted with images first
+  // Quick star/unstar — toggles is_bestseller so the product shows in the
+  // sales catalog's top "Featured" section.
+  const starMutation = useMutation({
+    mutationFn: ({ id, value }: { id: string; value: boolean }) =>
+      designerApi.updateProduct(id, { is_bestseller: value }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: t("product.starUpdated"), variant: "success" });
+    },
+    onError: () => {
+      toast({ title: t("toast.error"), variant: "error" });
+    },
+  });
+
+  // Filtered products based on search, sorted alphabetically by Arabic name
   const filtered = useMemo(() => {
     if (!products) return [];
     const list = !search.trim()
@@ -127,7 +141,7 @@ export function ProductList({ onAdd }: ProductListProps) {
             p.sku.toLowerCase().includes(q)
           );
         });
-    return sortProductsByImage(list);
+    return sortProductsByName(list);
   }, [products, search]);
 
   const productName = (p: Product) => getProductName(p);
@@ -200,7 +214,7 @@ export function ProductList({ onAdd }: ProductListProps) {
               <FadeIn key={product.id} delay={idx * 0.04} animation="scale" skip={idx >= 10}>
               <Card
                 variant="interactive"
-                className="group relative cursor-pointer overflow-hidden"
+                className="group relative cursor-pointer overflow-hidden [content-visibility:auto] [contain-intrinsic-size:auto_240px]"
                 onClick={() => {
                   setDialogProduct(product);
                   setDialogTab("details");
@@ -238,31 +252,53 @@ export function ProductList({ onAdd }: ProductListProps) {
                   </div>
 
                   {/* Per-card action buttons */}
-                  <div className="absolute end-2 top-2 flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  <div className="absolute end-2 top-2 flex flex-col gap-1">
+                    {/* Star toggle — always visible quick "featured" toggle */}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 rounded-lg bg-black/60 text-white hover:bg-black/80"
+                      className="h-8 w-8 rounded-lg bg-black/60 hover:bg-black/80"
+                      disabled={starMutation.isPending}
                       onClick={(e) => {
                         e.stopPropagation();
-                        duplicateMutation.mutate(product.id);
+                        starMutation.mutate({
+                          id: product.id,
+                          value: !product.is_bestseller,
+                        });
                       }}
-                      title={t("actions.duplicate")}
+                      title={product.is_bestseller ? t("product.unstar") : t("product.star")}
                     >
-                      <Copy className="h-4 w-4" />
+                      <Star
+                        className={`h-4 w-4 ${product.is_bestseller ? "fill-yellow-400 text-yellow-400" : "text-white"}`}
+                      />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-lg bg-black/60 text-destructive hover:bg-black/80"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteTarget(product);
-                      }}
-                      title={t("actions.delete")}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {/* Duplicate + delete — reveal on hover (desktop), always on mobile */}
+                    <div className="flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg bg-black/60 text-white hover:bg-black/80"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          duplicateMutation.mutate(product.id);
+                        }}
+                        title={t("actions.duplicate")}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg bg-black/60 text-destructive hover:bg-black/80"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget(product);
+                        }}
+                        title={t("actions.delete")}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 

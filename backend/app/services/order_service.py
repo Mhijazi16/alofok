@@ -6,8 +6,57 @@ from app.core.errors import HorizonException
 from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
-from app.schemas.transaction import OrderCreate, OrderUpdate, TransactionOut
+from app.schemas.transaction import (
+    DiscountType,
+    OrderCreate,
+    OrderItemSchema,
+    OrderUpdate,
+    TransactionOut,
+)
 from app.utils.cache import CacheBackend
+
+_CENTS = Decimal("0.01")
+
+
+def _subtotal(items: list[OrderItemSchema]) -> Decimal:
+    return sum(
+        (Decimal(str(i.quantity)) * Decimal(str(i.unit_price)) for i in items),
+        Decimal(0),
+    )
+
+
+def _discount_amount(
+    subtotal: Decimal, dtype: DiscountType | None, dvalue: Decimal | None
+) -> Decimal:
+    """Resolve an order-level discount to a shekel amount, clamped to [0, subtotal]."""
+    if not dtype or dvalue is None or dvalue <= 0:
+        return Decimal(0)
+    if dtype == "percent":
+        pct = min(max(dvalue, Decimal(0)), Decimal(100))
+        amt = subtotal * pct / Decimal(100)
+    else:  # fixed
+        amt = dvalue
+    amt = amt.quantize(_CENTS)
+    return min(max(amt, Decimal(0)), subtotal)
+
+
+def _order_data(
+    items: list[OrderItemSchema],
+    subtotal: Decimal,
+    dtype: DiscountType | None,
+    dvalue: Decimal | None,
+    discount: Decimal,
+) -> dict:
+    """Build the order's JSONB payload — items plus an optional discount breakdown."""
+    data: dict = {"items": [i.model_dump(mode="json") for i in items]}
+    if discount > 0:
+        data["subtotal"] = float(subtotal)
+        data["discount"] = {
+            "type": dtype,
+            "value": float(dvalue) if dvalue is not None else None,
+            "amount": float(discount),
+        }
+    return data
 
 
 class OrderService:
@@ -69,10 +118,11 @@ class OrderService:
         if not body.items:
             raise HorizonException(400, "Order must contain at least one item")
 
-        total = sum(
-            Decimal(str(item.quantity)) * Decimal(str(item.unit_price))
-            for item in body.items
+        subtotal = _subtotal(body.items)
+        discount = _discount_amount(
+            subtotal, body.discount_type, body.discount_value
         )
+        total = subtotal - discount  # positive — what the customer actually owes
 
         txn = Transaction(
             customer_id=body.customer_id,
@@ -80,7 +130,9 @@ class OrderService:
             type=TransactionType.Order,
             currency=Currency.ILS,
             amount=total,  # positive — increases customer debt
-            data={"items": [item.model_dump(mode="json") for item in body.items]},
+            data=_order_data(
+                body.items, subtotal, body.discount_type, body.discount_value, discount
+            ),
             notes=body.notes,
             delivery_date=body.delivery_date,
         )
@@ -125,14 +177,32 @@ class OrderService:
         else:
             new_customer = old_customer
 
-        # Update items and recalculate amount
-        if body.items:
-            total = sum(
-                Decimal(str(item.quantity)) * Decimal(str(item.unit_price))
-                for item in body.items
+        # Recalculate the amount whenever items OR the discount change. Either may
+        # be omitted, so fall back to whatever the order already has.
+        discount_touched = (
+            body.discount_type is not None or body.discount_value is not None
+        )
+        if body.items is not None or discount_touched:
+            existing = txn.data or {}
+            items = (
+                body.items
+                if body.items is not None
+                else [OrderItemSchema(**i) for i in existing.get("items", [])]
             )
-            txn.amount = total
-            txn.data = {"items": [item.model_dump(mode="json") for item in body.items]}
+            if discount_touched:
+                dtype, dvalue = body.discount_type, body.discount_value
+            else:
+                prev = existing.get("discount") or {}
+                dtype = prev.get("type")
+                dvalue = (
+                    Decimal(str(prev["value"]))
+                    if prev.get("value") is not None
+                    else None
+                )
+            subtotal = _subtotal(items)
+            discount = _discount_amount(subtotal, dtype, dvalue)
+            txn.amount = subtotal - discount
+            txn.data = _order_data(items, subtotal, dtype, dvalue, discount)
 
         # Update other fields
         if body.delivery_date is not None:

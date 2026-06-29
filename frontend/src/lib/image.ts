@@ -21,3 +21,12 @@ export function sortProductsByImage<T extends { image_urls?: string[] | null }>(
     return aHas - bHas;
   });
 }
+
+/** Sort products alphabetically by Arabic name (the primary catalog locale). */
+export function sortProductsByName<T extends { name_ar: string }>(
+  products: T[]
+): T[] {
+  return [...products].sort((a, b) =>
+    (a.name_ar ?? "").localeCompare(b.name_ar ?? "", "ar")
+  );
+}

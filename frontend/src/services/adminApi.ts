@@ -1,5 +1,5 @@
 import api from "./api";
-import type { Customer, CustomerCreate, CheckData } from "./salesApi";
+import type { Customer, CustomerCreate, CheckData, OrderItem } from "./salesApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -64,6 +64,36 @@ export interface CheckOut {
   related_transaction_id: string | null;
 }
 
+// ── Admin orders ──
+
+export interface AdminOrder {
+  id: string;
+  customer_id: string;
+  customer_name: string;
+  rep_id: string | null;
+  rep_name: string | null;
+  type: string;
+  currency: string;
+  amount: number;
+  status: string | null;
+  notes: string | null;
+  created_at: string;
+  delivery_date: string | null;
+  delivered_date: string | null;
+  is_draft: boolean;
+  items: OrderItem[];
+  subtotal?: number | null;
+  discount?: { type: "fixed" | "percent"; value: number; amount: number } | null;
+}
+
+export interface OrderFilters {
+  start_date?: string;
+  end_date?: string;
+  rep_id?: string;
+  customer_id?: string;
+  limit?: number;
+}
+
 // ── Daily breakdown types ──
 
 export interface DailyBreakdownItem {
@@ -76,6 +106,34 @@ export interface DailyBreakdownItem {
 
 export interface DailyBreakdownOut {
   days: DailyBreakdownItem[];
+}
+
+// ── Day summary (admin morning briefing) ──
+
+export interface DayPaymentRow {
+  customer_name: string;
+  rep_name: string | null;
+  amount: number;
+  method: "cash" | "check";
+}
+
+export interface DayExpenseCategory {
+  category: string;
+  amount: number;
+  count: number;
+}
+
+export interface DaySummary {
+  date: string;
+  collected_total: number;
+  collection_count: number;
+  payments: DayPaymentRow[];
+  orders_total: number;
+  orders_count: number;
+  expenses_total: number;
+  expenses_count: number;
+  expenses_by_category: DayExpenseCategory[];
+  net: number;
 }
 
 // ── Ledger types ──
@@ -140,6 +198,16 @@ export const adminApi = {
   getDebtStats: () =>
     api.get<DebtStatsOut>("/admin/stats/debt").then((r) => r.data),
 
+  getDaySummary: (date: string) =>
+    api
+      .get<DaySummary>("/admin/stats/day-summary", { params: { date } })
+      .then((r) => r.data),
+
+  getOrders: (filters: OrderFilters = {}) =>
+    api
+      .get<AdminOrder[]>("/admin/orders", { params: filters })
+      .then((r) => r.data),
+
   sendEodReport: (reportDate?: string) =>
     api
       .post<{ date: string; rows: number }>("/admin/reports/eod", null, {
@@ -174,6 +242,16 @@ export const adminApi = {
 
   updateCustomer: (id: string, body: Partial<AdminCustomerCreate>) =>
     api.put<Customer>(`/admin/customers/${id}`, body).then((r) => r.data),
+
+  // Hide/show a customer from the sales rep's route & lists (admin-only).
+  setCustomerVisibility: (id: string, hidden: boolean) =>
+    api
+      .put<Customer>(`/admin/customers/${id}`, { hidden_from_sales: hidden })
+      .then((r) => r.data),
+
+  // Move a customer to a different city/route (admin-only).
+  setCustomerCity: (id: string, city: string) =>
+    api.put<Customer>(`/admin/customers/${id}`, { city }).then((r) => r.data),
 
   archiveCustomer: (id: string) =>
     api.patch(`/admin/customers/${id}/archive`).then((r) => r.data),

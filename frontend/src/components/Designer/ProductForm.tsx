@@ -11,6 +11,7 @@ import {
   type ProductOptionInput,
 } from "@/services/designerApi";
 import { getImageUrl } from "@/lib/image";
+import { compressImage } from "@/lib/imageCompression";
 import { useToast } from "@/hooks/useToast";
 import { PageContainer } from "@/components/layout/page-container";
 import { TopBar } from "@/components/ui/top-bar";
@@ -390,7 +391,16 @@ export function ProductForm({
     if (imageUrls.length >= MAX_IMAGES) return;
     try {
       setIsUploading(true);
-      const url = await designerApi.uploadImage(file);
+      // Compress before upload so catalog images stay small for offline sync.
+      // Fall back to the original if the browser can't decode it (e.g. HEIC).
+      let toUpload: File = file;
+      try {
+        const blob = await compressImage(file, 1600, 0.82);
+        toUpload = new File([blob], "product.jpg", { type: "image/jpeg" });
+      } catch {
+        /* keep original */
+      }
+      const url = await designerApi.uploadImage(toUpload);
       setImageUrls((prev) => [...prev, url]);
     } catch {
       toast({ title: t("toast.error"), variant: "error" });

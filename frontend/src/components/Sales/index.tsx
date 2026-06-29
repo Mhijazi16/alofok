@@ -23,12 +23,14 @@ import { syncQueue } from "@/lib/syncQueue";
 import { getProductName } from "@/lib/product";
 import { toLocalDateStr } from "@/lib/utils";
 
-import { CartView, getAutoDeliveryDate } from "./views/CartView";
+import { CartView, getAutoDeliveryDate, type OrderDiscountInput } from "./views/CartView";
 import { SalesProfileView } from "./views/SalesProfileView";
 import { RouteView } from "./RouteView";
+import { RouteBriefing } from "./RouteBriefing";
 import { CustomerDashboard } from "./CustomerDashboard";
 import { OrderFlow } from "./OrderFlow";
 import { PaymentFlow } from "./PaymentFlow";
+import { DiscountDialog } from "./DiscountDialog";
 import { StatementView } from "./StatementView";
 import { ReturnedChecksView } from "./ReturnedChecksView";
 import { CustomerForm } from "./CustomerForm";
@@ -56,12 +58,13 @@ export default function SalesRoot() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [orderDiscount, setOrderDiscount] = useState<OrderDiscountInput | null>(null);
+  const [discountOpen, setDiscountOpen] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
   const [customDeliveryDate, setCustomDeliveryDate] = useState(false);
   const [avatarSeed, setAvatarSeed] = useState(() => localStorage.getItem("alofok-avatar-seed") || userId || "user");
   useEffect(() => { localStorage.setItem("alofok-avatar-seed", avatarSeed); }, [avatarSeed]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [prevViewBeforeProduct, setPrevViewBeforeProduct] = useState<View>("catalog");
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
 
   const { data: allCustomers = [] } = useQuery({ queryKey: ["my-customers"], queryFn: salesApi.getMyCustomers });
@@ -78,6 +81,7 @@ export default function SalesRoot() {
         queryClient.invalidateQueries({ queryKey: ["statement", selectedCustomer.id] });
       }
       clearCart();
+      setOrderDiscount(null);
       toast({ title: t("catalog.orderSuccess"), variant: "success" });
       setView("customer");
     },
@@ -101,27 +105,39 @@ export default function SalesRoot() {
       unit_price: getUnitPrice(ci.product, ci.selectedOptions),
       selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
     }));
-    const payload = { customer_id: selectedCustomer.id, items, delivery_date: deliveryDate ? toLocalDateStr(deliveryDate) : null };
+    const payload = {
+      customer_id: selectedCustomer.id,
+      items,
+      delivery_date: deliveryDate ? toLocalDateStr(deliveryDate) : null,
+      ...(orderDiscount && orderDiscount.value > 0
+        ? { discount_type: orderDiscount.type, discount_value: orderDiscount.value }
+        : {}),
+    };
     if (isOnline) { orderMutation.mutate(payload); } else {
       await syncQueue.push("order", payload);
       clearCart();
+      setOrderDiscount(null);
       toast({ title: t("catalog.orderQueued"), variant: "success" });
       setView("customer");
     }
     setConfirmOpen(false);
     setDeliveryDate(undefined);
-  }, [selectedCustomer, cart, isOnline, orderMutation, clearCart, toast, t, deliveryDate]);
+  }, [selectedCustomer, cart, isOnline, orderMutation, clearCart, toast, t, deliveryDate, orderDiscount]);
 
   /* ---- Navigation helpers ---- */
   const navigateToCustomer = useCallback((customer: Customer) => { setSelectedCustomer(customer); setView("customer"); }, []);
   const navigateBack = useCallback(() => {
     if (view === "customer") { setView("route"); setSelectedCustomer(null); }
     else if (view === "customerForm") { selectedCustomer ? setView("customer") : setView("route"); setEditingCustomer(undefined); }
-    else if (view === "productDetail") { setSelectedProduct(null); setView(prevViewBeforeProduct); }
     else if (["order", "payment", "statement", "returnedChecks", "purchase"].includes(view)) { setView("customer"); }
-  }, [view, selectedCustomer, prevViewBeforeProduct]);
-  const navigateToProduct = useCallback((product: Product) => { setSelectedProduct(product); setPrevViewBeforeProduct(view as View); setView("productDetail"); }, [view]);
-  const handleCustomerAction = useCallback((action: "order" | "payment" | "statement" | "check" | "purchase") => { setView(action === "check" ? "returnedChecks" : action); }, []);
+  }, [view, selectedCustomer]);
+  // Product detail opens as an overlay dialog (rendered below) so the catalog
+  // stays mounted underneath — going back just closes it, preserving scroll/state.
+  const navigateToProduct = useCallback((product: Product) => { setSelectedProduct(product); }, []);
+  const handleCustomerAction = useCallback((action: "order" | "payment" | "statement" | "check" | "purchase" | "discount") => {
+    if (action === "discount") { setDiscountOpen(true); return; }
+    setView(action === "check" ? "returnedChecks" : action);
+  }, []);
 
   const isMainView = ["route", "catalog", "cart", "customers", "profile"].includes(view);
   const bottomNavItems = [
@@ -141,7 +157,7 @@ export default function SalesRoot() {
         return <OrderFlow customer={cust} onBack={() => setView("route")} onDone={done} cart={cart} addToCart={addToCart} updateCartQty={updateCartQty} removeFromCart={removeFromCart} onViewCart={() => setView("cart")} onViewProduct={navigateToProduct} />;
       }
       case "customers": return <AllCustomersView queryKey={["my-customers"]} queryFn={salesApi.getMyCustomers} onSelectCustomer={navigateToCustomer} onAddCustomer={() => { setEditingCustomer(undefined); setView("customerForm"); }} archiveFn={salesApi.archiveCustomer} />;
-      case "cart": return <CartView cart={cart} updateCartQty={updateCartQty} removeFromCart={removeFromCart} clearCart={clearCart} cartTotal={cartTotal} onPlaceOrder={handlePlaceOrder} onBrowse={() => setView("catalog")} selectedCustomer={selectedCustomer} customers={allCustomers} onSelectCustomer={setSelectedCustomer} />;
+      case "cart": return <CartView cart={cart} updateCartQty={updateCartQty} removeFromCart={removeFromCart} clearCart={clearCart} cartTotal={cartTotal} onPlaceOrder={handlePlaceOrder} onBrowse={() => setView("catalog")} selectedCustomer={selectedCustomer} customers={allCustomers} onSelectCustomer={setSelectedCustomer} discount={orderDiscount} onDiscountChange={setOrderDiscount} />;
       case "profile": return <SalesProfileView userId={userId} username={username} role={role} avatarSeed={avatarSeed} onAvatarChange={setAvatarSeed} />;
       default: return null;
     }
@@ -149,12 +165,6 @@ export default function SalesRoot() {
 
   const renderSubView = () => {
     if (view === "customerForm") return <CustomerForm customer={editingCustomer} onBack={navigateBack} onDone={() => { setEditingCustomer(undefined); setView(selectedCustomer ? "customer" : "route"); }} />;
-    if (view === "productDetail" && selectedProduct) return (
-      <>
-        <ProductDetail product={selectedProduct} onBack={() => { setSelectedProduct(null); setView(prevViewBeforeProduct); }} actions={<Button variant="gradient" size="lg" className="w-full" onClick={() => { if (selectedProduct.options?.length) setPickerProduct(selectedProduct); else { addToCart(selectedProduct); setSelectedProduct(null); setView(prevViewBeforeProduct); } }}><ShoppingCart className="h-4 w-4" />{t("catalog.addToOrder")}</Button>} />
-        <OptionPickerDialog product={pickerProduct} onOpenChange={(open) => { if (!open) setPickerProduct(null); }} onAdd={(product, qty, options) => { addToCart(product, qty, options); setPickerProduct(null); setSelectedProduct(null); setView(prevViewBeforeProduct); }} />
-      </>
-    );
     if (!selectedCustomer) return null;
     switch (view) {
       case "customer": return <CustomerDashboard customer={selectedCustomer} onBack={navigateBack} onAction={handleCustomerAction} onEditCustomer={(c) => { setEditingCustomer(c); setView("customerForm"); }} />;
@@ -173,6 +183,16 @@ export default function SalesRoot() {
         <OfflineBanner isOnline={isOnline} isSyncing={isSyncing} pendingCount={pendingCount} />
         {isMainView ? renderMainView() : renderSubView()}
       </div>
+
+      {/* Morning route briefing — shows once per day for the rep */}
+      <RouteBriefing />
+
+      {/* Standalone discount off a customer's balance */}
+      <DiscountDialog
+        customer={selectedCustomer}
+        open={discountOpen}
+        onOpenChange={setDiscountOpen}
+      />
       <Dialog open={confirmOpen} onOpenChange={(open) => { setConfirmOpen(open); if (!open) setDeliveryDate(undefined); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -194,6 +214,37 @@ export default function SalesRoot() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Product detail — overlay over the catalog (keeps it mounted) */}
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) setSelectedProduct(null); }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          {selectedProduct && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{getProductName(selectedProduct)}</DialogTitle>
+              </DialogHeader>
+              <ProductDetail product={selectedProduct} embedded />
+              <Button
+                variant="gradient"
+                size="lg"
+                className="mt-3 w-full"
+                onClick={() => {
+                  if (selectedProduct.options?.length) setPickerProduct(selectedProduct);
+                  else { addToCart(selectedProduct); setSelectedProduct(null); }
+                }}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {t("catalog.addToOrder")}
+              </Button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      <OptionPickerDialog
+        product={pickerProduct}
+        onOpenChange={(open) => { if (!open) setPickerProduct(null); }}
+        onAdd={(product, qty, options) => { addToCart(product, qty, options); setPickerProduct(null); setSelectedProduct(null); }}
+      />
     </AppShell>
   );
 }

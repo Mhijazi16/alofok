@@ -129,9 +129,19 @@
     @apply border-border;
   }
 
+  /* Kill the double-tap-to-zoom detection delay on every touch target.
+     Set on the root: double-tap-zoom is a viewport gesture, so the html
+     element is an ancestor of every touch and its touch-action governs it.
+     Elements that need pan gestures (touch-pan-x/-y) override this locally. */
+  html {
+    touch-action: manipulation;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Cairo', 'Inter', system-ui, sans-serif;
+    /* Remove the gray tap-flash overlay for snappier perceived response. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Scrollbar */

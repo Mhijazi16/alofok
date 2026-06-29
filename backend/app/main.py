@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.endpoints import (
@@ -65,4 +66,14 @@ app.include_router(ledger.router)
 
 @app.get("/health", tags=["health"])
 async def health():
+    # Verifies DB connectivity so container healthchecks actually mean something.
+    from sqlalchemy import text
+
+    from app.api.deps import engine
+
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+    except Exception:
+        return JSONResponse(status_code=503, content={"status": "db_unavailable"})
     return {"status": "ok"}

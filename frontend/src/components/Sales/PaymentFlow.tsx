@@ -53,6 +53,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   const [currency, setCurrency] = useState<Currency>("ILS");
   const [exchangeRate, setExchangeRate] = useState("");
   const [bankName, setBankName] = useState("");
+  const [checkNumber, setCheckNumber] = useState("");
   const [bankNumber, setBankNumber] = useState("");
   const [branchNumber, setBranchNumber] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -101,6 +102,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
     (currency === "ILS" || parsedRate > 0) &&
     (paymentType === "Payment_Cash" ||
       (bankName.trim().length > 0 &&
+       checkNumber.trim().length > 0 &&
        bankNumber.trim().length > 0 &&
        branchNumber.trim().length > 0 &&
        accountNumber.trim().length > 0));
@@ -144,6 +146,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
     const checkData = paymentType === "Payment_Check"
       ? {
           bank: bankName.trim(),
+          check_number: checkNumber.trim(),
           bank_number: bankNumber.trim(),
           branch_number: branchNumber.trim(),
           account_number: accountNumber.trim(),
@@ -372,6 +375,22 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                     />
                   </FormField>
 
+                  <FormField label={t("payment.checkNumber")} required>
+                    <Input
+                      value={checkNumber}
+                      onChange={(e) => {
+                        setCheckNumber(e.target.value);
+                      }}
+                      placeholder={t("payment.checkNumber")}
+                      inputMode="numeric"
+                      dir="ltr"
+                      startIcon={<Hash className="h-4 w-4" />}
+                      className={cn()}
+                      onFocus={() => setFocusedField("checkNumber")}
+                      onBlur={() => setFocusedField(null)}
+                    />
+                  </FormField>
+
                   <FormField label={t("payment.bankNumber")} required>
                     <Input
                       value={bankNumber}
@@ -527,6 +546,12 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                         <span className="text-body font-medium text-foreground">
                           {bankName}
                         </span>
+                      </div>
+                    )}
+                    {paymentType === "Payment_Check" && checkNumber.trim() && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-body-sm text-muted-foreground">{t("payment.checkNumber")}</span>
+                        <span className="text-body font-medium text-foreground">{checkNumber}</span>
                       </div>
                     )}
                     {paymentType === "Payment_Check" && bankNumber.trim() && (

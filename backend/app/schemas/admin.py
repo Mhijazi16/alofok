@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 from pydantic import BaseModel
@@ -51,6 +51,47 @@ class ImportResult(BaseModel):
     errors: list[str]
 
 
+class OrderItemRead(BaseModel):
+    """Lenient read model for order line items stored in JSONB.
+
+    Unlike the strict create-time OrderItemSchema (which enforces gt=0 / a real
+    UUID), this never raises on historical or hand-edited rows — a read path must
+    not re-apply creation-time business rules, or one bad row 500s the whole list.
+    """
+
+    product_id: str | None = None
+    name: str | None = None
+    image_url: str | None = None
+    quantity: int = 0
+    unit_price: Decimal = Decimal(0)
+    selected_options: list[dict] | None = None
+
+    model_config = {"extra": "ignore"}
+
+
+class AdminOrderOut(BaseModel):
+    """An order (with line items, total, customer + rep) for the admin Orders tab."""
+
+    id: uuid.UUID
+    customer_id: uuid.UUID
+    customer_name: str
+    rep_id: uuid.UUID | None = None
+    rep_name: str | None = None
+    type: TransactionType
+    currency: Currency
+    amount: Decimal  # the order total (signed positive for orders)
+    status: TransactionStatus | None = None
+    notes: str | None = None
+    created_at: datetime
+    delivery_date: date | None = None
+    delivered_date: datetime | None = None
+    is_draft: bool = False
+    items: list[OrderItemRead] = []
+    # Present only when an order-level discount was applied at checkout.
+    subtotal: Decimal | None = None
+    discount: dict | None = None
+
+
 class CheckOut(BaseModel):
     id: uuid.UUID
     customer_id: uuid.UUID
@@ -77,6 +118,36 @@ class DailyBreakdownItem(BaseModel):
 
 class DailyBreakdownOut(BaseModel):
     days: list[DailyBreakdownItem]
+
+
+class DayPaymentRow(BaseModel):
+    """A single payment collected on the summary day (cash or check)."""
+
+    customer_name: str
+    rep_name: str | None = None
+    amount: Decimal  # positive (collected)
+    method: str  # "cash" | "check"
+
+
+class DayExpenseCategory(BaseModel):
+    category: str
+    amount: Decimal
+    count: int
+
+
+class DaySummaryOut(BaseModel):
+    """Everything an admin wants to glance at in the morning about *yesterday*."""
+
+    date: date
+    collected_total: Decimal
+    collection_count: int
+    payments: list[DayPaymentRow]
+    orders_total: Decimal
+    orders_count: int
+    expenses_total: Decimal
+    expenses_count: int
+    expenses_by_category: list[DayExpenseCategory]
+    net: Decimal  # collected_total - expenses_total
 
 
 class PaginatedResponse(BaseModel):

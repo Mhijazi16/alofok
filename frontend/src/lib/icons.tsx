@@ -58,6 +58,8 @@ import {
   AlertCircle as _AlertCircle,
   ArrowLeftRight as _ArrowLeftRight,
   Archive as _Archive,
+  Eye as _Eye,
+  EyeOff as _EyeOff,
   Camera as _Camera,
   Circle as _Circle,
   ChevronsUpDown as _ChevronsUpDown,
@@ -332,6 +334,8 @@ export const AlertCircle = _AlertCircle;
 // AlertTriangle is now animated (uses BadgeAlertIcon)
 export const ArrowLeftRight = _ArrowLeftRight;
 export const Archive = _Archive;
+export const Eye = _Eye;
+export const EyeOff = _EyeOff;
 // Banknote is now animated (uses HandCoinsIcon)
 // Calendar and CalendarDays are now animated (uses CalendarDaysIcon)
 export const Camera = _Camera;

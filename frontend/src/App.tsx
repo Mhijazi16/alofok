@@ -4,6 +4,7 @@ import { useAppSelector } from "@/store";
 import { FullPageSpinner } from "@/components/ui/spinner";
 import { ErrorBoundary } from "@/components/patterns/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
+import { InstallPrompt } from "@/components/ui/install-prompt";
 import { useTheme } from "@/hooks/useTheme";
 import LoginPage from "@/pages/LoginPage";
 
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="/*" element={<RoleRouter />} />
           </Routes>
         </Suspense>
+        <InstallPrompt />
         <Toaster />
       </BrowserRouter>
     </ErrorBoundary>

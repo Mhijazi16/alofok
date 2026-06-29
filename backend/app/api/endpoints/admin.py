@@ -6,8 +6,10 @@ from fastapi import APIRouter, File, Query, UploadFile
 from app.api.deps import AdminSvc, CurrentUser, CustomerSvc, UserRepo, require_admin
 from app.models.transaction import TransactionStatus
 from app.schemas.admin import (
+    AdminOrderOut,
     CheckOut,
     DailyBreakdownOut,
+    DaySummaryOut,
     DebtStatsOut,
     ImportResult,
     SalesStatsOut,
@@ -41,6 +43,20 @@ async def daily_breakdown(
     days: int = 7,
 ) -> DailyBreakdownOut:
     return await service.get_daily_breakdown(days)
+
+
+@router.get(
+    "/stats/day-summary",
+    response_model=DaySummaryOut,
+    dependencies=[require_admin],
+)
+async def day_summary(
+    service: AdminSvc,
+    date: date = Query(...),
+) -> DaySummaryOut:
+    """Morning briefing data for a single day (defaults to whatever the client
+    passes — typically yesterday): collections, who paid, orders, expenses."""
+    return await service.get_day_summary(date)
 
 
 @router.get("/stats/debt", response_model=DebtStatsOut, dependencies=[require_admin])
@@ -126,6 +142,22 @@ async def archive_customer(
 ):
     await service.archive_customer(
         customer_id, uuid.UUID(current_user["sub"]), current_user["role"]
+    )
+
+
+@router.get(
+    "/orders", response_model=list[AdminOrderOut], dependencies=[require_admin]
+)
+async def list_orders(
+    service: AdminSvc,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    rep_id: uuid.UUID | None = None,
+    customer_id: uuid.UUID | None = None,
+    limit: int = Query(500, ge=1, le=1000),
+) -> list[AdminOrderOut]:
+    return await service.get_orders(
+        start_date, end_date, rep_id, customer_id, limit
     )
 
 

@@ -55,7 +55,13 @@ const Progress = React.forwardRef<
     },
     ref
   ) => {
-    const percentage = Math.min(Math.max(value ?? 0, 0), 100);
+    // Coerce defensively: the API serializes numeric fields as strings, and
+    // call sites may divide by zero (NaN) or hit Infinity. Any non-finite
+    // value renders as an empty (0%) determinate bar instead of warning.
+    const numeric = Number(value);
+    const percentage = Number.isFinite(numeric)
+      ? Math.min(Math.max(numeric, 0), 100)
+      : 0;
 
     return (
       <div className="w-full">

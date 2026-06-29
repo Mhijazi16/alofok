@@ -1,4 +1,5 @@
 import * as React from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { AnimatedIconHandle } from "@/components/ui/animated-icon";
 
@@ -35,6 +36,8 @@ interface BottomNavProps extends React.HTMLAttributes<HTMLElement> {
   onValueChange: (value: string) => void;
 }
 
+const spring = { type: "spring", stiffness: 500, damping: 35 } as const;
+
 function NavIcon({
   icon: Icon,
   active,
@@ -46,8 +49,17 @@ function NavIcon({
   const prevActive = React.useRef(active);
 
   React.useEffect(() => {
-    if (active && !prevActive.current && iconRef.current) {
-      const t = setTimeout(() => iconRef.current?.startAnimation(), 200);
+    const handle = iconRef.current;
+    // Only animated icons expose startAnimation; a raw lucide icon's ref is the
+    // <svg> node (truthy but has no startAnimation) — guard so it can't throw.
+    if (
+      active &&
+      !prevActive.current &&
+      handle &&
+      typeof handle.startAnimation === "function"
+    ) {
+      const t = setTimeout(() => handle.startAnimation(), 200);
+      prevActive.current = active;
       return () => clearTimeout(t);
     }
     prevActive.current = active;
@@ -56,56 +68,82 @@ function NavIcon({
   return <Icon ref={iconRef} size={20} />;
 }
 
+/**
+ * Floating pill-dock bottom navigation (21stock-style):
+ * a centered, fully-rounded capsule that floats above the content.
+ * Inactive tabs are icon-only; the active tab fills with a tinted pill and
+ * its label slides in beside the icon. The whole dock auto-hides on scroll-down.
+ */
 const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(
   ({ items, activeValue, onValueChange, className, ...props }, ref) => {
-    const visibleItems = items.slice(0, 5);
+    const visibleItems = items.slice(0, 6);
     const hidden = useScrollDirection();
 
     return (
       <nav
         ref={ref}
         className={cn(
-          "fixed z-40 inset-x-1 mx-auto max-w-xl rounded-2xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/20 transition-transform duration-300",
-          "bottom-[calc(0.25rem+env(safe-area-inset-bottom,0px))]",
-          hidden && "translate-y-[calc(100%+2rem+env(safe-area-inset-bottom,0px))]",
+          "pointer-events-none fixed inset-x-0 z-40 flex justify-center transition-transform duration-300",
+          "bottom-[calc(0.5rem+env(safe-area-inset-bottom,0px))]",
+          hidden &&
+            "translate-y-[calc(100%+1.5rem+env(safe-area-inset-bottom,0px))]",
           className
         )}
         {...props}
       >
-        <div className="flex h-20 items-center">
+        <motion.div
+          layout
+          transition={spring}
+          className="pointer-events-auto flex max-w-[calc(100vw-1rem)] items-center gap-0.5 rounded-full border border-border/50 bg-background/80 px-1.5 py-1.5 shadow-lg shadow-black/25 backdrop-blur-xl"
+        >
           {visibleItems.map((item) => {
             const isActive = item.value === activeValue;
 
             return (
-              <button
+              <motion.button
                 key={item.value}
+                layout
+                transition={spring}
+                whileTap={{ scale: 0.9 }}
                 type="button"
                 onClick={() => onValueChange(item.value)}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors duration-200",
+                  "relative flex items-center gap-1.5 rounded-full py-2.5 transition-colors duration-200",
                   isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-primary/15 px-3 text-primary"
+                    : "px-2 text-muted-foreground hover:text-foreground"
                 )}
               >
-                {isActive && (
-                  <span className="absolute inset-x-0.5 -inset-y-0.5 rounded-2xl bg-primary/10" />
-                )}
-                <div className="relative">
+                <motion.span
+                  layout
+                  className="relative flex shrink-0 items-center justify-center"
+                >
                   <NavIcon icon={item.icon} active={isActive} />
                   {item.badge != null && item.badge > 0 && (
                     <span className="absolute -end-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[0.625rem] font-bold text-destructive-foreground">
                       {item.badge > 99 ? "99+" : item.badge}
                     </span>
                   )}
-                </div>
-                <span className="relative text-[0.625rem] font-medium leading-tight">
-                  {item.label}
-                </span>
-              </button>
+                </motion.span>
+                <AnimatePresence initial={false} mode="popLayout">
+                  {isActive && (
+                    <motion.span
+                      key={item.value + "-label"}
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={spring}
+                      className="overflow-hidden text-ellipsis whitespace-nowrap text-body-sm font-semibold"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
       </nav>
     );
   }

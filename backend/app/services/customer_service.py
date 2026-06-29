@@ -18,6 +18,7 @@ from app.schemas.customer import (
 )
 from app.schemas.transaction import (
     OrderWithCustomerOut,
+    PaymentWithCustomerOut,
     StatementOut,
     TransactionOut,
 )
@@ -196,6 +197,23 @@ class CustomerService:
         start = datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
         end = start + timedelta(days=1)
         return await self._transactions.get_collections_total(user_id, start, end)
+
+    async def get_collections_detail(
+        self, user_id: uuid.UUID, d: date
+    ) -> list[PaymentWithCustomerOut]:
+        """List the individual payments a rep collected on a given date."""
+        start = datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
+        end = start + timedelta(days=1)
+        rows = await self._transactions.get_payments_by_rep_with_customer(
+            user_id, start, end
+        )
+        return [
+            PaymentWithCustomerOut(
+                **TransactionOut.model_validate(txn).model_dump(),
+                customer_name=customer_name,
+            )
+            for txn, customer_name in rows
+        ]
 
     async def get_insights(self, customer_id: uuid.UUID) -> CustomerInsightsOut:
         cache_key = f"insights:{customer_id}"

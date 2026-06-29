@@ -15,7 +15,12 @@ from app.schemas.customer import (
 )
 from app.models.customer import AssignedDay
 from app.schemas.admin import CheckOut
-from app.schemas.transaction import OrderWithCustomerOut, StatementOut, TransactionOut
+from app.schemas.transaction import (
+    OrderWithCustomerOut,
+    PaymentWithCustomerOut,
+    StatementOut,
+    TransactionOut,
+)
 
 router = APIRouter()
 
@@ -137,6 +142,19 @@ async def collections(
 ) -> dict:
     total = await service.get_collections_for_date(UUID(current_user["sub"]), date)
     return {"total": total}
+
+
+@router.get(
+    "/collections/details",
+    response_model=list[PaymentWithCustomerOut],
+    dependencies=[require_sales],
+)
+async def collections_details(
+    current_user: CurrentUser,
+    service: CustomerSvc,
+    date: date = Query(...),
+) -> list[PaymentWithCustomerOut]:
+    return await service.get_collections_detail(UUID(current_user["sub"]), date)
 
 
 @router.get(

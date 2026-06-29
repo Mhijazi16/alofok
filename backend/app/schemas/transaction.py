@@ -1,10 +1,13 @@
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 from app.models.transaction import Currency, TransactionStatus, TransactionType
+
+DiscountType = Literal["fixed", "percent"]
 
 
 class SelectedOptionSchema(BaseModel):
@@ -26,6 +29,7 @@ class OrderItemSchema(BaseModel):
 
 class CheckData(BaseModel):
     bank: str | None = None  # existing: free-text bank name
+    check_number: str | None = None  # the cheque's printed serial number
     bank_number: str | None = None  # CHK-01
     branch_number: str | None = None  # CHK-02
     account_number: str | None = None  # CHK-03
@@ -59,6 +63,12 @@ class OrderWithCustomerOut(TransactionOut):
     is_route: bool = True
 
 
+class PaymentWithCustomerOut(TransactionOut):
+    """Payment with inline customer name for the daily collections list."""
+
+    customer_name: str
+
+
 class StatementEntryOut(BaseModel):
     transaction: TransactionOut
     running_balance: Decimal
@@ -75,12 +85,27 @@ class OrderCreate(BaseModel):
     items: list[OrderItemSchema]
     notes: str | None = None
     delivery_date: date | None = None
+    # Optional order-level discount applied at checkout. "fixed" = shekels off the
+    # subtotal; "percent" = a percentage off. The order's stored amount is the
+    # discounted total; the breakdown is kept in the transaction's `data`.
+    discount_type: DiscountType | None = None
+    discount_value: Decimal | None = Field(default=None, ge=0)
 
 
 class OrderUpdate(BaseModel):
     customer_id: uuid.UUID | None = None
     items: list[OrderItemSchema] | None = None
     delivery_date: date | None = None
+    notes: str | None = None
+    discount_type: DiscountType | None = None
+    discount_value: Decimal | None = Field(default=None, ge=0)
+
+
+class DiscountCreate(BaseModel):
+    """A standalone discount off a customer's outstanding balance."""
+
+    customer_id: uuid.UUID
+    amount: Decimal = Field(gt=0)  # ILS amount to forgive off the balance
     notes: str | None = None
 
 

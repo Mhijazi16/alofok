@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Package,
@@ -12,15 +12,63 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatCard } from "@/components/ui/stat-card";
 import { TopBar } from "@/components/ui/top-bar";
-import { type Customer, type Product, type CartItem } from "@/services/salesApi";
+import {
+  type Customer,
+  type Product,
+  type CartItem,
+  type DiscountType,
+} from "@/services/salesApi";
 import { getUnitPrice } from "@/lib/cart";
 import { getCoverImage } from "@/lib/image";
 import { formatCurrency } from "@/lib/format";
 import { getProductName } from "@/lib/product";
 import { FadeIn } from "@/components/ui/fade-in";
 import { CustomerSelector } from "./CustomerSelector";
+
+/** Keyboard-editable quantity field. Commits valid positive integers as you
+ *  type and snaps back to the last good value if left empty/invalid on blur. */
+function CartQtyInput({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (qty: number) => void;
+}) {
+  const [local, setLocal] = useState(String(value));
+
+  // Keep in sync when the quantity changes from the +/- buttons.
+  useEffect(() => {
+    setLocal(String(value));
+  }, [value]);
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      aria-label="quantity"
+      value={local}
+      onFocusCapture={(e) => e.currentTarget.select()}
+      onChange={(e) => {
+        const digits = e.target.value.replace(/[^0-9]/g, "");
+        setLocal(digits);
+        const n = parseInt(digits, 10);
+        if (Number.isFinite(n) && n > 0) onChange(n);
+      }}
+      onBlur={() => {
+        const n = parseInt(local, 10);
+        if (!Number.isFinite(n) || n < 1) setLocal(String(value));
+      }}
+      className="h-9 w-12 rounded-md border border-input bg-background text-center text-body-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+    />
+  );
+}
+
+export interface OrderDiscountInput {
+  type: DiscountType;
+  value: number;
+}
 
 export interface CartViewProps {
   cart: Map<string, CartItem>;
@@ -33,6 +81,21 @@ export interface CartViewProps {
   selectedCustomer: Customer | null;
   customers: Customer[];
   onSelectCustomer: (customer: Customer) => void;
+  discount: OrderDiscountInput | null;
+  onDiscountChange: (discount: OrderDiscountInput | null) => void;
+}
+
+/** Resolve a discount input against a subtotal to a shekel amount, clamped. */
+export function computeDiscount(
+  subtotal: number,
+  discount: OrderDiscountInput | null
+): number {
+  if (!discount || !discount.value || discount.value <= 0) return 0;
+  const amt =
+    discount.type === "percent"
+      ? (subtotal * Math.min(Math.max(discount.value, 0), 100)) / 100
+      : discount.value;
+  return Math.min(Math.max(amt, 0), subtotal);
 }
 
 export function CartView({
@@ -46,10 +109,15 @@ export function CartView({
   selectedCustomer,
   customers,
   onSelectCustomer,
+  discount,
+  onDiscountChange,
 }: CartViewProps) {
   const { t } = useTranslation();
 
   const cartEntries = useMemo(() => Array.from(cart.entries()), [cart]);
+
+  const discountAmount = computeDiscount(cartTotal, discount);
+  const finalTotal = cartTotal - discountAmount;
 
   const productName = (p: Product) => getProductName(p);
 
@@ -154,9 +222,10 @@ export function CartView({
                         >
                           <Minus className="h-3.5 w-3.5" />
                         </Button>
-                        <span className="min-w-[2rem] text-center text-body-sm font-bold text-foreground">
-                          {ci.quantity}
-                        </span>
+                        <CartQtyInput
+                          value={ci.quantity}
+                          onChange={(qty) => updateCartQty(key, qty)}
+                        />
                         <Button
                           size="icon"
                           variant="outline"
@@ -183,12 +252,88 @@ export function CartView({
             <span>{t("cart.itemCount", { count: cart.size })}</span>
           </div>
 
-          <StatCard
-            variant="gradient"
-            value={formatCurrency(cartTotal)}
-            label={t("cart.subtotal")}
-            icon={ShoppingCart}
-          />
+          {/* Order-level discount */}
+          <Card variant="glass" className="p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-body-sm font-semibold text-foreground">
+                {t("cart.discount")}
+              </span>
+              {/* ₪ / % type toggle */}
+              <div className="flex overflow-hidden rounded-lg border border-input">
+                {(["fixed", "percent"] as DiscountType[]).map((tp) => (
+                  <button
+                    key={tp}
+                    type="button"
+                    onClick={() =>
+                      onDiscountChange({
+                        type: tp,
+                        value: discount?.value ?? 0,
+                      })
+                    }
+                    className={
+                      "px-3 py-1 text-body-sm font-bold transition " +
+                      ((discount?.type ?? "fixed") === tp
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background text-muted-foreground")
+                    }
+                  >
+                    {tp === "fixed" ? "₪" : "%"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="text"
+                inputMode="decimal"
+                aria-label={t("cart.discount")}
+                value={discount?.value ? String(discount.value) : ""}
+                placeholder="0"
+                onFocusCapture={(e) => e.currentTarget.select()}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9.]/g, "");
+                  const n = parseFloat(raw);
+                  const type = discount?.type ?? "fixed";
+                  if (!raw || !Number.isFinite(n) || n <= 0) {
+                    onDiscountChange(null);
+                  } else {
+                    onDiscountChange({ type, value: n });
+                  }
+                }}
+                className="h-10 flex-1 rounded-lg border border-input bg-background px-3 text-body-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              {discountAmount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onDiscountChange(null)}
+                  className="shrink-0 rounded-lg px-2 py-1 text-caption font-semibold text-destructive"
+                >
+                  {t("actions.clear")}
+                </button>
+              )}
+            </div>
+          </Card>
+
+          {/* Breakdown */}
+          <div className="space-y-1.5 rounded-xl bg-background-subtle px-4 py-3">
+            <div className="flex items-center justify-between text-body-sm text-muted-foreground">
+              <span>{t("cart.subtotal")}</span>
+              <span dir="ltr">{formatCurrency(cartTotal)}</span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex items-center justify-between text-body-sm text-success">
+                <span>{t("cart.discount")}</span>
+                <span dir="ltr">− {formatCurrency(discountAmount)}</span>
+              </div>
+            )}
+            <Separator />
+            <div className="flex items-center justify-between text-body font-bold text-foreground">
+              <span>{t("order.total")}</span>
+              <span className="text-primary" dir="ltr">
+                {formatCurrency(finalTotal)}
+              </span>
+            </div>
+          </div>
 
           <Button
             variant="gradient"

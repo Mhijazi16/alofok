@@ -11,10 +11,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Frontend:** ReactJS + Vite, **Bun** as package manager, **shadcn/ui + Tailwind CSS**
 - **Mobile:** Capacitor (Android/iOS) — added after web is stable
 - **Backend:** Python FastAPI, PostgreSQL, SQLAlchemy (Async), Alembic migrations, Black for Formatting
-- **File Storage:** Local filesystem; files served via FastAPI `/static` mount, URL stored in DB
+- **File Storage:** Local filesystem; uploads live in the `static_files` volume, served directly by Caddy at `/static/*` (with immutable cache headers); URL stored in DB
 - **Localization:** Arabic primary (RTL layout), English fallback via `i18next`
-- **State/Cache:** Redis (backend), React Query (client-side cache + offline sync), Redux Toolkit (UI/auth state)
-- **Infra:** Docker Compose for local dev (Postgres on 5432, Redis on 6379, API on 8000)
+- **State/Cache:** In-process TTL cache (backend, single worker — see Caching below), React Query (client-side cache + offline sync), Redux Toolkit (UI/auth state)
+- **Infra:** Docker Compose (Caddy + Postgres + FastAPI). Caddy builds & serves the SPA and proxies `/api`. No separate frontend container.
 
 ## Commands
 
@@ -50,8 +50,8 @@ bun lint
    - Generic `Exception` → log stack trace, **send Slack webhook**, return 500 JSON
 3. **Auth Middleware** — decodes JWT, attaches `current_user` and `roles` to request state
 
-### Caching (Redis)
-`CacheBackend` is an abstract base class with `get`/`set`/`delete`/`invalidate_prefix`. `RedisCache` is the implementation, configured via `REDIS_URL`. Inject `CacheBackend` as a FastAPI dependency — never instantiate it directly in endpoints. TTLs: catalog 10 min, route 5 min, insights 2 min.
+### Caching
+`CacheBackend` is an abstract base class with `get`/`set`/`delete`/`invalidate_prefix`. The current implementation is `InMemoryCache` (per-process TTL dict) — **there is no Redis service**, despite earlier docs. Because the cache lives in-process, the backend runs with `uvicorn --workers 1` so invalidations stay consistent; **do not raise the worker count without first adding a shared cache.** A `RedisCache` can be dropped in behind the same `CacheBackend` interface (and wired via a `REDIS_URL` setting + a compose `redis` service) when the app needs to scale beyond one worker/instance. Inject `CacheBackend` as a FastAPI dependency — never instantiate it directly in endpoints. TTLs: catalog 10 min, route 5 min, insights 2 min.
 
 ### Database Base Mixin
 All models inherit a `BaseMixin` providing: `id` (UUID), `created_at`, `updated_at`, `is_deleted` (soft delete boolean, default False). Hard deletes should not be used.

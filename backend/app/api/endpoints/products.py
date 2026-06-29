@@ -14,6 +14,12 @@ UPLOAD_DIR = "static/products"
 
 _ALLOWED_DISTINCT_FIELDS = {"category", "trademark"}
 
+# Catalog images are served to offline-first mobile clients that cache every blob
+# in IndexedDB, so keep them small. The web client compresses to ~1600px before
+# upload; this cap is a backstop against oversized originals (e.g. raw phone photos).
+_MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+_ALLOWED_IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
+
 
 @router.get("", response_model=list[ProductOut])
 async def list_products(service: CatalogSvc) -> list[ProductOut]:
@@ -38,12 +44,19 @@ async def get_distinct_values(
     dependencies=[require_designer],
 )
 async def upload_product_image(file: UploadFile = File(...)) -> dict:
+    if not (file.content_type or "").startswith("image/"):
+        raise HorizonException(400, "File must be an image")
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in _ALLOWED_IMAGE_EXTS:
+        ext = ".jpg"
+    content = await file.read()
+    if len(content) > _MAX_IMAGE_BYTES:
+        raise HorizonException(413, "Image too large (max 5 MB)")
+
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    ext = os.path.splitext(file.filename or "")[1] or ".jpg"
     filename = f"{uuid.uuid4()}{ext}"
     path = os.path.join(UPLOAD_DIR, filename)
     async with aiofiles.open(path, "wb") as f:
-        content = await file.read()
         await f.write(content)
     return {"url": f"/static/products/{filename}"}
 

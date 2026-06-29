@@ -53,6 +53,7 @@ export interface Customer {
   avatar_url?: string | null;
   notes?: string | null;
   assigned_to?: string | null;
+  hidden_from_sales?: boolean;
   returned_checks_count?: number;
 }
 
@@ -142,21 +143,43 @@ export interface OrderWithCustomer extends Transaction {
   is_route?: boolean;
 }
 
+export type DiscountType = "fixed" | "percent";
+
 export interface OrderCreate {
   customer_id: string;
   items: OrderItem[];
   notes?: string;
   delivery_date?: string | null;
+  discount_type?: DiscountType | null;
+  discount_value?: number | null;
+}
+
+export interface DiscountCreate {
+  customer_id: string;
+  amount: number;
+  notes?: string;
+}
+
+/** Order-level discount breakdown stored in a transaction's `data`. */
+export interface OrderDiscount {
+  type: DiscountType;
+  value: number;
+  amount: number;
 }
 
 export interface CheckData {
   bank?: string;
+  check_number?: string;
   bank_number?: string;
   branch_number?: string;
   account_number?: string;
   holder_name?: string;
   due_date?: string;
   image_url?: string;
+}
+
+export interface CollectionPayment extends Transaction {
+  customer_name: string;
 }
 
 export interface PaymentCreate {
@@ -216,6 +239,11 @@ export const salesApi = {
   getCollections: (date: string) =>
     api.get<{ total: number }>("/customers/collections", { params: { date } }).then((r) => r.data.total),
 
+  getCollectionsDetails: (date: string) =>
+    api
+      .get<CollectionPayment[]>("/customers/collections/details", { params: { date } })
+      .then((r) => r.data),
+
   getInsights: (customerId: string) =>
     api
       .get<CustomerInsights>(`/customers/${customerId}/insights`)
@@ -239,6 +267,12 @@ export const salesApi = {
   createPayment: (payload: PaymentCreate) =>
     api.post<Transaction>("/payments", payload).then((r) => r.data),
 
+  createDiscount: (payload: DiscountCreate) =>
+    api.post<Transaction>("/payments/discount", payload).then((r) => r.data),
+
+  deletePayment: (id: string) =>
+    api.delete<Transaction>(`/payments/${id}`).then((r) => r.data),
+
   returnCheck: (checkId: string) =>
     api
       .put<Transaction>(`/payments/checks/${checkId}/status`, {
@@ -251,6 +285,8 @@ export const salesApi = {
     items?: OrderItem[];
     delivery_date?: string | null;
     notes?: string;
+    discount_type?: DiscountType | null;
+    discount_value?: number | null;
   }) =>
     api.put<Transaction>(`/orders/${id}`, payload).then((r) => r.data),
 

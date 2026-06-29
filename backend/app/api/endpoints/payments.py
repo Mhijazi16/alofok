@@ -6,7 +6,7 @@ from fastapi import APIRouter, File, UploadFile
 from pydantic import BaseModel
 
 from app.api.deps import CurrentUser, PaymentSvc, require_admin, require_sales
-from app.schemas.transaction import PaymentCreate, TransactionOut
+from app.schemas.transaction import DiscountCreate, PaymentCreate, TransactionOut
 
 router = APIRouter()
 
@@ -41,6 +41,31 @@ async def create_payment(
     body: PaymentCreate, current_user: CurrentUser, service: PaymentSvc
 ) -> TransactionOut:
     return await service.create_payment(body, uuid.UUID(current_user["sub"]))
+
+
+@router.post(
+    "/discount",
+    response_model=TransactionOut,
+    status_code=201,
+    dependencies=[require_sales],
+)
+async def create_discount(
+    body: DiscountCreate, current_user: CurrentUser, service: PaymentSvc
+) -> TransactionOut:
+    return await service.create_discount(body, uuid.UUID(current_user["sub"]))
+
+
+@router.delete(
+    "/{transaction_id}",
+    response_model=TransactionOut,
+    dependencies=[require_sales],
+)
+async def delete_payment(
+    transaction_id: uuid.UUID, current_user: CurrentUser, service: PaymentSvc
+) -> TransactionOut:
+    return await service.delete_payment(
+        transaction_id, uuid.UUID(current_user["sub"])
+    )
 
 
 @router.put(
