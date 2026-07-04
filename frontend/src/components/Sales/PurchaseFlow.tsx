@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -257,9 +257,10 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </Button>
-                          <span className="min-w-[2rem] text-center text-body-sm font-bold text-foreground">
-                            {inCart.quantity}
-                          </span>
+                          <QtyField
+                            value={inCart.quantity}
+                            onChange={(n) => updateQty(product.id, n)}
+                          />
                           <Button
                             size="icon"
                             variant="outline"
@@ -394,5 +395,46 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
         variant="default"
       />
     </FadeIn>
+  );
+}
+
+/**
+ * Typeable quantity field (so a rep can enter e.g. 200 directly instead of
+ * tapping + 200 times). Keeps a local string buffer to allow clearing while
+ * editing; commits any valid positive integer immediately and reverts the
+ * buffer on blur if left empty/invalid. The +/- steppers remain for small nudges.
+ */
+function QtyField({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+}) {
+  const [buf, setBuf] = useState(String(value));
+  useEffect(() => {
+    setBuf(String(value));
+  }, [value]);
+
+  return (
+    <Input
+      type="number"
+      inputMode="numeric"
+      dir="ltr"
+      min={1}
+      value={buf}
+      aria-label="quantity"
+      onChange={(e) => {
+        const raw = e.target.value;
+        setBuf(raw);
+        const n = parseInt(raw, 10);
+        if (Number.isFinite(n) && n > 0) onChange(n);
+      }}
+      onBlur={() => {
+        const n = parseInt(buf, 10);
+        if (!Number.isFinite(n) || n < 1) setBuf(String(value));
+      }}
+      className="h-8 w-16 text-center text-body-sm font-bold"
+    />
   );
 }
