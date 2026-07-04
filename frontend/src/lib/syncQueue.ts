@@ -38,7 +38,14 @@ export interface QueueItem {
   deadLetter?: boolean;
 }
 
-async function push(type: QueueItem["type"], payload: unknown): Promise<void> {
+async function push(
+  type: QueueItem["type"],
+  payload: unknown,
+  // Optional caller-supplied stable key. Lets a batch reuse one key per logical
+  // item so re-enqueuing after a partial failure is deduped by the backend
+  // instead of creating duplicates. Defaults to a fresh id.
+  idempotencyKey: string = newClientId()
+): Promise<void> {
   const db = await openOfflineDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
@@ -46,7 +53,7 @@ async function push(type: QueueItem["type"], payload: unknown): Promise<void> {
       type,
       payload,
       created_at: new Date().toISOString(),
-      idempotencyKey: newClientId(),
+      idempotencyKey,
       retryCount: 0,
     };
     const req = tx.objectStore(STORE).add(item);

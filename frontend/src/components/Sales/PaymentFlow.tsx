@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftRight, Banknote, CalendarDays, Hash, StickyNote, User } from "@/lib/icons";
+import { ArrowLeftRight, Banknote, CalendarDays, Hash, Layers, StickyNote, User } from "@/lib/icons";
 import { salesApi, type Customer, type PaymentCreate } from "@/services/salesApi";
 import { formatCurrency } from "@/lib/format";
 import { syncQueue } from "@/lib/syncQueue";
@@ -12,6 +12,7 @@ import { useAppSelector } from "@/store";
 import { BankAutocomplete, saveBankToHistory } from "@/components/ui/bank-autocomplete";
 import { CheckPreview } from "./CheckPreview";
 import { CheckCapture } from "./CheckCapture";
+import { ChequeBatchFlow } from "./ChequeBatchFlow";
 import { TopBar } from "@/components/ui/top-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -48,6 +49,7 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
 
   const userId = useAppSelector((state) => state.auth.userId) ?? "";
 
+  const [batchMode, setBatchMode] = useState(false);
   const [paymentType, setPaymentType] = useState<PaymentType>("Payment_Cash");
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<Currency>("ILS");
@@ -215,6 +217,16 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
     }
   };
 
+  if (batchMode) {
+    return (
+      <ChequeBatchFlow
+        customer={customer}
+        onBack={() => setBatchMode(false)}
+        onDone={onDone}
+      />
+    );
+  }
+
   return (
     <FadeIn animation="fade">
       <TopBar
@@ -342,6 +354,17 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
               {/* Check-specific fields */}
               {paymentType === "Payment_Check" && (
                 <FadeIn animation="fade"><div className="space-y-4">
+                  {/* Entry point to the multi-cheque / series batch flow */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-dashed"
+                    onClick={() => setBatchMode(true)}
+                  >
+                    <Layers className="h-4 w-4 me-1.5" />
+                    {t("payment.batch.entryLabel")}
+                  </Button>
+
                   {/* Photo capture — above CheckPreview */}
                   <CheckCapture
                     imageBlob={imageBlob}
@@ -368,7 +391,12 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
                   <FormField label={t("payment.bank")} required>
                     <BankAutocomplete
                       value={bankName}
-                      onChange={setBankName}
+                      onChange={(v) => {
+                        setBankName(v);
+                        // Remember the bank as soon as it's chosen/confirmed,
+                        // not only on final submit.
+                        if (v.trim()) saveBankToHistory(v.trim(), userId);
+                      }}
                       userId={userId}
                       placeholder={t("payment.bank")}
                       onFocus={() => setFocusedField("bankName")}

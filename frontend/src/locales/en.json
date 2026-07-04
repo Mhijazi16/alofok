@@ -189,7 +189,41 @@
     "checkNumber": "Cheque Number",
     "paymentDeleted": "Payment deleted",
     "deletePayment": "Delete Payment",
-    "deletePaymentConfirm": "Delete the {{amount}} payment from {{name}}? This will restore their balance."
+    "deletePaymentConfirm": "Delete the {{amount}} payment from {{name}}? This will restore their balance.",
+    "batch": {
+      "entryLabel": "Enter multiple cheques / series",
+      "title": "Multiple Cheques",
+      "sharedTitle": "Shared details",
+      "sharedHint": "These details apply to every cheque",
+      "chequesTitle": "Cheques",
+      "chequesHint": "Add cheques manually or use the series generator",
+      "reviewTitle": "Review",
+      "reviewHint": "Check the cheques before confirming",
+      "addCheque": "Add cheque",
+      "removeCheque": "Remove cheque",
+      "chequeNumber": "Cheque #{{n}}",
+      "total": "Total",
+      "chequeCount": "Cheque count",
+      "recorded": "{{count}} cheques recorded",
+      "queued": "{{count}} cheques queued",
+      "partialSuccess": "Recorded {{done}} of {{total}} cheques, stopped on error",
+      "needOneCheque": "Add at least one cheque",
+      "invalidRow": "Every cheque needs a number and an amount above zero",
+      "successTitle": "Cheques recorded",
+      "successHint": "All cheques saved successfully"
+    },
+    "series": {
+      "title": "Series",
+      "hint": "Auto-generate a sequence of cheques",
+      "startNumber": "First cheque number",
+      "count": "Cheque count",
+      "amountEach": "Amount per cheque",
+      "startDate": "First due date",
+      "interval": "Interval",
+      "intervalNone": "None",
+      "intervalMonthly": "Monthly",
+      "generate": "Generate"
+    }
   },
   "statement": {
     "title": "Account Statement",

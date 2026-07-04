@@ -189,7 +189,41 @@
     "checkNumber": "رقم الشيك",
     "paymentDeleted": "تم حذف الدفعة",
     "deletePayment": "حذف الدفعة",
-    "deletePaymentConfirm": "حذف دفعة {{amount}} من {{name}}؟ سيتم استرجاع رصيده."
+    "deletePaymentConfirm": "حذف دفعة {{amount}} من {{name}}؟ سيتم استرجاع رصيده.",
+    "batch": {
+      "entryLabel": "إدخال عدة شيكات / سيريه",
+      "title": "شيكات متعددة",
+      "sharedTitle": "التفاصيل المشتركة",
+      "sharedHint": "تُطبَّق هذه التفاصيل على كل الشيكات",
+      "chequesTitle": "الشيكات",
+      "chequesHint": "أضف الشيكات يدوياً أو استخدم السيريه",
+      "reviewTitle": "مراجعة",
+      "reviewHint": "راجع الشيكات قبل التأكيد",
+      "addCheque": "إضافة شيك",
+      "removeCheque": "حذف الشيك",
+      "chequeNumber": "شيك رقم {{n}}",
+      "total": "الإجمالي",
+      "chequeCount": "عدد الشيكات",
+      "recorded": "تم تسجيل {{count}} شيك",
+      "queued": "تم حفظ {{count}} شيك وسيتم إرسالها عند الاتصال",
+      "partialSuccess": "تم تسجيل {{done}} من {{total}} شيك، توقف عند خطأ",
+      "needOneCheque": "أضف شيكاً واحداً على الأقل",
+      "invalidRow": "كل شيك يحتاج رقماً ومبلغاً أكبر من صفر",
+      "successTitle": "تم تسجيل الشيكات",
+      "successHint": "تم حفظ جميع الشيكات بنجاح"
+    },
+    "series": {
+      "title": "سيريه",
+      "hint": "توليد شيكات متسلسلة تلقائياً",
+      "startNumber": "رقم أول شيك",
+      "count": "عدد الشيكات",
+      "amountEach": "مبلغ كل شيك",
+      "startDate": "تاريخ أول استحقاق",
+      "interval": "التكرار",
+      "intervalNone": "بدون",
+      "intervalMonthly": "شهري",
+      "generate": "توليد"
+    }
   },
   "statement": {
     "title": "كشف الحساب",
