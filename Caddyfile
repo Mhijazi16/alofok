@@ -17,6 +17,20 @@
     # SPA — serve built frontend, fallback to index.html
     handle {
         root * /srv
+
+        # Hashed asset bundles are content-addressed (filename changes on every
+        # build), so they are safe to cache forever.
+        @immutable path /assets/*
+        header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+        # The HTML entry point and service-worker files must always revalidate,
+        # otherwise a returning browser keeps an old index.html that references
+        # chunk hashes deleted by the latest deploy (dynamic-import failures).
+        header /index.html Cache-Control "no-cache, must-revalidate"
+        header /sw.js Cache-Control "no-cache, must-revalidate"
+        header /registerSW.js Cache-Control "no-cache, must-revalidate"
+        header /manifest.webmanifest Cache-Control "no-cache, must-revalidate"
+
         try_files {path} /index.html
         file_server
     }

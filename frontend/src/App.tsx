@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAppSelector } from "@/store";
 import { FullPageSpinner } from "@/components/ui/spinner";
@@ -6,12 +6,13 @@ import { ErrorBoundary } from "@/components/patterns/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { InstallPrompt } from "@/components/ui/install-prompt";
 import { useTheme } from "@/hooks/useTheme";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import LoginPage from "@/pages/LoginPage";
 
-const SalesRoot = lazy(() => import("@/components/Sales"));
-const DesignerRoot = lazy(() => import("@/components/Designer"));
-const AdminRoot = lazy(() => import("@/components/Admin"));
-const CustomerRoot = lazy(() => import("@/components/Customer"));
+const SalesRoot = lazyWithRetry(() => import("@/components/Sales"));
+const DesignerRoot = lazyWithRetry(() => import("@/components/Designer"));
+const AdminRoot = lazyWithRetry(() => import("@/components/Admin"));
+const CustomerRoot = lazyWithRetry(() => import("@/components/Customer"));
 
 function RoleRouter() {
   const { token, role } = useAppSelector((state) => state.auth);

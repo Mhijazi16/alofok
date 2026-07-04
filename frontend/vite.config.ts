@@ -55,6 +55,11 @@ export default defineConfig({
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/static/],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // Drop precaches from previous deploys so the service worker never
+        // serves a stale index.html pointing at deleted chunk hashes.
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
   ],
