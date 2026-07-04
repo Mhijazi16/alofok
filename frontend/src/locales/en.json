@@ -671,6 +671,26 @@
     "successTitle": "Have a great day!",
     "successHint": "You've got this 💪"
   },
+  "orderEdit": {
+    "customerTitle": "Customer",
+    "customerHint": "Who is this order for?",
+    "productsTitle": "Products",
+    "productsHint": "Add, change quantities, or remove items",
+    "deliveryTitle": "Delivery & notes",
+    "deliveryHint": "When should it arrive, and any notes?",
+    "reviewTitle": "Review order",
+    "reviewHint": "Check everything before saving",
+    "unavailable": "Unavailable product",
+    "needItem": "Order must have at least one item",
+    "next": "Next",
+    "back": "Back",
+    "complete": "Save changes",
+    "done": "Done",
+    "close": "Close",
+    "step": "Step {{current}} of {{total}}",
+    "successTitle": "Order updated",
+    "successHint": "Your changes have been saved"
+  },
   "adminBriefing": {
     "greeting": "Good morning 👋",
     "yesterdaySummary": "Here's how yesterday went",

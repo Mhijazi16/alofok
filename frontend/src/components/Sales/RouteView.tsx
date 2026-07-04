@@ -48,7 +48,7 @@ import { useToast } from "@/hooks/useToast";
 import { toLocalDateStr } from "@/lib/utils";
 import { ExpenseCard, REP_CATEGORIES } from "@/components/shared/ExpenseCard";
 import { FadeIn } from "@/components/ui/fade-in";
-import { OrderModal } from "./OrderModal";
+import { OrderEditWizard } from "./OrderEditWizard";
 
 interface RouteViewProps {
   onSelectCustomer: (customer: Customer) => void;
@@ -1078,8 +1078,8 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
         )}
       </div>
 
-      {/* Order Modal */}
-      <OrderModal
+      {/* Order edit wizard */}
+      <OrderEditWizard
         order={selectedOrder}
         open={orderModalOpen}
         onOpenChange={setOrderModalOpen}

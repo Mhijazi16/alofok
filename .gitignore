@@ -17,3 +17,5 @@ frontend/.env
 # python venvs
 .venv/
 backend/.venv/
+frontend/package-lock.json
+*.tsbuildinfo

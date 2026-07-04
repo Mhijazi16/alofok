@@ -671,6 +671,26 @@
     "successTitle": "يوماً موفقاً!",
     "successHint": "أنت قادر 💪"
   },
+  "orderEdit": {
+    "customerTitle": "العميل",
+    "customerHint": "لمن هذا الطلب؟",
+    "productsTitle": "المنتجات",
+    "productsHint": "أضف أو غيّر الكميات أو احذف المنتجات",
+    "deliveryTitle": "التسليم والملاحظات",
+    "deliveryHint": "متى يجب أن يصل، وهل من ملاحظات؟",
+    "reviewTitle": "مراجعة الطلب",
+    "reviewHint": "تأكد من كل شيء قبل الحفظ",
+    "unavailable": "منتج غير متوفر",
+    "needItem": "يجب أن يحتوي الطلب على منتج واحد على الأقل",
+    "next": "التالي",
+    "back": "السابق",
+    "complete": "حفظ التغييرات",
+    "done": "تم",
+    "close": "إغلاق",
+    "step": "الخطوة {{current}} من {{total}}",
+    "successTitle": "تم تحديث الطلب",
+    "successHint": "تم حفظ تغييراتك"
+  },
   "adminBriefing": {
     "greeting": "صباح الخير 👋",
     "yesterdaySummary": "إليك ملخص يوم أمس",

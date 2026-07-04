@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Package,
   ShoppingBag,
   User,
   Clock,
@@ -11,7 +10,7 @@ import {
   ChevronRight,
 } from "@/lib/icons";
 import { adminApi, type AdminOrder } from "@/services/adminApi";
-import { getImageUrl } from "@/lib/image";
+import type { OrderWithCustomer } from "@/services/salesApi";
 import { formatCurrency } from "@/lib/format";
 import { toLocalDateStr } from "@/lib/utils";
 import { TopBar } from "@/components/ui/top-bar";
@@ -19,14 +18,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { FadeIn } from "@/components/ui/fade-in";
+import { OrderEditWizard } from "@/components/Sales/OrderEditWizard";
 
 type Period = "today" | "7d" | "30d" | "all";
 type Delivery = "all" | "pending" | "delivered";
@@ -94,14 +87,6 @@ export function OrdersView() {
     [orders]
   );
 
-  const fmtDateTime = (iso: string) =>
-    new Date(iso).toLocaleString(isRTL ? "ar-EG" : "en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
   const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
       month: "short",
@@ -125,6 +110,30 @@ export function OrdersView() {
   };
 
   const isNew = (iso: string) => Date.now() - new Date(iso).getTime() < NEW_WINDOW_MS;
+
+  // Adapt the admin order shape to the shared wizard's `OrderWithCustomer` (items
+  // + discount live under `data`; `delivered_date` is read via an `as any` cast).
+  const wizardOrder = useMemo<OrderWithCustomer | null>(() => {
+    if (!selected) return null;
+    return {
+      id: selected.id,
+      customer_id: selected.customer_id,
+      customer_name: selected.customer_name,
+      type: selected.type,
+      currency: selected.currency,
+      amount: selected.amount,
+      status: selected.status,
+      notes: selected.notes,
+      created_at: selected.created_at,
+      related_transaction_id: null,
+      delivery_date: selected.delivery_date,
+      delivered_date: selected.delivered_date,
+      data: {
+        items: selected.items,
+        ...(selected.discount ? { discount: selected.discount } : {}),
+      },
+    } as unknown as OrderWithCustomer;
+  }, [selected]);
 
   return (
     <FadeIn animation="fade">
@@ -277,120 +286,14 @@ export function OrdersView() {
         )}
       </div>
 
-      {/* Order detail — products + total */}
-      <Dialog
+      {/* Tapping an order opens the shared edit wizard (read-only if delivered) */}
+      <OrderEditWizard
+        order={wizardOrder}
         open={!!selected}
         onOpenChange={(open) => {
           if (!open) setSelected(null);
         }}
-      >
-        <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>{selected?.customer_name}</DialogTitle>
-            <DialogDescription>
-              {selected?.rep_name ? `${selected.rep_name} · ` : ""}
-              {selected ? fmtDateTime(selected.created_at) : ""}
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Delivery status banner */}
-          {selected &&
-            (selected.delivered_date ? (
-              <div className="flex items-center gap-2 rounded-xl bg-success/10 px-3 py-2.5 text-success">
-                <CheckCircle className="h-4 w-4 shrink-0" />
-                <span className="text-body-sm font-semibold">
-                  {t("orders.deliveredOn", {
-                    date: fmtDateTime(selected.delivered_date),
-                  })}
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 rounded-xl bg-warning/10 px-3 py-2.5 text-warning">
-                <Clock className="h-4 w-4 shrink-0" />
-                <span className="text-body-sm font-semibold">
-                  {selected.delivery_date
-                    ? t("orders.scheduledFor", {
-                        date: fmtDate(selected.delivery_date),
-                      })
-                    : t("orders.notDeliveredYet")}
-                </span>
-              </div>
-            ))}
-
-          <div className="-mx-2 flex-1 overflow-y-auto px-2">
-            <div className="space-y-2 py-1">
-              {(selected?.items ?? []).map((item, idx) => (
-                <Card key={idx} variant="glass" className="p-3">
-                  <div className="flex gap-3">
-                    {getImageUrl(item.image_url) ? (
-                      <img
-                        src={getImageUrl(item.image_url)!}
-                        alt={item.name ?? ""}
-                        className="h-16 w-16 rounded-xl bg-muted object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted">
-                        <Package className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-body-sm font-semibold text-foreground truncate">
-                        {item.name}
-                      </p>
-                      {item.selected_options && item.selected_options.length > 0 && (
-                        <p className="text-caption text-muted-foreground truncate">
-                          {item.selected_options
-                            .map((o) => `${o.name}: ${o.value}`)
-                            .join(" | ")}
-                        </p>
-                      )}
-                      <p className="text-caption text-muted-foreground" dir="ltr">
-                        {item.quantity} × ₪ {formatCurrency(Number(item.unit_price))}
-                      </p>
-                    </div>
-                    <div className="text-end">
-                      <p className="text-body-sm font-semibold text-foreground" dir="ltr">
-                        ₪ {formatCurrency(item.quantity * Number(item.unit_price))}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-1.5 border-t border-border pt-3">
-            {selected?.discount && (
-              <>
-                <div className="flex items-center justify-between text-body-sm text-muted-foreground">
-                  <span>{t("cart.subtotal")}</span>
-                  <span dir="ltr">
-                    ₪ {formatCurrency(Number(selected.subtotal ?? 0))}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-body-sm text-success">
-                  <span>
-                    {t("cart.discount")}
-                    {selected.discount.type === "percent"
-                      ? ` (${selected.discount.value}%)`
-                      : ""}
-                  </span>
-                  <span dir="ltr">
-                    − ₪ {formatCurrency(Number(selected.discount.amount))}
-                  </span>
-                </div>
-              </>
-            )}
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-foreground">{t("order.total")}</p>
-              <p className="text-h4 font-bold text-primary" dir="ltr">
-                ₪ {formatCurrency(Number(selected?.amount ?? 0))}
-              </p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      />
     </FadeIn>
   );
 }
