@@ -201,9 +201,7 @@ class AdminService:
             )
             for r in exp_rows
         ]
-        expenses_total = sum(
-            (e.amount for e in expenses_by_category), Decimal(0)
-        )
+        expenses_total = sum((e.amount for e in expenses_by_category), Decimal(0))
         expenses_count = sum(e.count for e in expenses_by_category)
 
         return DaySummaryOut(

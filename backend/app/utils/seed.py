@@ -76,20 +76,44 @@ def _avatar_seed() -> str:
     return "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
 
 
+_DEFAULT_ADMIN_PASSWORD = "admin123"
+_DEFAULT_SALES_PASSWORD = "malik2026"
+
+
+def _seed_password(configured: str, default: str, label: str) -> str:
+    """Return the env-configured password, falling back to the legacy default.
+
+    Warns loudly when the insecure default is used so it is visible in logs.
+    """
+    if configured:
+        return configured
+    logger.warning(
+        "Using default %s seed password — set SEED_%s_PASSWORD to override.",
+        label.lower(),
+        label.upper(),
+    )
+    return default
+
+
 async def seed_users(db: AsyncSession) -> tuple[User, User]:
     """Ensure the baseline admin + sales rep exist. Returns (creator, rep)."""
+    admin_password = _seed_password(
+        settings.SEED_ADMIN_PASSWORD, _DEFAULT_ADMIN_PASSWORD, "ADMIN"
+    )
+    sales_password = _seed_password(
+        settings.SEED_SALES_PASSWORD, _DEFAULT_SALES_PASSWORD, "SALES"
+    )
+
     # Admin — product creator / catalog owner.
     admin = (
         await db.execute(
-            select(User).where(
-                User.role == UserRole.Admin, User.is_deleted.is_(False)
-            )
+            select(User).where(User.role == UserRole.Admin, User.is_deleted.is_(False))
         )
     ).scalar_one_or_none()
     if admin is None:
         admin = User(
             username="admin",
-            password_hash=hash_password("admin123"),
+            password_hash=hash_password(admin_password),
             role=UserRole.Admin,
             is_active=True,
         )
@@ -106,7 +130,7 @@ async def seed_users(db: AsyncSession) -> tuple[User, User]:
     if rep is None:
         rep = User(
             username="malik",
-            password_hash=hash_password("malik2026"),
+            password_hash=hash_password(sales_password),
             role=UserRole.Sales,
             is_active=True,
         )
@@ -137,7 +161,11 @@ async def seed_products(db: AsyncSession, creator: User) -> None:
                     sku=sku,
                     price=_dec(row["price"]) or Decimal("0"),
                     purchase_price=_dec(row.get("purchase_price", "")),
-                    stock_qty=int(row["stock_qty"]) if row.get("stock_qty", "").strip() else None,
+                    stock_qty=(
+                        int(row["stock_qty"])
+                        if row.get("stock_qty", "").strip()
+                        else None
+                    ),
                     created_by=creator.id,
                 )
             )
@@ -146,7 +174,9 @@ async def seed_products(db: AsyncSession, creator: User) -> None:
     logger.info("Products: %d created, %d skipped (already present).", created, skipped)
 
 
-async def _refresh_opening(db: AsyncSession, customer: Customer, rep: User, amount: Decimal) -> None:
+async def _refresh_opening(
+    db: AsyncSession, customer: Customer, rep: User, amount: Decimal
+) -> None:
     """Create or update the customer's single Opening_Balance transaction."""
     opening = (
         await db.execute(

@@ -1,12 +1,16 @@
+import uuid
 from typing import Annotated
 
 from fastapi import Depends, Header
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
 from app.core.errors import HorizonException
 from app.core.security import decode_access_token
+from app.models.user import User
 from app.repositories.customer_auth_repository import CustomerAuthRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.ledger_repository import LedgerRepository
@@ -59,14 +63,43 @@ Cache = Annotated[CacheBackend, Depends(get_cache)]
 # ---------------------------------------------------------------------------
 
 
-async def get_current_user(authorization: str = Header(...)) -> dict:
-    if not authorization.startswith("Bearer "):
+# auto_error=False so a missing/malformed header returns our structured 401
+# (HTTPBearer's default is a bare 403); the scheme still surfaces in OpenAPI.
+_bearer_scheme = HTTPBearer(auto_error=False)
+
+
+async def get_current_user(
+    db: DbSession,
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+) -> dict:
+    if credentials is None or credentials.scheme.lower() != "bearer":
         raise HorizonException(401, "Invalid authorization header")
-    token = authorization.removeprefix("Bearer ")
+    token = credentials.credentials
     try:
         payload = decode_access_token(token)
     except JWTError:
         raise HorizonException(401, "Invalid or expired token")
+
+    # Customer tokens are validated by get_current_customer / the customer
+    # portal flow — don't force a staff User lookup for them here.
+    if payload.get("user_type") == "customer":
+        return payload
+
+    # Validate against the DB so deactivated / deleted users lose access
+    # immediately instead of remaining valid until the token expires.
+    sub = payload.get("sub")
+    try:
+        user_id = uuid.UUID(str(sub))
+    except (ValueError, TypeError):
+        raise HorizonException(401, "Invalid or expired token")
+    user = (
+        await db.execute(
+            select(User).where(User.id == user_id, User.is_deleted.is_(False))
+        )
+    ).scalar_one_or_none()
+    if user is None or not user.is_active:
+        raise HorizonException(401, "User is no longer active")
+
     return payload
 
 

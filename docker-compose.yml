@@ -50,10 +50,13 @@ services:
       context: ./backend
     restart: always
     environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db/${POSTGRES_DB:-horizon}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-prod}
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      SEED_SALES_PASSWORD: ${SEED_SALES_PASSWORD:-}
     volumes:
       - static_files:/app/static
       - ./etl:/etl

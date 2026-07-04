@@ -5,3 +5,15 @@ __pycache__/
 dist/
 static/
 docker-compose.override.yml
+
+# Environment files — never commit real secrets. Keep .env.example tracked.
+.env
+*/.env
+backend/.env
+frontend/.env
+!.env.example
+!*/.env.example
+
+# python venvs
+.venv/
+backend/.venv/

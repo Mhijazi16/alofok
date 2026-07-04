@@ -71,6 +71,12 @@ class Transaction(BaseMixin, Base):
     # Check details (bank, due_date, image_url) and exchange rates
     data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     notes: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Client-generated idempotency key — stable across offline-queue retries.
+    # Unique among non-null values (Postgres allows multiple NULLs) so a retried
+    # mutation dedupes to the same transaction instead of creating a duplicate.
+    idempotency_key: Mapped[str | None] = mapped_column(
+        String, nullable=True, unique=True, index=True
+    )
     is_draft: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     delivery_date: Mapped[_dt.date | None] = mapped_column(
         Date, nullable=True, index=True

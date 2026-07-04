@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from sqlalchemy.exc import IntegrityError
+
 from app.core.errors import HorizonException
 from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_repository import CustomerRepository
@@ -89,8 +91,7 @@ class OrderService:
         customer = await self._customers.get_by_id(txn.customer_id)
         if customer is None:
             raise HorizonException(404, "Customer not found")
-        customer.balance += txn.amount
-        await self._customers.update_balance(customer)
+        await self._customers.apply_balance_delta(customer, txn.amount)
         txn = await self._transactions.update(txn)
         await self._invalidate_customer_cache(txn.customer_id)
         return TransactionOut.model_validate(txn)
@@ -109,8 +110,17 @@ class OrderService:
         return TransactionOut.model_validate(txn)
 
     async def create_order(
-        self, body: OrderCreate, creator_id: uuid.UUID
+        self,
+        body: OrderCreate,
+        creator_id: uuid.UUID,
+        idempotency_key: str | None = None,
     ) -> TransactionOut:
+        # Durable dedupe: a retried offline mutation carries the same key.
+        if idempotency_key is not None:
+            existing = await self._transactions.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return TransactionOut.model_validate(existing)
+
         customer = await self._customers.get_by_id(body.customer_id)
         if customer is None:
             raise HorizonException(404, "Customer not found")
@@ -119,9 +129,7 @@ class OrderService:
             raise HorizonException(400, "Order must contain at least one item")
 
         subtotal = _subtotal(body.items)
-        discount = _discount_amount(
-            subtotal, body.discount_type, body.discount_value
-        )
+        discount = _discount_amount(subtotal, body.discount_type, body.discount_value)
         total = subtotal - discount  # positive — what the customer actually owes
 
         txn = Transaction(
@@ -135,13 +143,23 @@ class OrderService:
             ),
             notes=body.notes,
             delivery_date=body.delivery_date,
+            idempotency_key=idempotency_key,
         )
 
         # Atomic: flush both, then commit together
-        txn = await self._transactions.create(txn, auto_commit=False)
-        customer.balance += total
-        await self._customers.update_balance(customer)
-        await self._customers.commit()
+        try:
+            txn = await self._transactions.create(txn, auto_commit=False)
+            await self._customers.apply_balance_delta(customer, total)
+            await self._customers.commit()
+        except IntegrityError:
+            # Concurrent request with the same key won the unique constraint.
+            if idempotency_key is None:
+                raise
+            await self._transactions.rollback()
+            existing = await self._transactions.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return TransactionOut.model_validate(existing)
+            raise
         await self._invalidate_customer_cache(body.customer_id)
         return TransactionOut.model_validate(txn)
 
@@ -215,14 +233,11 @@ class OrderService:
 
         # If customer changed
         if txn.customer_id != old_customer.id:
-            old_customer.balance -= old_amount
-            new_customer.balance += txn.amount
-            await self._customers.update_balance(old_customer)
-            await self._customers.update_balance(new_customer)
+            await self._customers.apply_balance_delta(old_customer, -old_amount)
+            await self._customers.apply_balance_delta(new_customer, txn.amount)
         else:
             # Same customer, just adjust the difference
-            new_customer.balance += balance_diff
-            await self._customers.update_balance(new_customer)
+            await self._customers.apply_balance_delta(new_customer, balance_diff)
 
         txn = await self._transactions.update(txn)
         await self._invalidate_customer_cache(txn.customer_id)
@@ -261,8 +276,7 @@ class OrderService:
             raise HorizonException(404, "Customer not found")
 
         # Atomic: flush balance + soft-delete, then commit together
-        customer.balance -= txn.amount
-        await self._customers.update_balance(customer)
+        await self._customers.apply_balance_delta(customer, -txn.amount)
         txn.is_deleted = True
         txn = await self._transactions.update(txn)
         await self._invalidate_customer_cache(txn.customer_id)

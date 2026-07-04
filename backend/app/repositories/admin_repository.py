@@ -130,9 +130,7 @@ class AdminRepository:
         )
         return [dict(r._mapping) for r in rows]
 
-    async def get_day_orders_total(
-        self, start_dt: datetime, end_dt: datetime
-    ) -> dict:
+    async def get_day_orders_total(self, start_dt: datetime, end_dt: datetime) -> dict:
         """Sum + count of (non-draft) orders created in the window."""
         row = await self._db.execute(
             text("""

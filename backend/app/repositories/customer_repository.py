@@ -1,7 +1,8 @@
 import datetime
 import uuid
+from decimal import Decimal
 
-from sqlalchemy import func as sa_func, select, union
+from sqlalchemy import func as sa_func, select, union, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import AssignedDay, Customer
@@ -150,8 +151,25 @@ class CustomerRepository:
         await self._db.refresh(customer)
         return customer
 
-    async def update_balance(self, customer: Customer) -> None:
-        await self._db.flush()  # persist balance change within the current transaction
+    async def apply_balance_delta(self, customer: Customer, delta: Decimal) -> None:
+        """Atomically apply a signed delta to the customer's balance.
+
+        Uses an in-place SQL ``UPDATE ... SET balance = balance + :delta`` rather
+        than a Python read-modify-write, so concurrent orders/payments on the same
+        customer can't lose updates via a lost-update race. The statement runs
+        within the caller's open transaction (flush only, no commit) so it commits
+        atomically with the Transaction row. The in-session ``customer`` object is
+        refreshed so any later read in the same request sees the new value.
+        """
+        if not delta:
+            await self._db.flush()
+            return
+        await self._db.execute(
+            update(Customer)
+            .where(Customer.id == customer.id)
+            .values(balance=Customer.balance + delta)
+        )
+        await self._db.refresh(customer, attribute_names=["balance"])
 
     async def commit(self) -> None:
         await self._db.commit()

@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 
 from app.api.deps import CurrentUser, OrderSvc, require_sales
 from app.schemas.transaction import OrderCreate, OrderUpdate, TransactionOut
@@ -12,9 +12,14 @@ router = APIRouter()
     "", response_model=TransactionOut, status_code=201, dependencies=[require_sales]
 )
 async def create_order(
-    body: OrderCreate, current_user: CurrentUser, service: OrderSvc
+    body: OrderCreate,
+    current_user: CurrentUser,
+    service: OrderSvc,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> TransactionOut:
-    return await service.create_order(body, uuid.UUID(current_user["sub"]))
+    return await service.create_order(
+        body, uuid.UUID(current_user["sub"]), idempotency_key
+    )
 
 
 @router.put("/{order_id}", response_model=TransactionOut, dependencies=[require_sales])

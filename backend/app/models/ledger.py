@@ -1,5 +1,6 @@
 import uuid
 from datetime import date, datetime
+from decimal import Decimal
 from enum import Enum as PyEnum
 
 import sqlalchemy as sa
@@ -46,7 +47,7 @@ class CompanyLedger(Base, BaseMixin):
         ),
         nullable=False,
     )
-    amount: Mapped[float] = mapped_column(sa.Numeric(12, 2), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(sa.Numeric(12, 2), nullable=False)
     category: Mapped[str | None] = mapped_column(sa.String(100), nullable=True)
     notes: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
 

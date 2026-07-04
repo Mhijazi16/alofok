@@ -19,6 +19,18 @@ class TransactionRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_by_idempotency_key(self, key: str) -> Transaction | None:
+        result = await self._db.execute(
+            select(Transaction).where(
+                Transaction.idempotency_key == key,
+                Transaction.is_deleted.is_(False),
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def rollback(self) -> None:
+        await self._db.rollback()
+
     async def get_payments_for_customer(
         self, customer_id: uuid.UUID
     ) -> list[Transaction]:

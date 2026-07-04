@@ -1,6 +1,8 @@
 import uuid
 from decimal import Decimal
 
+from sqlalchemy.exc import IntegrityError
+
 from app.core.errors import HorizonException
 
 from app.models.transaction import (
@@ -41,8 +43,17 @@ class PaymentService:
         await self._cache.invalidate_prefix("route:")
 
     async def create_payment(
-        self, body: PaymentCreate, creator_id: uuid.UUID
+        self,
+        body: PaymentCreate,
+        creator_id: uuid.UUID,
+        idempotency_key: str | None = None,
     ) -> TransactionOut:
+        # Durable dedupe: a retried offline mutation carries the same key.
+        if idempotency_key is not None:
+            existing = await self._transactions.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return TransactionOut.model_validate(existing)
+
         if body.type not in _PAYMENT_TYPES:
             raise HorizonException(400, "type must be Payment_Cash or Payment_Check")
         if body.amount <= 0:
@@ -94,38 +105,57 @@ class PaymentService:
             status=TransactionStatus.Pending if body.type in _CHECK_TYPES else None,
             data=data_dict or None,
             notes=body.notes,
+            idempotency_key=idempotency_key,
         )
 
         # Atomic: flush all three, then commit together
-        txn = await self._transactions.create(txn, auto_commit=False)
-        customer.balance -= ils_amount
-        await self._customers.update_balance(customer)
+        try:
+            txn = await self._transactions.create(txn, auto_commit=False)
+            await self._customers.apply_balance_delta(customer, -ils_amount)
 
-        ledger_entry = CompanyLedger(
-            direction="incoming",
-            payment_method=(
-                "cash" if body.type == TransactionType.Payment_Cash else "check"
-            ),
-            amount=ils_amount,
-            rep_id=creator_id,
-            customer_id=body.customer_id,
-            source_transaction_id=txn.id,
-            date=txn.created_at.date(),
-            status="pending",
-        )
-        await self._ledger.create(ledger_entry)
+            ledger_entry = CompanyLedger(
+                direction="incoming",
+                payment_method=(
+                    "cash" if body.type == TransactionType.Payment_Cash else "check"
+                ),
+                amount=ils_amount,
+                rep_id=creator_id,
+                customer_id=body.customer_id,
+                source_transaction_id=txn.id,
+                date=txn.created_at.date(),
+                status="pending",
+            )
+            await self._ledger.create(ledger_entry)
+        except IntegrityError:
+            # Concurrent request with the same key won the unique constraint.
+            if idempotency_key is None:
+                raise
+            await self._transactions.rollback()
+            existing = await self._transactions.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return TransactionOut.model_validate(existing)
+            raise
         await self._invalidate_customer_cache(body.customer_id)
 
         return TransactionOut.model_validate(txn)
 
     async def create_discount(
-        self, body: DiscountCreate, creator_id: uuid.UUID
+        self,
+        body: DiscountCreate,
+        creator_id: uuid.UUID,
+        idempotency_key: str | None = None,
     ) -> TransactionOut:
         """Forgive part of a customer's outstanding balance (settling / fractions).
 
         Recorded as a negative ``Discount`` transaction — it reduces the balance
         but is never counted as money collected and writes no ledger entry.
         """
+        # Durable dedupe: a retried offline mutation carries the same key.
+        if idempotency_key is not None:
+            existing = await self._transactions.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return TransactionOut.model_validate(existing)
+
         if body.amount <= 0:
             raise HorizonException(400, "amount must be positive")
 
@@ -146,13 +176,23 @@ class PaymentService:
             currency=Currency.ILS,
             amount=-body.amount,  # negative — reduces debt, not a payment
             notes=body.notes,
+            idempotency_key=idempotency_key,
         )
 
         # Atomic: flush txn + balance, then commit together.
-        txn = await self._transactions.create(txn, auto_commit=False)
-        customer.balance -= body.amount
-        await self._customers.update_balance(customer)
-        await self._customers.commit()
+        try:
+            txn = await self._transactions.create(txn, auto_commit=False)
+            await self._customers.apply_balance_delta(customer, -body.amount)
+            await self._customers.commit()
+        except IntegrityError:
+            # Concurrent request with the same key won the unique constraint.
+            if idempotency_key is None:
+                raise
+            await self._transactions.rollback()
+            existing = await self._transactions.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return TransactionOut.model_validate(existing)
+            raise
         await self._invalidate_customer_cache(body.customer_id)
 
         return TransactionOut.model_validate(txn)
@@ -188,8 +228,7 @@ class PaymentService:
 
         # Atomic: reverse balance + soft-delete txn, then commit together.
         # txn.amount is negative (a payment), so subtracting it restores the debt.
-        customer.balance -= txn.amount
-        await self._customers.update_balance(customer)
+        await self._customers.apply_balance_delta(customer, -txn.amount)
         txn.is_deleted = True
         txn = await self._transactions.update(txn, auto_commit=False)
         if ledger_entry is not None:
@@ -247,8 +286,7 @@ class PaymentService:
 
         # Atomic: flush return txn + balance update, then commit together
         customer = await self._customers.get_by_id(check_txn.customer_id)
-        customer.balance += original_amount
-        await self._customers.update_balance(customer)
+        await self._customers.apply_balance_delta(customer, original_amount)
         await self._transactions.create(return_txn)
         await self._invalidate_customer_cache(check_txn.customer_id)
 

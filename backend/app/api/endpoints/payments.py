@@ -2,7 +2,7 @@ import os
 import uuid
 
 import aiofiles
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Header, UploadFile
 from pydantic import BaseModel
 
 from app.api.deps import CurrentUser, PaymentSvc, require_admin, require_sales
@@ -38,9 +38,14 @@ async def upload_check_image(file: UploadFile = File(...)) -> dict:
     "", response_model=TransactionOut, status_code=201, dependencies=[require_sales]
 )
 async def create_payment(
-    body: PaymentCreate, current_user: CurrentUser, service: PaymentSvc
+    body: PaymentCreate,
+    current_user: CurrentUser,
+    service: PaymentSvc,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> TransactionOut:
-    return await service.create_payment(body, uuid.UUID(current_user["sub"]))
+    return await service.create_payment(
+        body, uuid.UUID(current_user["sub"]), idempotency_key
+    )
 
 
 @router.post(
@@ -50,9 +55,14 @@ async def create_payment(
     dependencies=[require_sales],
 )
 async def create_discount(
-    body: DiscountCreate, current_user: CurrentUser, service: PaymentSvc
+    body: DiscountCreate,
+    current_user: CurrentUser,
+    service: PaymentSvc,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> TransactionOut:
-    return await service.create_discount(body, uuid.UUID(current_user["sub"]))
+    return await service.create_discount(
+        body, uuid.UUID(current_user["sub"]), idempotency_key
+    )
 
 
 @router.delete(
@@ -63,9 +73,7 @@ async def create_discount(
 async def delete_payment(
     transaction_id: uuid.UUID, current_user: CurrentUser, service: PaymentSvc
 ) -> TransactionOut:
-    return await service.delete_payment(
-        transaction_id, uuid.UUID(current_user["sub"])
-    )
+    return await service.delete_payment(transaction_id, uuid.UUID(current_user["sub"]))
 
 
 @router.put(

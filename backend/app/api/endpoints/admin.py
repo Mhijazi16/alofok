@@ -145,9 +145,7 @@ async def archive_customer(
     )
 
 
-@router.get(
-    "/orders", response_model=list[AdminOrderOut], dependencies=[require_admin]
-)
+@router.get("/orders", response_model=list[AdminOrderOut], dependencies=[require_admin])
 async def list_orders(
     service: AdminSvc,
     start_date: date | None = None,
@@ -156,9 +154,7 @@ async def list_orders(
     customer_id: uuid.UUID | None = None,
     limit: int = Query(500, ge=1, le=1000),
 ) -> list[AdminOrderOut]:
-    return await service.get_orders(
-        start_date, end_date, rep_id, customer_id, limit
-    )
+    return await service.get_orders(start_date, end_date, rep_id, customer_id, limit)
 
 
 @router.get(
