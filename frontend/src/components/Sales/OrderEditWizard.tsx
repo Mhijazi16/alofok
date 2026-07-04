@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Minus, Trash2, Undo2, Package } from "@/lib/icons";
+import { Plus, Minus, Trash2, Undo2, Package, Pencil } from "@/lib/icons";
 import {
   Dialog,
   DialogContent,
@@ -66,6 +66,8 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
   // Historical unit_price per cartKey for lines already in the order — preserved
   // on save so an edit never silently reprices existing lines (see orderCart.ts).
   const [origPrices, setOrigPrices] = useState<Map<string, number>>(new Map());
+  // Tapping an order shows a read-only summary first; Edit enters the wizard.
+  const [editing, setEditing] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>();
   const [notes, setNotes] = useState("");
@@ -115,6 +117,11 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
     setNotes(order.notes || "");
     seededFor.current = order.id;
   }, [open, order, isDelivered, products, addToCart, clearCart]);
+
+  // Every fresh open (or a different order) starts on the summary, not mid-edit.
+  useEffect(() => {
+    if (open) setEditing(false);
+  }, [open, order?.id]);
 
   // ── Mutations ───────────────────────────────────────────────────────────────
   const invalidate = () => {
@@ -229,6 +236,7 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
     clearCart();
     setLegacy([]);
     setOrigPrices(new Map());
+    setEditing(false);
   };
 
   const handleConfirm = () => {
@@ -253,8 +261,8 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
 
   if (!order) return null;
 
-  // ── Delivered → read-only summary (no editing) ────────────────────────────────
-  if (isDelivered) {
+  // ── Read-only summary — shown first; delivered orders can't leave it ──────────
+  if (isDelivered || !editing) {
     const items = ((order.data as any)?.items ?? []) as OrderItem[];
     const total = items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
     return (
@@ -263,11 +271,13 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
           <DialogHeader>
             <DialogTitle>{order.customer_name}</DialogTitle>
           </DialogHeader>
-          <div className="flex items-center gap-2 rounded-xl bg-success/10 px-3 py-2.5 text-success">
-            <span className="text-body-sm font-semibold">
-              {t("order.deliveredLocked")}
-            </span>
-          </div>
+          {isDelivered && (
+            <div className="flex items-center gap-2 rounded-xl bg-success/10 px-3 py-2.5 text-success">
+              <span className="text-body-sm font-semibold">
+                {t("order.deliveredLocked")}
+              </span>
+            </div>
+          )}
           <div className="space-y-2">
             {items.map((item, idx) => (
               <ReadOnlyLine key={idx} item={item} />
@@ -288,14 +298,21 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
               <Trash2 className="h-4 w-4" />
               {t("order.deleteOrder")}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setConfirmUndeliverOpen(true)}
-            >
-              <Undo2 className="h-4 w-4" />
-              {t("order.undeliver")}
-            </Button>
+            {isDelivered ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmUndeliverOpen(true)}
+              >
+                <Undo2 className="h-4 w-4" />
+                {t("order.undeliver")}
+              </Button>
+            ) : (
+              <Button size="sm" onClick={() => setEditing(true)}>
+                <Pencil className="h-4 w-4" />
+                {t("order.editOrder")}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
 
