@@ -7,7 +7,7 @@
 
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import { RefreshCw, Check, AlertCircle, Database, Clock } from "@/lib/icons";
+import { RefreshCw, Check, AlertCircle, Database, Clock, AlertTriangle } from "@/lib/icons";
 import { useCacheSync } from "@/hooks/useCacheSync";
 import type { SyncTimestamps, SyncItemStatus } from "@/hooks/useCacheSync";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,6 +153,18 @@ export function SyncStatusCard() {
             {t("sync.pending", { count: syncState.pendingCount })}
           </span>
         </div>
+
+        {/* Dead-letter (permanently failed) queue — only when non-empty */}
+        {syncState.deadLetterCount > 0 && (
+          <div className="flex items-center gap-3 py-2">
+            <div className="flex h-5 w-5 items-center justify-center">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+            </div>
+            <span className="flex-1 text-body-sm text-destructive">
+              {t("sync.failedItems", { count: syncState.deadLetterCount })}
+            </span>
+          </div>
+        )}
 
         {/* Cache size */}
         <div className="flex items-center gap-3 py-2">

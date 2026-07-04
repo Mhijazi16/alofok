@@ -1,46 +1,54 @@
 /**
  * IndexedDB-backed offline sync queue.
- * Orders and payments created while offline are pushed here,
- * then drained automatically when connectivity resumes.
+ * Orders, payments, purchases and discounts created while offline are pushed
+ * here, then drained automatically when connectivity resumes.
+ *
+ * The DB connection/schema is owned by `offlineDB.ts` (shared with the
+ * check-image store) so the two modules can never bump the version out of sync.
+ *
+ * Reliability fields carried on each item:
+ *  - `idempotencyKey` — stable UUID generated at enqueue time, replayed with the
+ *    mutation so a request that succeeded server-side before the client could
+ *    remove it is de-duplicated on the next flush (backend must honor it).
+ *  - `retryCount` / `lastError` — retry bookkeeping for transient failures.
+ *  - `nextAttemptAt` — epoch ms before which the item is skipped (backoff).
+ *  - `deadLetter` — set once an item is permanently rejected (4xx) or exceeds the
+ *    max retry threshold, so it stops blocking the queue and can be surfaced.
  */
 
-const DB_NAME = "alofok_offline";
-const STORE = "sync_queue";
-const VERSION = 2;
-export const IMAGE_STORE = "check_images";
+import { openOfflineDB, SYNC_STORE, IMAGE_STORE, newClientId } from "./offlineDB";
+
+const STORE = SYNC_STORE;
+export { IMAGE_STORE };
 
 export interface QueueItem {
   id?: number;
   type: "order" | "payment" | "purchase" | "discount";
   payload: unknown;
   created_at: string;
-}
-
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, VERSION);
-    req.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE)) {
-        db.createObjectStore(STORE, { keyPath: "id", autoIncrement: true });
-      }
-      if (!db.objectStoreNames.contains(IMAGE_STORE)) {
-        db.createObjectStore(IMAGE_STORE, { keyPath: "id", autoIncrement: true });
-      }
-    };
-    req.onblocked = () => {
-      console.warn("[syncQueue] IndexedDB upgrade blocked — close other tabs");
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+  /** Stable idempotency key, generated at enqueue time; never changes on retry. */
+  idempotencyKey: string;
+  /** Number of transient failures so far. */
+  retryCount: number;
+  /** Last error message, for surfacing/debugging. */
+  lastError?: string;
+  /** Epoch ms; item is skipped while Date.now() < nextAttemptAt (backoff). */
+  nextAttemptAt?: number;
+  /** Permanently failed — no longer retried, kept for user visibility. */
+  deadLetter?: boolean;
 }
 
 async function push(type: QueueItem["type"], payload: unknown): Promise<void> {
-  const db = await openDB();
+  const db = await openOfflineDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
-    const item: QueueItem = { type, payload, created_at: new Date().toISOString() };
+    const item: QueueItem = {
+      type,
+      payload,
+      created_at: new Date().toISOString(),
+      idempotencyKey: newClientId(),
+      retryCount: 0,
+    };
     const req = tx.objectStore(STORE).add(item);
     req.onsuccess = () => resolve();
     req.onerror = () => reject(req.error);
@@ -48,7 +56,7 @@ async function push(type: QueueItem["type"], payload: unknown): Promise<void> {
 }
 
 async function all(): Promise<QueueItem[]> {
-  const db = await openDB();
+  const db = await openOfflineDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readonly");
     const req = tx.objectStore(STORE).getAll();
@@ -57,8 +65,19 @@ async function all(): Promise<QueueItem[]> {
   });
 }
 
+/** Persist mutated retry/dead-letter bookkeeping back onto an existing item. */
+async function update(item: QueueItem): Promise<void> {
+  const db = await openOfflineDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, "readwrite");
+    const req = tx.objectStore(STORE).put(item);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
 async function remove(id: number): Promise<void> {
-  const db = await openDB();
+  const db = await openOfflineDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
     const req = tx.objectStore(STORE).delete(id);
@@ -67,14 +86,16 @@ async function remove(id: number): Promise<void> {
   });
 }
 
+/** Count of active (non-dead-letter) pending items. */
 async function count(): Promise<number> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readonly");
-    const req = tx.objectStore(STORE).count();
-    req.onsuccess = () => resolve(req.result as number);
-    req.onerror = () => reject(req.error);
-  });
+  const items = await all();
+  return items.filter((it) => !it.deadLetter).length;
 }
 
-export const syncQueue = { push, all, remove, count };
+/** Count of permanently-failed items awaiting user attention. */
+async function deadLetterCount(): Promise<number> {
+  const items = await all();
+  return items.filter((it) => it.deadLetter).length;
+}
+
+export const syncQueue = { push, all, update, remove, count, deadLetterCount };

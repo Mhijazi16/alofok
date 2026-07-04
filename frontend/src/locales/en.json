@@ -606,7 +606,8 @@
     "pending": "{{count}} pending",
     "cacheSize": "Cache size",
     "syncComplete": "Sync complete",
-    "syncFailed": "Some items failed to sync"
+    "syncFailed": "Some items failed to sync",
+    "failedItems": "{{count}} failed to sync — need attention"
   },
   "errors": {
     "generic": "An unexpected error occurred. Please try again.",

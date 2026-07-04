@@ -140,7 +140,8 @@ export function PurchaseFlow({ customer, onBack, onComplete }: PurchaseFlowProps
   }, []);
 
   const purchaseMutation = useMutation({
-    mutationFn: salesApi.createPurchase,
+    mutationFn: (payload: Parameters<typeof salesApi.createPurchase>[0]) =>
+      salesApi.createPurchase(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["insights", customer.id] });

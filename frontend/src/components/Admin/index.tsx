@@ -148,7 +148,8 @@ export default function AdminPanel() {
 
   /* ---- Order mutation ---- */
   const orderMutation = useMutation({
-    mutationFn: salesApi.createOrder,
+    mutationFn: (payload: Parameters<typeof salesApi.createOrder>[0]) =>
+      salesApi.createOrder(payload),
     onSuccess: () => {
       if (selectedCustomer) {
         queryClient.invalidateQueries({ queryKey: ["insights", selectedCustomer.id] });

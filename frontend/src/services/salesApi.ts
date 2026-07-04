@@ -1,6 +1,18 @@
 import api from "./api";
 import type { LedgerEntry } from "./adminApi";
 
+/**
+ * Build an axios config that carries a client-generated idempotency key.
+ * Used when replaying queued offline mutations so a request that already
+ * succeeded server-side (but whose ACK never reached the client) is
+ * de-duplicated instead of creating a duplicate order/payment.
+ * NOTE: the backend must read the `Idempotency-Key` header and dedupe on it;
+ * until then the header is harmless but has no effect.
+ */
+function idempotentConfig(key?: string) {
+  return key ? { headers: { "Idempotency-Key": key } } : undefined;
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface ProductOptionValue {
@@ -261,14 +273,24 @@ export const salesApi = {
       .get<Statement>(`/customers/${customerId}/statement`, { params })
       .then((r) => r.data),
 
-  createOrder: (payload: OrderCreate) =>
-    api.post<Transaction>("/orders", payload).then((r) => r.data),
+  createOrder: (payload: OrderCreate, idempotencyKey?: string) =>
+    api
+      .post<Transaction>("/orders", payload, idempotentConfig(idempotencyKey))
+      .then((r) => r.data),
 
-  createPayment: (payload: PaymentCreate) =>
-    api.post<Transaction>("/payments", payload).then((r) => r.data),
+  createPayment: (payload: PaymentCreate, idempotencyKey?: string) =>
+    api
+      .post<Transaction>("/payments", payload, idempotentConfig(idempotencyKey))
+      .then((r) => r.data),
 
-  createDiscount: (payload: DiscountCreate) =>
-    api.post<Transaction>("/payments/discount", payload).then((r) => r.data),
+  createDiscount: (payload: DiscountCreate, idempotencyKey?: string) =>
+    api
+      .post<Transaction>(
+        "/payments/discount",
+        payload,
+        idempotentConfig(idempotencyKey)
+      )
+      .then((r) => r.data),
 
   deletePayment: (id: string) =>
     api.delete<Transaction>(`/payments/${id}`).then((r) => r.data),
@@ -357,6 +379,8 @@ export const salesApi = {
     api.delete<{ deleted: boolean }>(`/ledger/expenses/${id}`).then((r) => r.data),
 
   // ── Purchases ─────────────────────────────────────────────────────────────
-  createPurchase: (payload: PurchaseCreate) =>
-    api.post<Transaction>("/purchases", payload).then((r) => r.data),
+  createPurchase: (payload: PurchaseCreate, idempotencyKey?: string) =>
+    api
+      .post<Transaction>("/purchases", payload, idempotentConfig(idempotencyKey))
+      .then((r) => r.data),
 };

@@ -76,7 +76,8 @@ export function PaymentFlow({ customer, onBack, onDone }: PaymentFlowProps) {
   }, [imagePreviewUrl]);
 
   const paymentMutation = useMutation({
-    mutationFn: salesApi.createPayment,
+    mutationFn: (payload: Parameters<typeof salesApi.createPayment>[0]) =>
+      salesApi.createPayment(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-route"] });
       queryClient.invalidateQueries({ queryKey: ["my-customers"] });

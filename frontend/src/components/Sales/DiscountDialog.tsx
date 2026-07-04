@@ -66,7 +66,8 @@ export function DiscountDialog({
   };
 
   const mutation = useMutation({
-    mutationFn: salesApi.createDiscount,
+    mutationFn: (payload: Parameters<typeof salesApi.createDiscount>[0]) =>
+      salesApi.createDiscount(payload),
     onSuccess: () => {
       invalidate();
       toast({ title: t("discount.applied"), variant: "success" });

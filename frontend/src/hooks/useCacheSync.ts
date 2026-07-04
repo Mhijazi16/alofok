@@ -29,6 +29,8 @@ export interface SyncState {
   timestamps: SyncTimestamps;
   statuses: Record<keyof SyncTimestamps, SyncItemStatus>;
   pendingCount: number;
+  /** Items that permanently failed to sync and need user attention. */
+  deadLetterCount: number;
   cacheSize: number;
   isSyncing: boolean;
 }
@@ -97,6 +99,7 @@ export function useCacheSync() {
   });
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [deadLetterCount, setDeadLetterCount] = useState(0);
   const [cacheSize, setCacheSize] = useState(0);
   const [timestamps, setTimestamps] = useState<SyncTimestamps>(
     getSyncTimestamps
@@ -157,12 +160,14 @@ export function useCacheSync() {
 
     // Update metadata
     try {
-      const [imgSize, pending] = await Promise.all([
+      const [imgSize, pending, dead] = await Promise.all([
         getImageCacheSize(),
         syncQueue.count(),
+        syncQueue.deadLetterCount(),
       ]);
       setCacheSize(imgSize);
       setPendingCount(pending);
+      setDeadLetterCount(dead);
     } catch {
       // Non-critical
     }
@@ -202,8 +207,12 @@ export function useCacheSync() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const count = await syncQueue.count();
+        const [count, dead] = await Promise.all([
+          syncQueue.count(),
+          syncQueue.deadLetterCount(),
+        ]);
         setPendingCount(count);
+        setDeadLetterCount(dead);
       } catch {
         // Non-critical
       }
@@ -219,6 +228,7 @@ export function useCacheSync() {
     timestamps,
     statuses,
     pendingCount,
+    deadLetterCount,
     cacheSize,
     isSyncing,
   };
