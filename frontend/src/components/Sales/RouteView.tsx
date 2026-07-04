@@ -25,6 +25,8 @@ import {
   CheckSquare,
   Square,
   AlertTriangle,
+  Hash,
+  CalendarDays,
 } from "@/lib/icons";
 import { salesApi, type Customer, type OrderWithCustomer, type CollectionPayment } from "@/services/salesApi";
 import { TopBar } from "@/components/ui/top-bar";
@@ -1179,6 +1181,25 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                             {formatTime(p.created_at, i18n.language)}
                           </span>
                         </div>
+                        {p.type === "Payment_Check" && p.data && (
+                          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-caption text-muted-foreground">
+                            {p.data.check_number && (
+                              <span className="inline-flex items-center gap-1" title={t("payment.checkNumber")}>
+                                <Hash className="h-3 w-3 shrink-0" />
+                                <span dir="ltr">{p.data.check_number}</span>
+                              </span>
+                            )}
+                            {p.data.due_date && (
+                              <span className="inline-flex items-center gap-1" title={t("payment.dueDate")}>
+                                <CalendarDays className="h-3 w-3 shrink-0" />
+                                <span dir="ltr">{p.data.due_date}</span>
+                              </span>
+                            )}
+                            {p.data.bank && (
+                              <span className="truncate">{p.data.bank}</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <span className="shrink-0 text-body-sm font-bold text-foreground" dir="ltr">
                         ₪ {formatCurrency(Math.abs(p.amount))}
