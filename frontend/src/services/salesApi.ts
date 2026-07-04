@@ -283,6 +283,8 @@ export const salesApi = {
       .post<Transaction>("/payments", payload, idempotentConfig(idempotencyKey))
       .then((r) => r.data),
 
+  getBanks: () => api.get<string[]>("/payments/banks").then((r) => r.data),
+
   createDiscount: (payload: DiscountCreate, idempotencyKey?: string) =>
     api
       .post<Transaction>(

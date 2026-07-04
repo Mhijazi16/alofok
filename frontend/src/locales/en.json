@@ -161,7 +161,10 @@
     "discount": "Discount"
   },
   "payment": {
-    "cash": "Cash",
+    "cash": {
+      "amountHint": "Enter amount and currency",
+      "notesHint": "Optional note"
+    },
     "check": "Check",
     "amount": "Amount",
     "currency": "Currency",
@@ -222,7 +225,37 @@
       "interval": "Interval",
       "intervalNone": "None",
       "intervalMonthly": "Monthly",
-      "generate": "Generate"
+      "generate": "Generate",
+      "configTitle": "Series setup",
+      "configHint": "Set the sequence and dates",
+      "numberDelta": "Number gap",
+      "dateDelta": "Months apart",
+      "editTitle": "Edit cheques",
+      "editHint": "Adjust each cheque as needed",
+      "amountAll": "Amount for all cheques",
+      "applyAmount": "Apply to all"
+    },
+    "collect": {
+      "methodTitle": "Payment method",
+      "methodHint": "Choose how to collect",
+      "methodCash": "Cash",
+      "methodCheque": "Cheques",
+      "chequeTypeTitle": "Cheque type",
+      "chequeTypeHint": "Series or normal cheques",
+      "typeSeries": "Series",
+      "typeNormal": "Normal",
+      "reviewTitle": "Review",
+      "reviewHint": "Review before confirming",
+      "submitting": "Saving…",
+      "successTitle": "Payment collected",
+      "successHint": "Recorded successfully"
+    },
+    "normal": {
+      "addTitle": "Add cheques",
+      "addHint": "Add one or more cheques"
+    },
+    "bankAutocomplete": {
+      "empty": "No saved banks"
     }
   },
   "statement": {

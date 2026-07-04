@@ -168,6 +168,21 @@ class TransactionRepository:
         )
         return list(result.all())
 
+    async def get_distinct_check_banks(self) -> list[str]:
+        bank = Transaction.data["bank"].astext  # JSONB ->> 'bank'
+        result = await self._db.execute(
+            select(bank)
+            .where(
+                Transaction.type == TransactionType.Payment_Check,
+                Transaction.is_deleted.is_(False),
+                bank.isnot(None),
+                bank != "",
+            )
+            .distinct()
+            .order_by(bank)
+        )
+        return [row[0] for row in result.all()]
+
     async def create(
         self, txn: Transaction, *, auto_commit: bool = True
     ) -> Transaction:

@@ -161,7 +161,10 @@
     "discount": "خصم"
   },
   "payment": {
-    "cash": "نقدي",
+    "cash": {
+      "amountHint": "أدخل المبلغ والعملة",
+      "notesHint": "ملاحظة اختيارية"
+    },
     "check": "شيك",
     "amount": "المبلغ",
     "currency": "العملة",
@@ -222,7 +225,37 @@
       "interval": "التكرار",
       "intervalNone": "بدون",
       "intervalMonthly": "شهري",
-      "generate": "توليد"
+      "generate": "توليد",
+      "configTitle": "إعداد السيريه",
+      "configHint": "حدد التسلسل والتواريخ",
+      "numberDelta": "الفرق بين الأرقام",
+      "dateDelta": "الفرق بالأشهر",
+      "editTitle": "تعديل الشيكات",
+      "editHint": "عدّل كل شيك عند الحاجة",
+      "amountAll": "مبلغ لكل الشيكات",
+      "applyAmount": "تطبيق على الكل"
+    },
+    "collect": {
+      "methodTitle": "طريقة الدفع",
+      "methodHint": "اختر طريقة التحصيل",
+      "methodCash": "نقدي",
+      "methodCheque": "شيكات",
+      "chequeTypeTitle": "نوع الشيك",
+      "chequeTypeHint": "سيريه متسلسلة أو شيكات عادية",
+      "typeSeries": "سيريه",
+      "typeNormal": "عادي",
+      "reviewTitle": "مراجعة",
+      "reviewHint": "راجع التفاصيل قبل التأكيد",
+      "submitting": "جارٍ الحفظ…",
+      "successTitle": "تم التحصيل",
+      "successHint": "تم تسجيل الدفعة بنجاح"
+    },
+    "normal": {
+      "addTitle": "إضافة الشيكات",
+      "addHint": "أضف شيكاً أو أكثر"
+    },
+    "bankAutocomplete": {
+      "empty": "لا توجد بنوك محفوظة"
     }
   },
   "statement": {

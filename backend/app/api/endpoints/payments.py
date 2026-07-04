@@ -65,6 +65,11 @@ async def create_discount(
     )
 
 
+@router.get("/banks", response_model=list[str], dependencies=[require_sales])
+async def list_check_banks(service: PaymentSvc) -> list[str]:
+    return await service.get_distinct_check_banks()
+
+
 @router.delete(
     "/{transaction_id}",
     response_model=TransactionOut,

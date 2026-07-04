@@ -1173,7 +1173,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Badge variant={p.type === "Payment_Check" ? "info" : "success"} size="sm">
-                            {p.type === "Payment_Check" ? t("payment.check") : t("payment.cash")}
+                            {p.type === "Payment_Check" ? t("payment.check") : t("payment.collect.methodCash")}
                           </Badge>
                           <span className="text-caption text-muted-foreground">
                             {formatTime(p.created_at, i18n.language)}

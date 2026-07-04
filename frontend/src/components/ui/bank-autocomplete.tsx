@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "@/lib/icons";
 import {
   Command,
@@ -8,6 +10,7 @@ import {
   CommandList,
 } from "cmdk";
 import * as Popover from "@radix-ui/react-popover";
+import { salesApi } from "@/services/salesApi";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -63,10 +66,32 @@ export function BankAutocomplete({
   onFocus,
   onBlur,
 }: BankAutocompleteProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
-  const history = getBankHistory(userId);
+  const { data: serverBanks = [] } = useQuery({
+    queryKey: ["check-banks"],
+    queryFn: salesApi.getBanks,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 1,
+  });
+
+  const localHistory = getBankHistory(userId);
+  // localStorage MRU first, then server-side banks; dedupe case-insensitive,
+  // drop empties.
+  const mergedBanks = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const b of [...localHistory, ...serverBanks]) {
+      const key = b.trim().toLowerCase();
+      if (!b.trim() || seen.has(key)) continue;
+      seen.add(key);
+      out.push(b);
+    }
+    return out;
+  }, [localHistory, serverBanks]);
 
   const handleSelect = (bank: string) => {
     onChange(bank);
@@ -83,14 +108,14 @@ export function BankAutocomplete({
   };
 
   const filteredHistory = inputValue
-    ? history.filter((b) =>
+    ? mergedBanks.filter((b) =>
         b.toLowerCase().includes(inputValue.toLowerCase())
       )
-    : history;
+    : mergedBanks;
 
   const showFreeText =
     inputValue.trim().length > 0 &&
-    !history.some((b) => b.toLowerCase() === inputValue.trim().toLowerCase());
+    !mergedBanks.some((b) => b.toLowerCase() === inputValue.trim().toLowerCase());
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
@@ -141,7 +166,7 @@ export function BankAutocomplete({
             <CommandList className="max-h-48 overflow-y-auto py-1">
               {filteredHistory.length === 0 && !showFreeText && (
                 <CommandEmpty className="py-4 text-center text-sm text-muted-foreground">
-                  لا توجد بنوك محفوظة
+                  {t("payment.bankAutocomplete.empty")}
                 </CommandEmpty>
               )}
 

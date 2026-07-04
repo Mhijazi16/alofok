@@ -29,6 +29,26 @@ describe("nextChequeNumber", () => {
   it("handles trailing digits after mixed content", () => {
     expect(nextChequeNumber("A1B0009")).toBe("A1B0010");
   });
+
+  it("increments by an explicit delta (05 + 2 = 07)", () => {
+    expect(nextChequeNumber("05", 2)).toBe("07");
+  });
+
+  it("increments by delta preserving a prefix (XXXX05 + 2 = XXXX07)", () => {
+    expect(nextChequeNumber("XXXX05", 2)).toBe("XXXX07");
+  });
+
+  it("carries and grows width with a delta (98 + 2 = 100)", () => {
+    expect(nextChequeNumber("98", 2)).toBe("100");
+  });
+
+  it("carries with a prefix and delta (AB0099 + 2 = AB0101)", () => {
+    expect(nextChequeNumber("AB0099", 2)).toBe("AB0101");
+  });
+
+  it("defaults delta to 1 when omitted (05 → 06)", () => {
+    expect(nextChequeNumber("05")).toBe("06");
+  });
 });
 
 describe("generateSeries", () => {
@@ -96,5 +116,77 @@ describe("generateSeries", () => {
       intervalMonths: 1,
     });
     expect(series).toHaveLength(1);
+  });
+
+  it("threads a numberDelta of 2 through the sequence", () => {
+    const series = generateSeries({
+      startNumber: "05",
+      count: 3,
+      amount: 250,
+      startDate: "2026-01-15",
+      intervalMonths: 1,
+      numberDelta: 2,
+    });
+    expect(series.map((c) => c.check_number)).toEqual(["05", "07", "09"]);
+  });
+
+  it("threads a numberDelta of 2 with carry", () => {
+    const series = generateSeries({
+      startNumber: "98",
+      count: 3,
+      amount: 250,
+      startDate: "2026-01-15",
+      intervalMonths: 1,
+      numberDelta: 2,
+    });
+    expect(series.map((c) => c.check_number)).toEqual(["98", "100", "102"]);
+  });
+
+  it("defaults numberDelta to 1 when omitted (regression guard)", () => {
+    const series = generateSeries({
+      startNumber: "XXXX05",
+      count: 3,
+      amount: 100,
+      startDate: "2026-01-15",
+      intervalMonths: 1,
+    });
+    expect(series.map((c) => c.check_number)).toEqual([
+      "XXXX05",
+      "XXXX06",
+      "XXXX07",
+    ]);
+  });
+
+  it("applies a date delta of 2 months", () => {
+    const series = generateSeries({
+      startNumber: "05",
+      count: 3,
+      amount: 100,
+      startDate: "2026-01-15",
+      intervalMonths: 2,
+      numberDelta: 1,
+    });
+    expect(series.map((c) => c.due_date)).toEqual([
+      "2026-01-15",
+      "2026-03-15",
+      "2026-05-15",
+    ]);
+  });
+
+  it("combines numberDelta 2 and intervalMonths 2", () => {
+    const series = generateSeries({
+      startNumber: "05",
+      count: 3,
+      amount: 100,
+      startDate: "2026-01-15",
+      intervalMonths: 2,
+      numberDelta: 2,
+    });
+    expect(series.map((c) => c.check_number)).toEqual(["05", "07", "09"]);
+    expect(series.map((c) => c.due_date)).toEqual([
+      "2026-01-15",
+      "2026-03-15",
+      "2026-05-15",
+    ]);
   });
 });

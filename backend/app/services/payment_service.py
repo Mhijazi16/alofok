@@ -17,12 +17,14 @@ from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.admin import CheckOut
 from app.schemas.transaction import DiscountCreate, PaymentCreate, TransactionOut
-from app.utils.cache import CacheBackend
+from app.utils.cache import CacheBackend, TTL_CATALOG
 
 _PAYMENT_TYPES = {TransactionType.Payment_Cash, TransactionType.Payment_Check}
 _CHECK_TYPES = {TransactionType.Payment_Check}
 # Transactions a rep is allowed to soft-delete (reverse) themselves.
 _REVERSIBLE_TYPES = _PAYMENT_TYPES | {TransactionType.Discount}
+
+_BANKS_KEY = "payments:banks"
 
 
 class PaymentService:
@@ -136,8 +138,18 @@ class PaymentService:
                 return TransactionOut.model_validate(existing)
             raise
         await self._invalidate_customer_cache(body.customer_id)
+        if body.type == TransactionType.Payment_Check:
+            await self._cache.delete(_BANKS_KEY)
 
         return TransactionOut.model_validate(txn)
+
+    async def get_distinct_check_banks(self) -> list[str]:
+        cached = await self._cache.get(_BANKS_KEY)
+        if cached is not None:
+            return cached
+        banks = await self._transactions.get_distinct_check_banks()
+        await self._cache.set(_BANKS_KEY, banks, ttl=TTL_CATALOG)
+        return banks
 
     async def create_discount(
         self,
