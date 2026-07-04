@@ -237,9 +237,15 @@ async def seed_customers(db: AsyncSession, rep: User) -> None:
                 created += 1
                 continue
 
-            # Existing customer: route metadata is always safe to sync.
-            customer.city = city
-            customer.assigned_day = day
+            # Existing customer: preserve app-side edits. Once reps are live they
+            # manage route metadata (city / visit day / assignment) in the app, so
+            # only fill fields that are still empty — NEVER clobber a rep's change.
+            # (The old code re-synced city/assigned_day on every boot, so a deploy
+            # silently reverted a rep moving a customer from e.g. Tuesday to Saturday.)
+            if not customer.city:
+                customer.city = city
+            if customer.assigned_day is None:
+                customer.assigned_day = day
             if phone and not customer.phone:
                 customer.phone = phone
             if customer.assigned_to is None:
