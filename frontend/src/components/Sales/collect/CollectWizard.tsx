@@ -8,8 +8,10 @@ import { saveBankToHistory } from "@/components/ui/bank-autocomplete";
 import { StepWizard, type WizardStep } from "@/components/ui/step-wizard";
 import { generateSeries } from "@/lib/chequeSeries";
 import {
+  bankDetailsValid,
   blankRow,
   DEFAULT_EXCHANGE_RATES,
+  type ChequeBankDetails,
   type ChequeRow,
   type ChequeType,
   type CollectMethod,
@@ -153,6 +155,8 @@ export function CollectWizard({ customer, onBack, onDone }: CollectWizardProps) 
         amount: c.amount.toString(),
         imageBlob: null,
         imagePreviewUrl: null,
+        // A series is by definition one bank/account — always the shared details.
+        override: null,
       }))
     );
     setGeneratedFromSeries(true);
@@ -189,7 +193,21 @@ export function CollectWizard({ customer, onBack, onDone }: CollectWizardProps) 
     parseInt(seriesDateDelta, 10) >= 0;
   const rowsValid =
     rows.length > 0 &&
-    rows.every((r) => r.checkNumber.trim().length > 0 && (parseFloat(r.amount) || 0) > 0);
+    rows.every(
+      (r) =>
+        r.checkNumber.trim().length > 0 &&
+        (parseFloat(r.amount) || 0) > 0 &&
+        // A cheque that opted out of the shared details must carry its own.
+        (!r.override || bankDetailsValid(r.override))
+    );
+
+  const sharedDetails: ChequeBankDetails = {
+    bank: bankName,
+    bankNumber,
+    branchNumber,
+    accountNumber,
+    holderName,
+  };
 
   const { handleSubmit } = useCollectSubmit({
     customer,
@@ -384,6 +402,8 @@ export function CollectWizard({ customer, onBack, onDone }: CollectWizardProps) 
           content: (
             <NormalChequesStep
               rows={rows}
+              shared={sharedDetails}
+              userId={userId}
               onUpdateRow={updateRow}
               onAddRow={addRow}
               onRemoveRow={removeRow}

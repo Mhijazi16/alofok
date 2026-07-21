@@ -46,6 +46,11 @@ export function ChequeReviewStep({
             {accountNumber}
           </span>
         </div>
+        {rows.some((r) => r.override) && (
+          <p className="pt-1 text-caption text-muted-foreground">
+            {t("payment.normal.someDifferent")}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -64,6 +69,14 @@ export function ChequeReviewStep({
                 <p className="text-caption text-muted-foreground">
                   {t("payment.batch.chequeNumber", { n: idx + 1 })}
                 </p>
+                {row.override && (
+                  <p className="mt-0.5 truncate text-caption text-warning">
+                    {row.override.bank.trim() || t("payment.bank")}
+                    {row.override.accountNumber.trim() && (
+                      <span dir="ltr"> · {row.override.accountNumber}</span>
+                    )}
+                  </p>
+                )}
               </div>
               <p className="text-body-sm font-bold text-foreground" dir="ltr">
                 {currencySymbol} {formatCurrency(parseFloat(row.amount) || 0)}

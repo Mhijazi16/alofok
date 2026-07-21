@@ -8,7 +8,7 @@ import { newClientId } from "@/lib/offlineDB";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useToast } from "@/hooks/useToast";
 import { saveBankToHistory } from "@/components/ui/bank-autocomplete";
-import type { CollectMethod, Currency, ChequeRow } from "./types";
+import type { ChequeBankDetails, CollectMethod, Currency, ChequeRow } from "./types";
 
 interface UseCollectSubmitArgs {
   customer: Customer;
@@ -86,20 +86,30 @@ export function useCollectSubmit(args: UseCollectSubmitArgs) {
   async function submitCheques() {
     if (args.bankName.trim()) saveBankToHistory(args.bankName.trim(), args.userId);
 
-    const sharedCheck = {
-      bank: args.bankName.trim() || undefined,
-      bank_number: args.bankNumber.trim(),
-      branch_number: args.branchNumber.trim(),
-      account_number: args.accountNumber.trim(),
-      holder_name: args.holderName.trim() || undefined,
+    const sharedDetails: ChequeBankDetails = {
+      bank: args.bankName,
+      bankNumber: args.bankNumber,
+      branchNumber: args.branchNumber,
+      accountNumber: args.accountNumber,
+      holderName: args.holderName,
     };
 
     const total = args.rows.length;
     let succeeded = 0;
     try {
       for (const row of args.rows) {
+        // A cheque may be drawn on a different bank/account than the rest of
+        // the batch — its own details win when it has an override.
+        const details = row.override ?? sharedDetails;
+        if (row.override?.bank.trim()) {
+          saveBankToHistory(row.override.bank.trim(), args.userId);
+        }
         const checkData: CheckData = {
-          ...sharedCheck,
+          bank: details.bank.trim() || undefined,
+          bank_number: details.bankNumber.trim(),
+          branch_number: details.branchNumber.trim(),
+          account_number: details.accountNumber.trim(),
+          holder_name: details.holderName.trim() || undefined,
           check_number: row.checkNumber.trim(),
           due_date: row.dueDate || undefined,
         };

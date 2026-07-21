@@ -197,7 +197,7 @@
       "entryLabel": "Enter multiple cheques / series",
       "title": "Multiple Cheques",
       "sharedTitle": "Shared details",
-      "sharedHint": "These details apply to every cheque",
+      "sharedHint": "Applied to every cheque; you can override any single cheque later",
       "chequesTitle": "Cheques",
       "chequesHint": "Add cheques manually or use the series generator",
       "reviewTitle": "Review",
@@ -252,7 +252,11 @@
     },
     "normal": {
       "addTitle": "Add cheques",
-      "addHint": "Add one or more cheques"
+      "addHint": "Add one or more cheques",
+      "differentBank": "Different bank or account",
+      "differentBankOn": "This cheque has its own bank details",
+      "differentBankOff": "Uses the shared details",
+      "someDifferent": "Some cheques use a different bank or account — shown on each cheque below."
     },
     "bankAutocomplete": {
       "empty": "No saved banks"

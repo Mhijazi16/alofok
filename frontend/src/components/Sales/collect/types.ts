@@ -17,6 +17,32 @@ export interface CurrencyOption {
   symbol: string;
 }
 
+/** Bank/account identity of a cheque — the fields that are normally shared. */
+export interface ChequeBankDetails {
+  bank: string;
+  bankNumber: string;
+  branchNumber: string;
+  accountNumber: string;
+  holderName: string;
+}
+
+export const EMPTY_BANK_DETAILS: ChequeBankDetails = {
+  bank: "",
+  bankNumber: "",
+  branchNumber: "",
+  accountNumber: "",
+  holderName: "",
+};
+
+/** Same gate the shared step uses: bank/branch/account numbers are required. */
+export function bankDetailsValid(d: ChequeBankDetails): boolean {
+  return (
+    d.bankNumber.trim().length > 0 &&
+    d.branchNumber.trim().length > 0 &&
+    d.accountNumber.trim().length > 0
+  );
+}
+
 export interface ChequeRow {
   id: string;
   checkNumber: string;
@@ -24,6 +50,12 @@ export interface ChequeRow {
   amount: string;
   imageBlob: Blob | null;
   imagePreviewUrl: string | null;
+  /**
+   * Per-cheque bank/account details. `null` (the default) means this cheque
+   * uses the shared details from the shared step. Non-null when the customer
+   * handed over cheques drawn on different banks/accounts in one visit.
+   */
+  override: ChequeBankDetails | null;
 }
 
 /**
@@ -38,5 +70,6 @@ export function blankRow(): ChequeRow {
     amount: "",
     imageBlob: null,
     imagePreviewUrl: null,
+    override: null,
   };
 }
