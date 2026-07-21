@@ -172,6 +172,14 @@ export interface DiscountCreate {
   notes?: string;
 }
 
+/** Re-anchor a customer's balance to a figure agreed face-to-face. */
+export interface SettlementCreate {
+  customer_id: string;
+  /** The customer's NEW total balance, not a delta. */
+  agreed_balance: number;
+  notes?: string;
+}
+
 /** Order-level discount breakdown stored in a transaction's `data`. */
 export interface OrderDiscount {
   type: DiscountType;
@@ -289,6 +297,15 @@ export const salesApi = {
     api
       .post<Transaction>(
         "/payments/discount",
+        payload,
+        idempotentConfig(idempotencyKey)
+      )
+      .then((r) => r.data),
+
+  createSettlement: (payload: SettlementCreate, idempotencyKey?: string) =>
+    api
+      .post<Transaction>(
+        "/payments/settlement",
         payload,
         idempotentConfig(idempotencyKey)
       )

@@ -6,7 +6,12 @@ from fastapi import APIRouter, File, Header, UploadFile
 from pydantic import BaseModel
 
 from app.api.deps import CurrentUser, PaymentSvc, require_admin, require_sales
-from app.schemas.transaction import DiscountCreate, PaymentCreate, TransactionOut
+from app.schemas.transaction import (
+    DiscountCreate,
+    PaymentCreate,
+    SettlementCreate,
+    TransactionOut,
+)
 
 router = APIRouter()
 
@@ -61,6 +66,23 @@ async def create_discount(
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> TransactionOut:
     return await service.create_discount(
+        body, uuid.UUID(current_user["sub"]), idempotency_key
+    )
+
+
+@router.post(
+    "/settlement",
+    response_model=TransactionOut,
+    status_code=201,
+    dependencies=[require_sales],
+)
+async def create_settlement(
+    body: SettlementCreate,
+    current_user: CurrentUser,
+    service: PaymentSvc,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+) -> TransactionOut:
+    return await service.create_settlement(
         body, uuid.UUID(current_user["sub"]), idempotency_key
     )
 

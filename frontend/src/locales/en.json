@@ -114,7 +114,8 @@
     "previous": "Previous",
     "next": "Next",
     "clear": "Clear",
-    "discount": "Discount"
+    "discount": "Discount",
+    "settlement": "Settlement"
   },
   "route": {
     "noCustomers": "No customers today",
@@ -822,5 +823,19 @@
     "apply": "Apply discount",
     "applied": "Discount applied",
     "queued": "Discount queued — will sync when online"
+  },
+  "settlement": {
+    "title": "Balance settlement",
+    "subtitle": "Enter the balance agreed with the customer — recorded as a new opening balance",
+    "currentBalance": "Current balance",
+    "agreedBalance": "Agreed balance",
+    "adjustment": "Adjustment",
+    "newBalance": "Balance after settlement",
+    "noChange": "That is the current balance — nothing to adjust",
+    "note": "Note",
+    "notePlaceholder": "Reason for the settlement (optional)",
+    "apply": "Record settlement",
+    "applied": "Settlement recorded",
+    "queued": "Settlement queued — it will be sent when back online"
   }
 }

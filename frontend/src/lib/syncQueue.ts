@@ -23,7 +23,7 @@ export { IMAGE_STORE };
 
 export interface QueueItem {
   id?: number;
-  type: "order" | "payment" | "purchase" | "discount";
+  type: "order" | "payment" | "purchase" | "discount" | "settlement";
   payload: unknown;
   created_at: string;
   /** Stable idempotency key, generated at enqueue time; never changes on retry. */

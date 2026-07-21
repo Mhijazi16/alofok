@@ -16,7 +16,12 @@ from app.repositories.customer_repository import CustomerRepository
 from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.schemas.admin import CheckOut
-from app.schemas.transaction import DiscountCreate, PaymentCreate, TransactionOut
+from app.schemas.transaction import (
+    DiscountCreate,
+    PaymentCreate,
+    SettlementCreate,
+    TransactionOut,
+)
 from app.utils.cache import CacheBackend, TTL_CATALOG
 
 _PAYMENT_TYPES = {TransactionType.Payment_Cash, TransactionType.Payment_Check}
@@ -198,6 +203,69 @@ class PaymentService:
             await self._customers.commit()
         except IntegrityError:
             # Concurrent request with the same key won the unique constraint.
+            if idempotency_key is None:
+                raise
+            await self._transactions.rollback()
+            existing = await self._transactions.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return TransactionOut.model_validate(existing)
+            raise
+        await self._invalidate_customer_cache(body.customer_id)
+
+        return TransactionOut.model_validate(txn)
+
+    async def create_settlement(
+        self,
+        body: SettlementCreate,
+        creator_id: uuid.UUID,
+        idempotency_key: str | None = None,
+    ) -> TransactionOut:
+        """Re-anchor a customer's balance to a figure agreed with them.
+
+        The rep enters the balance he and the customer settled on; we post the
+        difference as an ``Opening_Balance`` transaction so the statement shows
+        a fresh "opening balance" line and the running balance lands exactly on
+        the agreed figure. History above it is preserved.
+        """
+        if idempotency_key is not None:
+            existing = await self._transactions.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return TransactionOut.model_validate(existing)
+
+        customer = await self._customers.get_by_id(body.customer_id)
+        if customer is None:
+            raise HorizonException(404, "Customer not found")
+
+        previous = Decimal(str(customer.balance))
+        agreed = Decimal(str(body.agreed_balance))
+        delta = agreed - previous
+        if delta == 0:
+            raise HorizonException(
+                400, "Settlement matches the current balance — nothing to adjust"
+            )
+
+        txn = Transaction(
+            customer_id=body.customer_id,
+            created_by=creator_id,
+            type=TransactionType.Opening_Balance,
+            currency=Currency.ILS,
+            # Signed difference, so the statement's running balance lands on the
+            # agreed figure without rewriting any earlier entry.
+            amount=delta,
+            notes=body.notes,
+            data={
+                "settlement": True,
+                "agreed_balance": str(agreed),
+                "previous_balance": str(previous),
+            },
+            idempotency_key=idempotency_key,
+        )
+
+        try:
+            txn = await self._transactions.create(txn, auto_commit=False)
+            await self._customers.apply_balance_delta(customer, delta)
+            await self._customers.commit()
+        except IntegrityError:
             if idempotency_key is None:
                 raise
             await self._transactions.rollback()

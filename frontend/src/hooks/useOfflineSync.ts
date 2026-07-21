@@ -3,7 +3,7 @@ import axios from "axios";
 import { syncQueue, type QueueItem } from "@/lib/syncQueue";
 import { checkImageQueue } from "@/lib/checkImageQueue";
 import { newClientId } from "@/lib/offlineDB";
-import { salesApi, type OrderCreate, type PaymentCreate, type PurchaseCreate, type CheckData, type DiscountCreate } from "@/services/salesApi";
+import { salesApi, type OrderCreate, type PaymentCreate, type PurchaseCreate, type CheckData, type DiscountCreate, type SettlementCreate } from "@/services/salesApi";
 
 /**
  * Extended payment payload shape used internally when an image was captured offline.
@@ -90,6 +90,10 @@ async function replayItem(item: QueueItem): Promise<void> {
   }
   if (item.type === "discount") {
     await salesApi.createDiscount(item.payload as DiscountCreate, key);
+    return;
+  }
+  if (item.type === "settlement") {
+    await salesApi.createSettlement(item.payload as SettlementCreate, key);
     return;
   }
 

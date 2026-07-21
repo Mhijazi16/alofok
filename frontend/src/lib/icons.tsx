@@ -73,6 +73,7 @@ import {
   Image as _Image,
   Info as _Info,
   Landmark as _Landmark,
+  Scale as _Scale,
   Languages as _Languages,
   Loader2 as _Loader2,
   LogOut as _LogOut,
@@ -352,6 +353,7 @@ export const HelpCircle = _HelpCircle;
 export const ImageIcon = _Image;
 export const Info = _Info;
 export const Landmark = _Landmark;
+export const Scale = _Scale;
 export const Languages = _Languages;
 export const Loader2 = _Loader2;
 export const LogOut = _LogOut;

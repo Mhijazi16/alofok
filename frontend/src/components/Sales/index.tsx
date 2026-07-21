@@ -30,6 +30,7 @@ import { RouteBriefing } from "./RouteBriefing";
 import { CustomerDashboard } from "./CustomerDashboard";
 import { OrderFlow } from "./OrderFlow";
 import { PaymentFlow } from "./PaymentFlow";
+import { SettlementDialog } from "./SettlementDialog";
 import { DiscountDialog } from "./DiscountDialog";
 import { StatementView } from "./StatementView";
 import { ReturnedChecksView } from "./ReturnedChecksView";
@@ -60,6 +61,7 @@ export default function SalesRoot() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [orderDiscount, setOrderDiscount] = useState<OrderDiscountInput | null>(null);
   const [discountOpen, setDiscountOpen] = useState(false);
+  const [settlementOpen, setSettlementOpen] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
   const [customDeliveryDate, setCustomDeliveryDate] = useState(false);
   const [avatarSeed, setAvatarSeed] = useState(() => localStorage.getItem("alofok-avatar-seed") || userId || "user");
@@ -135,8 +137,9 @@ export default function SalesRoot() {
   // Product detail opens as an overlay dialog (rendered below) so the catalog
   // stays mounted underneath — going back just closes it, preserving scroll/state.
   const navigateToProduct = useCallback((product: Product) => { setSelectedProduct(product); }, []);
-  const handleCustomerAction = useCallback((action: "order" | "payment" | "statement" | "check" | "purchase" | "discount") => {
+  const handleCustomerAction = useCallback((action: "order" | "payment" | "statement" | "check" | "purchase" | "discount" | "settlement") => {
     if (action === "discount") { setDiscountOpen(true); return; }
+    if (action === "settlement") { setSettlementOpen(true); return; }
     setView(action === "check" ? "returnedChecks" : action);
   }, []);
 
@@ -193,6 +196,12 @@ export default function SalesRoot() {
         customer={selectedCustomer}
         open={discountOpen}
         onOpenChange={setDiscountOpen}
+      />
+      {/* Settlement — re-anchor the balance to a figure agreed with the customer */}
+      <SettlementDialog
+        customer={selectedCustomer}
+        open={settlementOpen}
+        onOpenChange={setSettlementOpen}
       />
       <Dialog open={confirmOpen} onOpenChange={(open) => { setConfirmOpen(open); if (!open) setDeliveryDate(undefined); }}>
         <DialogContent className="max-w-sm">

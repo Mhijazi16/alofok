@@ -16,6 +16,7 @@ import {
   X,
   ArrowDownToLine,
   Tag,
+  Scale,
   IconHoverZone,
 } from "@/lib/icons";
 import { salesApi, type Customer } from "@/services/salesApi";
@@ -39,7 +40,8 @@ type CustomerAction =
   | "statement"
   | "check"
   | "purchase"
-  | "discount";
+  | "discount"
+  | "settlement";
 
 interface CustomerDashboardProps {
   customer: Customer;
@@ -195,6 +197,13 @@ export function CustomerDashboard({
       label: t("actions.purchase"),
       accent: "hover:border-blue-500/50",
       iconBg: "bg-blue-500/15 text-blue-400",
+    },
+    {
+      key: "settlement",
+      icon: Scale,
+      label: t("actions.settlement"),
+      accent: "hover:border-teal-500/50",
+      iconBg: "bg-teal-500/15 text-teal-400",
     },
     {
       key: "check",

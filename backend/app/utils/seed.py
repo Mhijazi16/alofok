@@ -33,7 +33,7 @@ import random
 import string
 from decimal import Decimal, InvalidOperation
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
@@ -177,14 +177,23 @@ async def seed_products(db: AsyncSession, creator: User) -> None:
 async def _refresh_opening(
     db: AsyncSession, customer: Customer, rep: User, amount: Decimal
 ) -> None:
-    """Create or update the customer's single Opening_Balance transaction."""
+    """Create or update the customer's ORIGINAL Opening_Balance transaction.
+
+    A customer can have more than one Opening_Balance row: reps post a
+    settlement (تسوية) as one when they re-anchor a balance face-to-face. Only
+    the earliest — the legacy migration entry — is ours to touch, and this is
+    only ever reached when the customer has no live activity at all.
+    """
     opening = (
         await db.execute(
-            select(Transaction).where(
+            select(Transaction)
+            .where(
                 Transaction.customer_id == customer.id,
                 Transaction.type == TransactionType.Opening_Balance,
                 Transaction.is_deleted.is_(False),
             )
+            .order_by(Transaction.created_at.asc())
+            .limit(1)
         )
     ).scalar_one_or_none()
     if opening is None:
@@ -253,11 +262,17 @@ async def seed_customers(db: AsyncSession, rep: User) -> None:
 
             # Balance is only refreshed while the customer has no real ledger
             # activity yet — once the rep starts transacting we never overwrite.
+            # A rep-posted settlement is stored as an Opening_Balance row but is
+            # very much live activity — it must count, or the next boot would
+            # wipe the balance the rep agreed with the customer.
             real_txns = (
                 await db.execute(
                     select(func.count(Transaction.id)).where(
                         Transaction.customer_id == customer.id,
-                        Transaction.type != TransactionType.Opening_Balance,
+                        or_(
+                            Transaction.type != TransactionType.Opening_Balance,
+                            Transaction.data["settlement"].astext == "true",
+                        ),
                         Transaction.is_deleted.is_(False),
                     )
                 )

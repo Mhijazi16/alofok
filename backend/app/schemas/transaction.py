@@ -109,6 +109,19 @@ class DiscountCreate(BaseModel):
     notes: str | None = None
 
 
+class SettlementCreate(BaseModel):
+    """Re-anchor a customer's balance to a figure agreed face-to-face.
+
+    ``agreed_balance`` is the customer's NEW total balance, not a delta — the
+    service posts whatever adjustment is needed to land on it and records the
+    entry as an Opening_Balance line in the statement.
+    """
+
+    customer_id: uuid.UUID
+    agreed_balance: Decimal  # signed: negative == we owe the customer
+    notes: str | None = None
+
+
 class PaymentCreate(BaseModel):
     customer_id: uuid.UUID
     type: TransactionType  # Payment_Cash or Payment_Check
