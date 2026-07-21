@@ -1,10 +1,11 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
 from sqlalchemy.exc import IntegrityError
 
 from app.core.errors import HorizonException
+from app.models.customer import AssignedDay, Customer
 from app.models.transaction import Currency, Transaction, TransactionType
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.transaction_repository import TransactionRepository
@@ -18,6 +19,33 @@ from app.schemas.transaction import (
 from app.utils.cache import CacheBackend
 
 _CENTS = Decimal("0.01")
+
+# Python's date.weekday(): Mon=0 … Sun=6.
+_DAY_TO_WEEKDAY = {
+    AssignedDay.Mon: 0,
+    AssignedDay.Tue: 1,
+    AssignedDay.Wed: 2,
+    AssignedDay.Thu: 3,
+    AssignedDay.Fri: 4,
+    AssignedDay.Sat: 5,
+    AssignedDay.Sun: 6,
+}
+
+
+def default_delivery_date(customer: Customer, today: date | None = None) -> date:
+    """Next occurrence of the customer's route day (today if that's their day).
+
+    Every route/delivery view filters orders by ``delivery_date``, so an order
+    with a NULL date is invisible everywhere except the customer statement.
+    Clients are supposed to always send one, but a client bug (or an old build)
+    must not be able to create an unroutable order — mirror the app's
+    auto-date logic server-side instead of storing NULL.
+    """
+    today = today or date.today()
+    target = _DAY_TO_WEEKDAY.get(customer.assigned_day)
+    if target is None:
+        return today
+    return today + timedelta(days=(target - today.weekday()) % 7)
 
 
 def _subtotal(items: list[OrderItemSchema]) -> Decimal:
@@ -142,7 +170,7 @@ class OrderService:
                 body.items, subtotal, body.discount_type, body.discount_value, discount
             ),
             notes=body.notes,
-            delivery_date=body.delivery_date,
+            delivery_date=body.delivery_date or default_delivery_date(customer),
             idempotency_key=idempotency_key,
         )
 

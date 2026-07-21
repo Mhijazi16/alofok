@@ -206,7 +206,9 @@ export default function SalesRoot() {
               <label htmlFor="custom-delivery" className="text-sm text-muted-foreground cursor-pointer">{t("catalog.customDeliveryDate") || "Set custom delivery date"}</label>
             </div>
             <FormField label={t("catalog.deliveryDate")}>
-              <DatePicker value={deliveryDate} onChange={setDeliveryDate} placeholder={t("catalog.selectDeliveryDate")} disabled={!customDeliveryDate} />
+              {/* Tapping the already-selected day in react-day-picker fires onSelect(undefined).
+                  Ignore that — an order with no delivery date never shows up in any route day. */}
+              <DatePicker value={deliveryDate} onChange={(d) => d && setDeliveryDate(d)} placeholder={t("catalog.selectDeliveryDate")} disabled={!customDeliveryDate} />
             </FormField>
           </div>
           <DialogFooter>

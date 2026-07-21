@@ -510,7 +510,9 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
       content: (
         <div className="space-y-4">
           <FormField label={t("catalog.deliveryDate")}>
-            <DatePicker value={deliveryDate} onChange={setDeliveryDate} />
+            {/* Never let the date be cleared — see Sales/index.tsx: a dateless
+                order disappears from every route/delivery view. */}
+            <DatePicker value={deliveryDate} onChange={(d) => d && setDeliveryDate(d)} />
           </FormField>
           <FormField label={t("order.notes")}>
             <Textarea
