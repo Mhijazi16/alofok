@@ -98,6 +98,37 @@ const CARDS_PER_PAGE = 6;
 const SWIPE_THRESHOLD = 50;
 
 /**
+ * Delivery state of an order card. Undelivered orders used to be marked only
+ * by the ABSENCE of the green "delivered" badge, which the rep kept missing —
+ * so pending now gets its own amber badge with a pulsing dot.
+ */
+function DeliveryStatusBadge({ delivered }: { delivered: boolean }) {
+  const { t } = useTranslation();
+  if (delivered) {
+    return (
+      <Badge variant="success" className="flex items-center gap-1">
+        <Check className="h-3 w-3" />
+        {t("order.delivered")}
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="warning" className="flex items-center gap-1.5">
+      <span className="relative flex h-2 w-2 shrink-0">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-warning opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-warning" />
+      </span>
+      {t("order.notDelivered")}
+    </Badge>
+  );
+}
+
+/** Accent stripe colour for an order card — amber shouts "still pending". */
+function deliveryStripe(delivered: boolean): string {
+  return delivered ? "bg-emerald-500" : "bg-amber-500";
+}
+
+/**
  * Paginates the route's customer cards so reps don't endlessly scroll.
  * Swipe left/right (RTL-aware) to flip pages; a dots indicator shows position.
  */
@@ -337,6 +368,17 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
   const bonusOrders = useMemo(
     () => allOrders?.filter((o) => o.is_route === false) ?? [],
     [allOrders]
+  );
+
+  // How many of the day's orders are still waiting to be delivered — surfaced
+  // in the section headers so the rep sees it without scanning every card.
+  const pendingCount = useMemo(
+    () => orders.filter((o) => !(o as any).delivered_date).length,
+    [orders]
+  );
+  const pendingBonusCount = useMemo(
+    () => bonusOrders.filter((o) => !(o as any).delivered_date).length,
+    [bonusOrders]
   );
 
   // Delivery confirmation mutation
@@ -630,6 +672,11 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                 <Badge variant="default" size="sm">
                   {bonusOrders!.length}
                 </Badge>
+                {pendingBonusCount > 0 && (
+                  <Badge variant="warning" size="sm">
+                    {t("order.pendingCount", { count: pendingBonusCount })}
+                  </Badge>
+                )}
               </div>
               <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />
             </div>
@@ -647,7 +694,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                     className={`overflow-hidden p-0 transition-all ${isSelected ? "border-primary ring-2 ring-primary/30" : ""}`}
                   >
                     <div className="flex">
-                      <div className={`w-1 shrink-0 rounded-s-xl ${isDelivered ? "bg-emerald-500" : "bg-amber-500/60"}`} />
+                      <div className={`w-1 shrink-0 rounded-s-xl ${deliveryStripe(isDelivered)}`} />
                       <div className="flex-1 p-3">
                         <div
                           className="flex items-center justify-between gap-3 cursor-pointer select-none"
@@ -696,12 +743,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                             <Badge variant="warning" className="font-mono tabular-nums">
                               {formatCurrency(order.amount)}
                             </Badge>
-                            {isDelivered && (
-                              <Badge variant="success" className="flex items-center gap-1">
-                                <Check className="h-3 w-3" />
-                                {t("order.delivered")}
-                              </Badge>
-                            )}
+                            <DeliveryStatusBadge delivered={isDelivered} />
                           </div>
                         </div>
                         {!selectionMode && (
@@ -758,6 +800,11 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                     {orders.length}
                   </Badge>
                 )}
+                {pendingCount > 0 && (
+                  <Badge variant="warning" size="sm">
+                    {t("order.pendingCount", { count: pendingCount })}
+                  </Badge>
+                )}
               </div>
               <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />
             </div>
@@ -797,7 +844,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                       >
                         {/* Accent stripe */}
                         <div className="flex">
-                          <div className={`w-1 shrink-0 rounded-s-xl ${isDelivered ? "bg-emerald-500" : "bg-primary/60"}`} />
+                          <div className={`w-1 shrink-0 rounded-s-xl ${deliveryStripe(isDelivered)}`} />
                           <div className="flex-1 p-3">
                             <div
                               className="flex items-center justify-between gap-3 cursor-pointer select-none"
@@ -846,12 +893,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                                 <Badge variant="success" className="font-mono tabular-nums">
                                   {formatCurrency(order.amount)}
                                 </Badge>
-                                {isDelivered && (
-                                  <Badge variant="success" className="flex items-center gap-1">
-                                    <Check className="h-3 w-3" />
-                                    {t("order.delivered")}
-                                  </Badge>
-                                )}
+                                <DeliveryStatusBadge delivered={isDelivered} />
                               </div>
                             </div>
                             {!selectionMode && (
@@ -909,6 +951,11 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                         {bonusOrders.length}
                       </Badge>
                     )}
+                    {pendingBonusCount > 0 && (
+                      <Badge variant="warning" size="sm">
+                        {t("order.pendingCount", { count: pendingBonusCount })}
+                      </Badge>
+                    )}
                   </div>
                   <div className="h-px flex-1 bg-gradient-to-e from-transparent via-border to-transparent" />
                 </div>
@@ -937,7 +984,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                         >
                           {/* Accent stripe */}
                           <div className="flex">
-                            <div className={`w-1 shrink-0 rounded-s-xl ${isDelivered ? "bg-emerald-500" : "bg-amber-500/60"}`} />
+                            <div className={`w-1 shrink-0 rounded-s-xl ${deliveryStripe(isDelivered)}`} />
                             <div className="flex-1 p-3">
                               <div
                                 className="flex items-center justify-between gap-3 cursor-pointer select-none"
@@ -986,12 +1033,7 @@ export function RouteView({ onSelectCustomer }: RouteViewProps) {
                                   <Badge variant="warning" className="font-mono tabular-nums">
                                     {formatCurrency(order.amount)}
                                   </Badge>
-                                  {isDelivered && (
-                                    <Badge variant="success" className="flex items-center gap-1">
-                                      <Check className="h-3 w-3" />
-                                      {t("order.delivered")}
-                                    </Badge>
-                                  )}
+                                  <DeliveryStatusBadge delivered={isDelivered} />
                                 </div>
                               </div>
                               {!selectionMode && (

@@ -549,7 +549,9 @@
     "bulkDeliverMessage": "تحديد {{count}} طلبات كمسلّمة؟",
     "bulkUndeliverMessage": "إرجاع {{count}} طلبات إلى غير مسلّمة؟",
     "total": "الإجمالي",
-    "products": "المنتجات"
+    "products": "المنتجات",
+    "notDelivered": "لم يُسلّم",
+    "pendingCount": "{{count}} لم تُسلّم"
   },
   "filter": {
     "all": "الكل"

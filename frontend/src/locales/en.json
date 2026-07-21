@@ -549,7 +549,9 @@
     "bulkDeliverMessage": "Mark {{count}} orders as delivered?",
     "bulkUndeliverMessage": "Revert {{count}} orders to undelivered?",
     "total": "Total",
-    "products": "Products"
+    "products": "Products",
+    "notDelivered": "Not delivered",
+    "pendingCount": "{{count}} pending"
   },
   "filter": {
     "all": "All"
