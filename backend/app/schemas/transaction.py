@@ -25,6 +25,8 @@ class OrderItemSchema(BaseModel):
     name: str | None = None
     image_url: str | None = None
     selected_options: list[SelectedOptionSchema] | None = None
+    # Free-text per-line note from the rep (e.g. which colour to deliver).
+    note: str | None = Field(default=None, max_length=500)
 
 
 class CheckData(BaseModel):

@@ -159,7 +159,9 @@
     "itemCount": "{{count}} items",
     "selectCustomer": "Please select a customer first",
     "clearCart": "Clear Cart",
-    "discount": "Discount"
+    "discount": "Discount",
+    "addItemNote": "Add note",
+    "itemNotePlaceholder": "e.g. red colour"
   },
   "payment": {
     "cash": {

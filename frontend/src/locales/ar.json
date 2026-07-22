@@ -159,7 +159,9 @@
     "itemCount": "{{count}} عناصر",
     "selectCustomer": "يرجى اختيار عميل أولاً",
     "clearCart": "إفراغ السلة",
-    "discount": "خصم"
+    "discount": "خصم",
+    "addItemNote": "إضافة ملاحظة",
+    "itemNotePlaceholder": "مثال: اللون أحمر"
   },
   "payment": {
     "cash": {

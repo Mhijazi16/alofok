@@ -70,7 +70,7 @@ export default function SalesRoot() {
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
 
   const { data: allCustomers = [] } = useQuery({ queryKey: ["my-customers"], queryFn: salesApi.getMyCustomers });
-  const { cart, addToCart, updateCartQty, removeFromCart, clearCart, cartTotal } = useCart({ storageKey: "alofok-cart" });
+  const { cart, addToCart, updateCartQty, updateCartNote, removeFromCart, clearCart, cartTotal } = useCart({ storageKey: "alofok-cart" });
 
   /* ---- Order mutation ---- */
   const orderMutation = useMutation({
@@ -107,6 +107,7 @@ export default function SalesRoot() {
       quantity: ci.quantity,
       unit_price: getUnitPrice(ci.product, ci.selectedOptions),
       selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
+      note: ci.note?.trim() || null,
     }));
     const payload = {
       customer_id: selectedCustomer.id,
@@ -161,7 +162,7 @@ export default function SalesRoot() {
         return <OrderFlow customer={cust} onBack={() => setView("route")} onDone={done} cart={cart} addToCart={addToCart} updateCartQty={updateCartQty} removeFromCart={removeFromCart} onViewCart={() => setView("cart")} onViewProduct={navigateToProduct} />;
       }
       case "customers": return <AllCustomersView queryKey={["my-customers"]} queryFn={salesApi.getMyCustomers} onSelectCustomer={navigateToCustomer} onAddCustomer={() => { setEditingCustomer(undefined); setView("customerForm"); }} archiveFn={salesApi.archiveCustomer} />;
-      case "cart": return <CartView cart={cart} updateCartQty={updateCartQty} removeFromCart={removeFromCart} clearCart={clearCart} cartTotal={cartTotal} onPlaceOrder={handlePlaceOrder} onBrowse={() => setView("catalog")} selectedCustomer={selectedCustomer} customers={allCustomers} onSelectCustomer={setSelectedCustomer} discount={orderDiscount} onDiscountChange={setOrderDiscount} />;
+      case "cart": return <CartView cart={cart} updateCartQty={updateCartQty} updateCartNote={updateCartNote} removeFromCart={removeFromCart} clearCart={clearCart} cartTotal={cartTotal} onPlaceOrder={handlePlaceOrder} onBrowse={() => setView("catalog")} selectedCustomer={selectedCustomer} customers={allCustomers} onSelectCustomer={setSelectedCustomer} discount={orderDiscount} onDiscountChange={setOrderDiscount} />;
       case "profile": return <SalesProfileView userId={userId} username={username} role={role} avatarSeed={avatarSeed} onAvatarChange={setAvatarSeed} />;
       default: return null;
     }

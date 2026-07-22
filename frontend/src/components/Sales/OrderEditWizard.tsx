@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Minus, Trash2, Undo2, Package, Pencil } from "@/lib/icons";
+import { Plus, Minus, Trash2, Undo2, Package, Pencil, StickyNote } from "@/lib/icons";
 import {
   Dialog,
   DialogContent,
@@ -61,7 +61,7 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
   const isDelivered = !!(order as any)?.delivered_date;
 
   // ── Edit state ──────────────────────────────────────────────────────────────
-  const { cart, addToCart, updateCartQty, clearCart } = useCart(); // no storageKey → not persisted
+  const { cart, addToCart, updateCartQty, updateCartNote, clearCart } = useCart(); // no storageKey → not persisted
   const [legacy, setLegacy] = useState<OrderItem[]>([]);
   // Historical unit_price per cartKey for lines already in the order — preserved
   // on save so an edit never silently reprices existing lines (see orderCart.ts).
@@ -105,8 +105,9 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
       prices: seededPrices,
     } = hydrateOrderItems(orderItems, products);
     clearCart();
-    for (const item of seededCart.values()) {
+    for (const [key, item] of seededCart.entries()) {
       addToCart(item.product, item.quantity, item.selectedOptions);
+      if (item.note) updateCartNote(key, item.note);
     }
     setLegacy(seededLegacy);
     setOrigPrices(seededPrices);
@@ -116,7 +117,7 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
     );
     setNotes(order.notes || "");
     seededFor.current = order.id;
-  }, [open, order, isDelivered, products, addToCart, clearCart]);
+  }, [open, order, isDelivered, products, addToCart, updateCartNote, clearCart]);
 
   // Every fresh open (or a different order) starts on the summary, not mid-edit.
   useEffect(() => {
@@ -551,6 +552,9 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
                   .join(" | ")}
                 quantity={item.quantity}
                 unitPrice={lineUnitPrice(key, item)}
+                note={item.note}
+                onNoteChange={(n) => updateCartNote(key, n)}
+                notePlaceholder={t("cart.itemNotePlaceholder")}
               />
             ))}
             {legacy.map((item, idx) => (
@@ -564,6 +568,7 @@ export function OrderEditWizard({ order, open, onOpenChange }: OrderEditWizardPr
                 quantity={item.quantity}
                 unitPrice={item.unit_price}
                 unavailable={t("orderEdit.unavailable")}
+                note={item.note ?? undefined}
               />
             ))}
           </div>
@@ -688,6 +693,12 @@ function ReadOnlyLine({ item }: { item: OrderItem }) {
           <p className="text-caption text-muted-foreground" dir="ltr">
             {item.quantity} × ₪ {formatCurrency(item.unit_price)}
           </p>
+          {item.note && (
+            <p className="mt-1 flex items-start gap-1.5 text-body-sm font-medium text-amber-500">
+              <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {item.note}
+            </p>
+          )}
         </div>
         <div className="text-end">
           <p className="text-body-sm font-semibold" dir="ltr">
@@ -706,6 +717,9 @@ function ReviewLine({
   quantity,
   unitPrice,
   unavailable,
+  note,
+  onNoteChange,
+  notePlaceholder,
 }: {
   name: string;
   image: string | null;
@@ -713,6 +727,10 @@ function ReviewLine({
   quantity: number;
   unitPrice: number;
   unavailable?: string;
+  note?: string;
+  /** When provided, the note is editable inline. */
+  onNoteChange?: (note: string) => void;
+  notePlaceholder?: string;
 }) {
   return (
     <Card variant="glass" className="p-3">
@@ -737,6 +755,26 @@ function ReviewLine({
           <p className="text-caption text-muted-foreground" dir="ltr">
             {quantity} × ₪ {formatCurrency(unitPrice)}
           </p>
+          {onNoteChange ? (
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <StickyNote className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+              <input
+                type="text"
+                value={note ?? ""}
+                maxLength={200}
+                placeholder={notePlaceholder}
+                onChange={(e) => onNoteChange(e.target.value)}
+                className="h-8 w-full rounded-md border border-input bg-background px-2 text-caption text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          ) : (
+            note && (
+              <p className="mt-1 flex items-start gap-1.5 text-body-sm font-medium text-amber-500">
+                <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {note}
+              </p>
+            )
+          )}
         </div>
         <div className="text-end">
           <p className="text-body-sm font-semibold" dir="ltr">

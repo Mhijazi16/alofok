@@ -11,6 +11,7 @@ interface UseCartReturn {
   cart: Map<string, CartItem>;
   addToCart: (product: Product, qty?: number, selectedOptions?: SelectedOption[]) => void;
   updateCartQty: (key: string, qty: number) => void;
+  updateCartNote: (key: string, note: string) => void;
   removeFromCart: (key: string) => void;
   clearCart: () => void;
   cartTotal: number;
@@ -78,6 +79,15 @@ export function useCart(options?: UseCartOptions): UseCartReturn {
     });
   }, []);
 
+  const updateCartNote = useCallback((key: string, note: string) => {
+    setCart((prev) => {
+      const next = new Map(prev);
+      const existing = next.get(key);
+      if (existing) next.set(key, { ...existing, note: note || undefined });
+      return next;
+    });
+  }, []);
+
   const clearCart = useCallback(() => setCart(new Map()), []);
 
   const cartTotal = useMemo(
@@ -90,5 +100,5 @@ export function useCart(options?: UseCartOptions): UseCartReturn {
     [cart]
   );
 
-  return { cart, addToCart, updateCartQty, removeFromCart, clearCart, cartTotal };
+  return { cart, addToCart, updateCartQty, updateCartNote, removeFromCart, clearCart, cartTotal };
 }

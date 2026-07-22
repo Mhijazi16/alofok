@@ -48,9 +48,19 @@ export function hydrateOrderItems(
     const key = cartKey(product.id, selectedOptions);
     const existing = cart.get(key);
     if (existing) {
-      cart.set(key, { ...existing, quantity: existing.quantity + item.quantity });
+      cart.set(key, {
+        ...existing,
+        quantity: existing.quantity + item.quantity,
+        // Merged duplicate lines: keep the first note seen rather than dropping it.
+        note: existing.note ?? item.note ?? undefined,
+      });
     } else {
-      cart.set(key, { product, quantity: item.quantity, selectedOptions });
+      cart.set(key, {
+        product,
+        quantity: item.quantity,
+        selectedOptions,
+        note: item.note ?? undefined,
+      });
     }
     // Keep the first-seen historical price for this line (duplicates share it).
     if (!prices.has(key)) prices.set(key, item.unit_price);
@@ -80,6 +90,7 @@ export function serializeCart(
     unit_price:
       originalPrices?.get(key) ?? getUnitPrice(ci.product, ci.selectedOptions),
     selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
+    note: ci.note?.trim() || null,
   }));
   return [...items, ...legacy];
 }

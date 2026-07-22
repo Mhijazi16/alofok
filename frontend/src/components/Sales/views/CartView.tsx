@@ -6,6 +6,7 @@ import {
   Plus,
   Minus,
   Trash2,
+  StickyNote,
 } from "@/lib/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,7 @@ export interface OrderDiscountInput {
 export interface CartViewProps {
   cart: Map<string, CartItem>;
   updateCartQty: (productId: string, qty: number) => void;
+  updateCartNote: (key: string, note: string) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
   cartTotal: number;
@@ -101,6 +103,7 @@ export function computeDiscount(
 export function CartView({
   cart,
   updateCartQty,
+  updateCartNote,
   removeFromCart,
   clearCart,
   cartTotal,
@@ -115,6 +118,18 @@ export function CartView({
   const { t } = useTranslation();
 
   const cartEntries = useMemo(() => Array.from(cart.entries()), [cart]);
+
+  // Lines whose note field is open even while still empty (tapping the note
+  // button shouldn't close it just because nothing is typed yet).
+  const [openNotes, setOpenNotes] = useState<Set<string>>(new Set());
+  const showNoteField = (key: string, ci: CartItem) =>
+    !!ci.note || openNotes.has(key);
+  const toggleNote = (key: string) =>
+    setOpenNotes((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
 
   const discountAmount = computeDiscount(cartTotal, discount);
   const finalTotal = cartTotal - discountAmount;
@@ -237,6 +252,31 @@ export function CartView({
                       </div>
                     </div>
                   </div>
+
+                  {/* Per-item note — e.g. which colour to deliver. Travels with
+                      the order line so it shows up again in My Route. */}
+                  {showNoteField(key, ci) ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <StickyNote className="h-4 w-4 shrink-0 text-amber-500" />
+                      <input
+                        type="text"
+                        value={ci.note ?? ""}
+                        maxLength={200}
+                        placeholder={t("cart.itemNotePlaceholder")}
+                        onChange={(e) => updateCartNote(key, e.target.value)}
+                        className="h-9 w-full rounded-md border border-input bg-background px-2 text-body-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => toggleNote(key)}
+                      className="mt-2 inline-flex items-center gap-1.5 text-caption text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                      {t("cart.addItemNote")}
+                    </button>
+                  )}
                 </CardContent>
               </Card>
               </FadeIn>

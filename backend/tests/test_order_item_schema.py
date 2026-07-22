@@ -162,3 +162,25 @@ if __name__ == "__main__":
             print(f"PASS: {t.__name__}")
         except Exception as e:
             print(f"FAIL: {t.__name__}: {e}")
+
+
+def test_order_item_note_round_trips():
+    """The per-line note (e.g. delivery colour) must survive serialization."""
+    from app.schemas.transaction import OrderItemSchema
+
+    item = OrderItemSchema(
+        product_id=uuid.uuid4(),
+        quantity=1,
+        unit_price=Decimal("10"),
+        note="اللون أحمر",
+    )
+    assert item.model_dump(mode="json")["note"] == "اللون أحمر"
+
+
+def test_order_item_note_defaults_to_none():
+    from app.schemas.transaction import OrderItemSchema
+
+    item = OrderItemSchema(
+        product_id=uuid.uuid4(), quantity=1, unit_price=Decimal("10")
+    )
+    assert item.note is None

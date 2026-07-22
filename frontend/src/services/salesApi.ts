@@ -141,12 +141,16 @@ export interface OrderItem {
   quantity: number;
   unit_price: number;
   selected_options?: SelectedOption[] | null;
+  /** Free-text per-line note from the rep (e.g. which colour to deliver). */
+  note?: string | null;
 }
 
 export interface CartItem {
   product: Product;
   quantity: number;
   selectedOptions?: SelectedOption[];
+  /** Per-line note carried into the order (e.g. "اللون أحمر"). */
+  note?: string;
 }
 
 export interface OrderWithCustomer extends Transaction {

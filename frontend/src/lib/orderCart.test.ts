@@ -171,3 +171,39 @@ describe("hydrateOrderItems / serializeCart", () => {
     expect(Array.from(cart.values())[0].quantity).toBe(7);
   });
 });
+
+describe("per-item notes", () => {
+  it("hydrates the note onto the cart line and serializes it back", () => {
+    const product = makeProduct({ id: "p1", price: 10 });
+    const { cart, legacy, prices } = hydrateOrderItems(
+      [{ product_id: "p1", name: "x", quantity: 2, unit_price: 10, note: "اللون أحمر" }],
+      [product]
+    );
+    expect(cart.get("p1")?.note).toBe("اللون أحمر");
+    const out = serializeCart(cart, legacy, prices);
+    expect(out[0].note).toBe("اللون أحمر");
+  });
+
+  it("keeps the first note when duplicate lines merge", () => {
+    const product = makeProduct({ id: "p1", price: 10 });
+    const { cart } = hydrateOrderItems(
+      [
+        { product_id: "p1", name: "x", quantity: 1, unit_price: 10, note: "أول" },
+        { product_id: "p1", name: "x", quantity: 1, unit_price: 10, note: "ثاني" },
+      ],
+      [product]
+    );
+    expect(cart.get("p1")?.note).toBe("أول");
+  });
+
+  it("serializes a missing note as null, and an empty string as null", () => {
+    const product = makeProduct({ id: "p1", price: 10 });
+    const { cart, legacy, prices } = hydrateOrderItems(
+      [{ product_id: "p1", name: "x", quantity: 1, unit_price: 10 }],
+      [product]
+    );
+    expect(serializeCart(cart, legacy, prices)[0].note).toBeNull();
+    cart.set("p1", { ...cart.get("p1")!, note: "   " });
+    expect(serializeCart(cart, legacy, prices)[0].note).toBeNull();
+  });
+});

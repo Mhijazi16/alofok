@@ -168,6 +168,7 @@ export default function AdminPanel() {
       product_id: ci.product.id, name: getProductName(ci.product), quantity: ci.quantity,
       unit_price: getUnitPrice(ci.product, ci.selectedOptions),
       selected_options: ci.selectedOptions?.length ? ci.selectedOptions : null,
+      note: ci.note?.trim() || null,
     }));
     const payload = {
       customer_id: selectedCustomer.id, items,
